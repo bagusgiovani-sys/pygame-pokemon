@@ -1,4 +1,6 @@
-from settings import * 
+import pygame
+from pygame.math import Vector2 as vector
+from settings import BATTLE_POSITIONS, BATTLE_CHOICES, COLORS
 from sprites import MonsterSprite, MonsterNameSprite, MonsterLevelSprite, MonsterStatsSprite, MonsterOutlineSprite, AttackSprite, TimedSprite
 from groups import BattleSprites
 from game_data import ATTACK_DATA

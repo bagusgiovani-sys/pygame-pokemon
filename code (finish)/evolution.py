@@ -1,4 +1,6 @@
-from settings import * 
+import pygame
+from pygame.math import Vector2 as vector
+from settings import WINDOW_WIDTH, WINDOW_HEIGHT, COLORS, ANIMATION_SPEED
 from timer import Timer
 
 class Evolution:

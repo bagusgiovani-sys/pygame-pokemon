@@ -1,4 +1,6 @@
-from settings import * 
+import pygame
+from pygame.math import Vector2 as vector
+from settings import WINDOW_WIDTH, WINDOW_HEIGHT, COLORS, ANIMATION_SPEED
 from support import draw_bar
 from game_data import MONSTER_DATA, ATTACK_DATA
 

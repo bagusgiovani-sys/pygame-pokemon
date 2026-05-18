@@ -1,4 +1,6 @@
-from settings import * 
+import pygame
+from pygame.math import Vector2 as vector
+from settings import WORLD_LAYERS, COLORS
 from timer import Timer
 
 class DialogTree:
