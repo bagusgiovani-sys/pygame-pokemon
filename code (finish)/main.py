@@ -211,7 +211,7 @@ class Game:
 
 	# transition system
 	def transition_check(self):
-		sprites = [sprite for sprite in self.transition_sprites if sprite.rect.colliderect(self.player.hitbox)]
+		sprites = pygame.sprite.spritecollide(self.player, self.transition_sprites, False)
 		if sprites:
 			self.player.block()
 			self.transition_target = sprites[0].target
@@ -267,12 +267,12 @@ class Game:
 
 	# monster encounters 
 	def check_monster(self):
-		if [sprite for sprite in self.monster_sprites if sprite.rect.colliderect(self.player.hitbox)] and not self.battle and self.player.direction:
+		if pygame.sprite.spritecollide(self.player, self.monster_sprites, False) and not self.battle and self.player.direction:
 			if not self.encounter_timer.active:
 				self.encounter_timer.activate()
 
 	def monster_encounter(self):
-		sprites = [sprite for sprite in self.monster_sprites if sprite.rect.colliderect(self.player.hitbox)]
+		sprites = pygame.sprite.spritecollide(self.player, self.monster_sprites, False)
 		if sprites and self.player.direction:
 			self.encounter_timer.duration = randint(800, 2500)
 			self.player.block()
