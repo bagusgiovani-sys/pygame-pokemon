@@ -1,0 +1,2 @@
+pygame-ce>=2.5.7
+pytmx>=3.32
