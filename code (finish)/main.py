@@ -1,9 +1,16 @@
-from settings import *
-from game_data import *
-from pytmx.util_pygame import load_pygame
+import pygame
+from sys import exit
 from os.path import join
 from random import randint
+from pytmx.util_pygame import load_pygame
 
+from settings import WINDOW_WIDTH, WINDOW_HEIGHT, TILE_SIZE, WORLD_LAYERS
+from game_data import TRAINER_DATA
+from support import (
+    tmx_importer, import_folder, coast_importer, all_character_import,
+    import_folder_dict, monster_importer, outline_creator, attack_importer,
+    audio_importer, check_connections
+)
 from sprites import Sprite, AnimatedSprite, MonsterPatchSprite, BorderSprite, CollidableSprite, TransitionSprite
 from entities import Player, Character
 from groups import AllSprites
@@ -12,8 +19,6 @@ from monster_index import MonsterIndex
 from battle import Battle
 from timer import Timer
 from evolution import Evolution
-
-from support import *
 from monster import Monster
 
 class Game:
