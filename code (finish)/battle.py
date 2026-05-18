@@ -1,4 +1,5 @@
 import pygame
+from sys import exit
 from pygame.math import Vector2 as vector
 from settings import BATTLE_POSITIONS, BATTLE_CHOICES, COLORS
 from sprites import MonsterSprite, MonsterNameSprite, MonsterLevelSprite, MonsterStatsSprite, MonsterOutlineSprite, AttackSprite, TimedSprite
@@ -230,7 +231,7 @@ class Battle:
 		if len(self.opponent_sprites) == 0 and not self.battle_over:
 			self.battle_over = True
 			self.end_battle(self.character)
-			for monster in self. monster_data['player'].values():
+			for monster in self.monster_data['player'].values():
 				monster.initiative = 0
 
 		# player has been defeated 
