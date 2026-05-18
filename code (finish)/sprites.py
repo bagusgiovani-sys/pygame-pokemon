@@ -1,5 +1,7 @@
-from settings import * 
+import pygame
+from pygame.math import Vector2 as vector
 from random import uniform
+from settings import WORLD_LAYERS, ANIMATION_SPEED, BATTLE_LAYERS, COLORS
 from support import draw_bar
 from timer import Timer
 
@@ -31,7 +33,6 @@ class CollidableSprite(Sprite):
 
 class MonsterPatchSprite(Sprite):
 	def __init__(self, pos, surf, groups, biome, monsters, level):
-		self.biome = biome
 		super().__init__(pos, surf, groups, WORLD_LAYERS['main' if biome != 'sand' else 'bg'])
 		self.y_sort -= 40
 		self.biome = biome

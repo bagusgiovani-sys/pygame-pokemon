@@ -1,4 +1,6 @@
-from settings import * 
+import pygame
+from pygame.math import Vector2 as vector
+from settings import WORLD_LAYERS, BATTLE_LAYERS, WINDOW_WIDTH, WINDOW_HEIGHT
 from support import import_image
 from entities import Entity
 

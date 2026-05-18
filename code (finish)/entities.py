@@ -1,4 +1,6 @@
-from settings import * 
+import pygame
+from pygame.math import Vector2 as vector
+from settings import WORLD_LAYERS, ANIMATION_SPEED
 from support import check_connections
 from timer import Timer
 from random import choice
