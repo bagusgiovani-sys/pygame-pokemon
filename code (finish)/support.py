@@ -1,4 +1,4 @@
-from settings import *
+import pygame
 from os.path import join
 from os import walk
 from pytmx.util_pygame import load_pygame
