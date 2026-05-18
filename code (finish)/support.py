@@ -27,14 +27,6 @@ def import_folder_dict(*path):
 			frames[image_name.split('.')[0]] = surf
 	return frames
 
-def import_sub_folders(*path):
-	frames = {}
-	for _, sub_folders, __ in walk(join(*path)):
-		if sub_folders:
-			for sub_folder in sub_folders:
-				frames[sub_folder] = import_folder(*path, sub_folder)
-	return frames
-
 def import_tilemap(cols, rows, *path):
 	frames = {}
 	surf = import_image(*path)
@@ -145,7 +137,7 @@ def draw_bar(surface, rect, value, max_value, color, bg_color, radius = 1):
 	pygame.draw.rect(surface, bg_color, bg_rect, 0, radius)
 	pygame.draw.rect(surface, color, progress_rect, 0, radius)
 
-def check_connections(radius, entity, target, tolerance = 30):
+def check_connections(radius, entity, target, tolerance=30):
 	relation = vector(target.rect.center) - vector(entity.rect.center)
 	if relation.length() < radius:
 		if entity.facing_direction == 'left' and relation.x < 0 and abs(relation.y) < tolerance or\
@@ -153,3 +145,4 @@ def check_connections(radius, entity, target, tolerance = 30):
 		   entity.facing_direction == 'up' and relation.y < 0 and abs(relation.x) < tolerance or\
 		   entity.facing_direction == 'down' and relation.y > 0 and abs(relation.x) < tolerance:
 			return True
+	return False

@@ -37,11 +37,6 @@ class Game:
 		}
 		for monster in self.player_monsters.values():
 			monster.xp += randint(0,monster.level * 100)
-		self.test_monsters = {
-			0: Monster('Finsta', 15),
-			1: Monster('Pouch', 13),
-			2: Monster('Larvea', 12),
-		}
 
 
 		# groups 
@@ -224,7 +219,7 @@ class Game:
 		if self.tint_mode == 'tint':
 			self.tint_progress += self.tint_speed * dt
 			if self.tint_progress >= 255:
-				if type(self.transition_target) == Battle:
+				if isinstance(self.transition_target, Battle):
 					self.battle = self.transition_target
 				elif self.transition_target == 'level':
 					self.battle = None

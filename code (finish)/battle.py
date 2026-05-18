@@ -46,13 +46,12 @@ class Battle:
 		self.setup()
 
 	def setup(self):
-		for entity, monster in self.monster_data.items():
-			for index, monster in {k:v for k,v in monster.items() if k <= 2}.items():
+		for entity, monsters in self.monster_data.items():
+			for index, monster in {k: v for k, v in monsters.items() if k <= 2}.items():
 				self.create_monster(monster, index, index, entity)
 
-			# remove opponent monster data 
-			for i in range(len(self.opponent_sprites)):
-				del self.monster_data['opponent'][i]
+		for i in range(len(self.opponent_sprites)):
+			del self.monster_data['opponent'][i]
 
 	def create_monster(self, monster, index, pos_index, entity):
 		monster.paused = False
@@ -83,7 +82,7 @@ class Battle:
 
 			match self.selection_mode:
 				case 'general': limiter = len(BATTLE_CHOICES['full'])
-				case 'attacks': limiter = len(self.current_monster.monster.get_abilities(all = False))
+				case 'attacks': limiter = len(self.current_monster.monster.get_abilities(include_all=False))
 				case 'switch': limiter = len(self.available_monsters)
 				case 'target': limiter = len(self.opponent_sprites) if self.selection_side == 'opponent' else len(self.player_sprites)
 
@@ -118,7 +117,7 @@ class Battle:
 
 				if self.selection_mode == 'attacks':
 					self.selection_mode = 'target'
-					self.selected_attack = self.current_monster.monster.get_abilities(all = False)[self.indexes['attacks']]
+					self.selected_attack = self.current_monster.monster.get_abilities(include_all=False)[self.indexes['attacks']]
 					self.selection_side = ATTACK_DATA[self.selected_attack]['target']
 
 				if self.selection_mode == 'general':
@@ -259,7 +258,7 @@ class Battle:
 
 	def draw_attacks(self):
 		# data
-		abilities = self.current_monster.monster.get_abilities(all = False)
+		abilities = self.current_monster.monster.get_abilities(include_all=False)
 		width, height = 150, 200
 		visible_attacks = 4
 		item_height = height / visible_attacks

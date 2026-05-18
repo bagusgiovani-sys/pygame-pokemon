@@ -36,8 +36,8 @@ class Monster:
 			'recovery': self.get_stat('recovery'),
 		}
 
-	def get_abilities(self, all  = True):
-		if all:
+	def get_abilities(self, include_all=True):
+		if include_all:
 			return [ability for lvl, ability in self.abilities.items() if self.level >= lvl]
 		else:
 			return [ability for lvl, ability in self.abilities.items() if self.level >= lvl and ATTACK_DATA[ability]['cost'] < self.energy]

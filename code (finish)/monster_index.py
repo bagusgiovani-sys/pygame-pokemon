@@ -47,7 +47,7 @@ class MonsterIndex:
 		if keys[pygame.K_DOWN]:
 			self.index += 1
 		if keys[pygame.K_SPACE]:
-			if self.selected_index != None:
+			if self.selected_index is not None:
 				selected_monster = self.monsters[self.selected_index]
 				current_monster  = self.monsters[self.index]
 				self.monsters[self.index] = selected_monster
