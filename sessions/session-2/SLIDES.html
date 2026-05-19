@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 2 — Making the Player Walk</title>
+<style>
+  :root {
+    --dark:    #2b292c;
+    --gray:    #3a373b;
+    --lgray:   #4b484d;
+    --white:   #f4fefa;
+    --light:   #c8c8c8;
+    --green:   #64a990;
+    --fire:    #f8a060;
+    --water:   #50b0d8;
+    --red:     #f03131;
+    --gold:    #ffd700;
+    --code-bg: #1e1c1f;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--dark);
+    color: var(--white);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  #deck {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 80px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    text-align: center;
+  }
+  .slide.active { opacity: 1; pointer-events: all; }
+  .slide.left-align { align-items: flex-start; text-align: left; }
+
+  h1 { font-size: 3.2rem; font-weight: 700; line-height: 1.15; }
+  h2 { font-size: 2rem;   font-weight: 600; margin-bottom: 0.5rem; }
+  h3 { font-size: 1.3rem; font-weight: 600; color: var(--green); margin-bottom: 0.4rem; }
+  p  { font-size: 1.15rem; line-height: 1.7; color: var(--light); max-width: 820px; }
+  .subtitle { font-size: 1.3rem; color: var(--green); margin-top: 0.6rem; }
+  .small    { font-size: 0.95rem; color: var(--light); }
+
+  .tag {
+    display: inline-block;
+    background: var(--green);
+    color: var(--dark);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+  .tag.fire  { background: var(--fire); }
+  .tag.water { background: var(--water); }
+  .tag.gold  { background: var(--gold); }
+  .tag.red   { background: var(--red); }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--lgray);
+    border-left: 4px solid var(--green);
+    border-radius: 8px;
+    padding: 1.2rem 1.4rem;
+    text-align: left;
+    font-size: 1rem;
+    line-height: 1.65;
+    overflow-x: auto;
+    max-width: 860px;
+    width: 100%;
+    margin: 0.8rem 0;
+    font-family: 'Consolas', 'Fira Code', monospace;
+  }
+  pre.sm { font-size: 0.88rem; line-height: 1.6; padding: 0.9rem 1.1rem; }
+  pre.fire-border  { border-left-color: var(--fire); }
+  pre.water-border { border-left-color: var(--water); }
+  pre.gold-border  { border-left-color: var(--gold); }
+  pre.red-border   { border-left-color: var(--red); }
+
+  .kw  { color: #c792ea; }
+  .fn  { color: #82aaff; }
+  .st  { color: #c3e88d; }
+  .cm  { color: #546e7a; font-style: italic; }
+  .nm  { color: var(--fire); }
+  .op  { color: var(--light); }
+  .at  { color: #ffcb6b; }
+
+  .box {
+    background: var(--gray);
+    border: 1px solid var(--lgray);
+    border-radius: 10px;
+    padding: 1rem 1.4rem;
+    margin: 0.6rem 0;
+    text-align: left;
+    max-width: 860px;
+    width: 100%;
+  }
+  .box.green  { border-left: 4px solid var(--green); }
+  .box.fire   { border-left: 4px solid var(--fire); }
+  .box.water  { border-left: 4px solid var(--water); }
+  .box.gold   { border-left: 4px solid var(--gold); }
+  .box.red    { border-left: 4px solid var(--red); }
+
+  ul, ol { padding-left: 1.4rem; text-align: left; max-width: 820px; }
+  li { font-size: 1.1rem; line-height: 1.8; color: var(--light); margin-bottom: 0.2rem; }
+  li strong { color: var(--white); }
+  li .label {
+    display: inline-block;
+    background: var(--green);
+    color: var(--dark);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 3px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  li .label.fire  { background: var(--fire); }
+  li .label.water { background: var(--water); }
+  li .label.gold  { background: var(--gold); }
+
+  .loop-diagram {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    max-width: 860px;
+    margin: 1.2rem auto;
+  }
+  .loop-step {
+    background: var(--gray);
+    border: 2px solid var(--lgray);
+    border-radius: 8px;
+    padding: 0.65rem 0.9rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--white);
+    text-align: center;
+    min-width: 110px;
+    flex: 1;
+  }
+  .loop-step.green  { border-color: var(--green);  color: var(--green); }
+  .loop-step.fire   { border-color: var(--fire);   color: var(--fire); }
+  .loop-step.water  { border-color: var(--water);  color: var(--water); }
+  .loop-step.gold   { border-color: var(--gold);   color: var(--gold); }
+  .arrow { font-size: 1.4rem; color: var(--lgray); padding: 0 4px; flex-shrink: 0; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+    max-width: 900px;
+    width: 100%;
+    text-align: left;
+  }
+  .col h3 { margin-top: 0; }
+
+  .step-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+  }
+  .step-num {
+    background: var(--green);
+    color: var(--dark);
+    font-size: 1.6rem;
+    font-weight: 800;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .step-num.fire  { background: var(--fire); }
+  .step-num.water { background: var(--water); }
+  .step-num.gold  { background: var(--gold); color: var(--dark); }
+  .step-title { font-size: 1.5rem; font-weight: 600; }
+
+  .ext-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    max-width: 900px;
+    width: 100%;
+  }
+  .ext-card {
+    background: var(--gray);
+    border: 1px solid var(--lgray);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    text-align: left;
+  }
+  .ext-card h4 {
+    color: var(--gold);
+    font-size: 0.95rem;
+    margin-bottom: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .ext-card p { font-size: 0.9rem; max-width: none; }
+
+  code {
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: 'Consolas', 'Fira Code', monospace;
+    font-size: 0.9em;
+    color: var(--green);
+  }
+
+  /* ── Compass grid for vectors ── */
+  .vec-compass {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.6rem;
+    max-width: 440px;
+    margin: 1rem auto;
+  }
+  .vec-cell {
+    background: var(--gray);
+    border: 2px solid var(--lgray);
+    border-radius: 8px;
+    padding: 0.6rem;
+    text-align: center;
+  }
+  .vec-cell.active { border-color: var(--green); }
+  .vec-cell .va { font-size: 1.5rem; line-height: 1.1; }
+  .vec-cell .vn { font-size: 0.75rem; font-weight: 700; color: var(--white); margin: 0.15rem 0; }
+  .vec-cell .vv { font-size: 0.78rem; color: var(--fire); font-family: 'Consolas', monospace; }
+  .vec-empty { opacity: 0; pointer-events: none; }
+  .vec-center-cell {
+    background: var(--lgray);
+    border-radius: 50%;
+    width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    margin: auto;
+    font-size: 0.7rem; color: var(--white); font-weight: 700;
+  }
+
+  /* ── Hitbox demo ── */
+  .hb-demo {
+    display: flex;
+    gap: 3rem;
+    align-items: flex-end;
+    justify-content: center;
+    margin: 1rem 0;
+  }
+  .hb-item { text-align: center; }
+  .hb-sprite {
+    position: relative;
+    width: 52px; height: 80px;
+    background: var(--gray);
+    border: 2px solid var(--lgray);
+    border-radius: 4px;
+    margin: 0 auto 0.5rem;
+  }
+  .hb-full {
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--red);
+    border-radius: 2px;
+  }
+  .hb-small {
+    position: absolute;
+    bottom: 0;
+    left: 10px; right: 10px;
+    height: 40px;
+    border: 2px solid var(--green);
+    border-radius: 2px;
+  }
+  .hb-label { font-size: 0.78rem; color: var(--light); }
+
+  /* ── Window preview ── */
+  .window-preview {
+    border: 2px solid var(--lgray);
+    border-radius: 8px;
+    overflow: hidden;
+    width: 320px;
+    flex-shrink: 0;
+  }
+  .window-bar {
+    background: var(--lgray);
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--light);
+  }
+  .window-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .window-screen {
+    background: #111;
+    height: 180px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ws-border-h {
+    position: absolute;
+    left: 0; right: 0;
+    height: 4px;
+    background: var(--lgray);
+  }
+  .ws-border-v {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 4px;
+    background: var(--lgray);
+  }
+  .player-rect {
+    width: 28px; height: 40px;
+    background: var(--green);
+    border-radius: 2px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── Navigation ── */
+  #nav {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 100;
+  }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--lgray);
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .dot.active { background: var(--green); transform: scale(1.4); }
+
+  #prev, #next {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(58,55,59,0.7);
+    border: 1px solid var(--lgray);
+    color: var(--light);
+    font-size: 1.4rem;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    transition: background 0.2s;
+  }
+  #prev:hover, #next:hover { background: var(--lgray); }
+  #prev { left: 20px; }
+  #next { right: 20px; }
+
+  #slide-counter {
+    position: fixed;
+    top: 18px;
+    right: 24px;
+    font-size: 0.8rem;
+    color: var(--lgray);
+    font-family: 'Consolas', monospace;
+    z-index: 100;
+  }
+
+  .title-slide { background: radial-gradient(ellipse at 60% 40%, #3a4a3f 0%, var(--dark) 65%); }
+</style>
+</head>
+<body>
+
+<div id="deck">
+
+  <!-- ─────────────── SLIDE 1: Title ─────────────── -->
+  <div class="slide title-slide active">
+    <div class="tag">Session 2 of 7</div>
+    <h1>Making the<br>Player Walk</h1>
+    <p class="subtitle">Vectors · input · animation · collision</p>
+    <p style="margin-top:2rem;" class="small">← → arrow keys to navigate</p>
+  </div>
+
+  <!-- ─────────────── SLIDE 2: Agenda ─────────────── -->
+  <div class="slide left-align">
+    <div class="tag">Today's plan</div>
+    <h2>What we're building</h2>
+    <p style="margin-bottom:1rem;">By the end of this session your player sprite walks in four directions, animates, and bounces off the screen edges.</p>
+    <ul style="margin-bottom:1rem;">
+      <li><span class="label">Steps 1–4</span> <strong>timer.py</strong> — build the whole <code>Timer</code> class from scratch</li>
+      <li><span class="label">Step 5</span> <strong>entities.py</strong> — <code>Entity.animate(dt)</code></li>
+      <li><span class="label fire">Steps 6–9</span> <strong>entities.py</strong> — <code>Player</code>: init, input, move, collisions</li>
+      <li><span class="label water">Steps 10–12</span> <strong>sprites.py</strong> — <code>Sprite</code>, <code>BorderSprite</code>, <code>CollidableSprite</code></li>
+      <li><span class="label gold">Step 13</span> <strong>main.py</strong> — <code>setup()</code>: place the player + four walls</li>
+    </ul>
+    <div class="box green">
+      <p class="small"><strong>Build order matters:</strong> <code>timer.py</code> first (entities.py imports it), then <code>entities.py</code>, then <code>sprites.py</code>, then <code>main.py</code>.</p>
+    </div>
+  </div>
+
+  <!-- ─────────────── SLIDE 3: Vectors ─────────────── -->
+  <div class="slide">
+    <div class="tag">Core concept</div>
+    <h2>Vectors — direction in one object</h2>
+    <p style="margin-bottom:0.5rem;">A <strong>Vector2</strong> stores x and y together. We use it to track which way the player is moving.</p>
+    <div class="vec-compass">
+      <div class="vec-cell vec-empty"></div>
+      <div class="vec-cell active">
+        <div class="va">↑</div>
+        <div class="vn">UP</div>
+        <div class="vv">(0, -1)</div>
+      </div>
+      <div class="vec-cell vec-empty"></div>
+      <div class="vec-cell active">
+        <div class="va">←</div>
+        <div class="vn">LEFT</div>
+        <div class="vv">(-1, 0)</div>
+      </div>
+      <div class="vec-cell">
+        <div class="vec-center-cell">Player</div>
+      </div>
+      <div class="vec-cell active">
+        <div class="va">→</div>
+        <div class="vn">RIGHT</div>
+        <div class="vv">(1, 0)</div>
+      </div>
+      <div class="vec-cell vec-empty"></div>
+      <div class="vec-cell active">
+        <div class="va">↓</div>
+        <div class="vn">DOWN</div>
+        <div class="vv">(0, 1)</div>
+      </div>
+      <div class="vec-cell vec-empty"></div>
+    </div>
+    <div class="box water" style="max-width:680px;">
+      <p class="small"><strong>Diagonal problem:</strong> pressing UP + RIGHT gives <code>(1, 1)</code> — length ≈ 1.41, so the player moves 41% faster diagonally.<br>
+      <strong>Fix:</strong> <code>input_vector.normalize()</code> — rescales any vector to length exactly 1.</p>
+    </div>
+  </div>
+
+  <!-- ─────────────── SLIDE 4: Timer concept ─────────────── -->
+  <div class="slide">
+    <div class="tag">Core concept</div>
+    <h2>The Timer class — delay, then fire</h2>
+    <p style="margin-bottom:0.8rem;">A <code>Timer</code> waits a set number of milliseconds, then calls a function. Optionally repeats.</p>
+    <div class="loop-diagram" style="margin-bottom:0.5rem;">
+      <div class="loop-step green">activate()<br><span style="font-size:0.75rem;font-weight:400;color:var(--light)">start the clock</span></div>
+      <div class="arrow">→</div>
+      <div class="loop-step">counting…<br><span style="font-size:0.75rem;font-weight:400;color:var(--light)">update() every frame</span></div>
+      <div class="arrow">→</div>
+      <div class="loop-step fire">expired!<br><span style="font-size:0.75rem;font-weight:400;color:var(--light)">call func()</span></div>
+      <div class="arrow">→</div>
+      <div class="loop-step water">deactivate()<br><span style="font-size:0.75rem;font-weight:400;color:var(--light)">or repeat ↺</span></div>
+    </div>
+    <div class="two-col" style="max-width:820px; margin-top:0.5rem;">
+      <div class="box green">
+        <h3>Where it's used</h3>
+        <p class="small">NPC patrol pauses every 1.5 s<br>500 ms delay before NPC walks<br>Battle action timing</p>
+      </div>
+      <div class="box fire">
+        <h3>Key parameters</h3>
+        <p class="small"><code>duration</code> — ms to wait<br><code>repeat</code> — auto-restart<br><code>autostart</code> — start immediately<br><code>func</code> — callback to call</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── SLIDE 5: Steps 1–2 timer.__init__ + activate ─────────────── -->
+  <div class="slide left-align">
+    <div class="step-badge">
+      <div class="step-num">1</div>
+      <div>
+        <div class="tag" style="margin-bottom:0.2rem;">timer.py</div>
+        <span class="step-title">__init__ — store the settings</span>
+      </div>
+    </div>
+    <pre><span class="kw">def</span> <span class="fn">__init__</span>(<span class="at">self</span>, duration, repeat<span class="op">=</span><span class="kw">False</span>, autostart<span class="op">=</span><span class="kw">False</span>, func<span class="op">=</span><span class="kw">None</span>)<span class="op">:</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">duration</span>   <span class="op">=</span> duration
+    <span class="at">self</span><span class="op">.</span><span class="at">start_time</span> <span class="op">=</span> <span class="nm">0</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">active</span>     <span class="op">=</span> <span class="kw">False</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">repeat</span>     <span class="op">=</span> repeat
+    <span class="at">self</span><span class="op">.</span><span class="at">func</span>       <span class="op">=</span> func
+    <span class="kw">if</span> autostart<span class="op">:</span>
+        <span class="at">self</span><span class="op">.</span><span class="fn">activate</span><span class="op">()</span></pre>
+    <div class="step-badge" style="margin-top:0.4rem;">
+      <div class="step-num fire">2</div>
+      <div>
+        <span class="step-title">activate() — start the clock</span>
+      </div>
+    </div>
+    <pre class="fire-border"><span class="kw">def</span> <span class="fn">activate</span>(<span class="at">self</span>)<span class="op">:</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">active</span>     <span class="op">=</span> <span class="kw">True</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">start_time</span> <span class="op">=</span> <span class="fn">get_ticks</span><span class="op">()</span>   <span class="cm"># milliseconds since pygame.init()</span></pre>
+  </div>
+
+  <!-- ─────────────── SLIDE 6: Steps 3–4 deactivate + update ─────────────── -->
+  <div class="slide left-align">
+    <div class="step-badge">
+      <div class="step-num water">3</div>
+      <div>
+        <div class="tag water" style="margin-bottom:0.2rem;">timer.py</div>
+        <span class="step-title">deactivate() — stop (or repeat)</span>
+      </div>
+    </div>
+    <pre class="water-border"><span class="kw">def</span> <span class="fn">deactivate</span>(<span class="at">self</span>)<span class="op">:</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">active</span>     <span class="op">=</span> <span class="kw">False</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">start_time</span> <span class="op">=</span> <span class="nm">0</span>
+    <span class="kw">if</span> <span class="at">self</span><span class="op">.</span><span class="at">repeat</span><span class="op">:</span>
+        <span class="at">self</span><span class="op">.</span><span class="fn">activate</span><span class="op">()</span>   <span class="cm"># restart immediately</span></pre>
+    <div class="step-badge" style="margin-top:0.4rem;">
+      <div class="step-num gold">4</div>
+      <div>
+        <span class="step-title">update() — check every frame</span>
+      </div>
+    </div>
+    <pre class="gold-border"><span class="kw">def</span> <span class="fn">update</span>(<span class="at">self</span>)<span class="op">:</span>
+    <span class="kw">if</span> <span class="at">self</span><span class="op">.</span><span class="at">active</span><span class="op">:</span>
+        current_time <span class="op">=</span> <span class="fn">get_ticks</span><span class="op">()</span>
+        <span class="kw">if</span> current_time <span class="op">-</span> <span class="at">self</span><span class="op">.</span><span class="at">start_time</span> <span class="op">&gt;=</span> <span class="at">self</span><span class="op">.</span><span class="at">duration</span><span class="op">:</span>
+            <span class="kw">if</span> <span class="at">self</span><span class="op">.</span><span class="at">func</span><span class="op">:</span>
+                <span class="at">self</span><span class="op">.</span><span class="fn">func</span><span class="op">()</span>
+            <span class="at">self</span><span class="op">.</span><span class="fn">deactivate</span><span class="op">()</span></pre>
+    <div class="box green" style="margin-top:0.2rem; padding:0.6rem 1rem;">
+      <p class="small"><strong>Call <code>timer.update()</code> every frame</strong> — otherwise it never checks whether it's expired.</p>
+    </div>
+  </div>
+
+  <!-- ─────────────── SLIDE 7: Step 5 animate ─────────────── -->
+  <div class="slide left-align">
+    <div class="step-badge">
+      <div class="step-num">5</div>
+      <div>
+        <div class="tag" style="margin-bottom:0.2rem;">entities.py — Entity</div>
+        <span class="step-title">animate(dt) — cycle through frames</span>
+      </div>
+    </div>
+    <p style="margin-bottom:0.8rem;">Two lines: advance the counter, then pick the correct frame image.</p>
+    <pre><span class="kw">def</span> <span class="fn">animate</span>(<span class="at">self</span>, dt)<span class="op">:</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">frame_index</span> <span class="op">+=</span> <span class="nm">ANIMATION_SPEED</span> <span class="op">*</span> dt
+    state <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="fn">get_state</span><span class="op">()</span>          <span class="cm"># e.g. 'down', 'right_idle'</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">image</span> <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">frames</span><span class="op">[</span>state<span class="op">][</span><span class="fn">int</span><span class="op">(</span><span class="at">self</span><span class="op">.</span><span class="at">frame_index</span> <span class="op">%</span> <span class="fn">len</span><span class="op">(</span><span class="at">self</span><span class="op">.</span><span class="at">frames</span><span class="op">[</span>state<span class="op">]))]</span></pre>
+    <ul style="margin-top:0.4rem;">
+      <li><code>ANIMATION_SPEED * dt</code> — moves the counter by ~0.1 each frame (6 frames/s at 60fps).</li>
+      <li><code>get_state()</code> — returns the dict key: <code>'down'</code>, <code>'left_idle'</code>, <code>'up'</code>, etc.</li>
+      <li><code>% len(...)</code> — <strong>modulo wraps</strong> the index back to 0 when it reaches the end of the list.</li>
+    </ul>
+    <div class="box fire" style="margin-top:0.6rem;">
+      <p class="small"><strong>Example:</strong> frame_index = 7.4, list has 4 frames → <code>int(7.4 % 4) = int(3.4) = 3</code> — last frame. Next: wraps to 0.</p>
+    </div>
+  </div>
+
+  <!-- ─────────────── SLIDE 8: Step 6 Player.__init__ ─────────────── -->
+  <div class="slide left-align">
+    <div class="step-badge">
+      <div class="step-num fire">6</div>
+      <div>
+        <div class="tag fire" style="margin-bottom:0.2rem;">entities.py — Player</div>
+        <span class="step-title">Player.__init__ — three lines</span>
+      </div>
+    </div>
+    <p style="margin-bottom:0.8rem;"><code>Player</code> inherits from <code>Entity</code>. Your __init__ just calls super and stores two extra things.</p>
+    <pre class="fire-border"><span class="kw">def</span> <span class="fn">__init__</span>(<span class="at">self</span>, pos, frames, groups, facing_direction, collision_sprites)<span class="op">:</span>
+    <span class="fn">super</span><span class="op">().</span><span class="fn">__init__</span><span class="op">(</span>pos, frames, groups, facing_direction<span class="op">)</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">collision_sprites</span> <span class="op">=</span> collision_sprites
+    <span class="at">self</span><span class="op">.</span><span class="at">noticed</span> <span class="op">=</span> <span class="kw">False</span></pre>
+    <ul style="margin-top:0.6rem;">
+      <li><code>super().__init__(...)</code> — runs Entity's setup: sets rect, hitbox, frames, direction, speed.</li>
+      <li><code>collision_sprites</code> — the group of walls the player collides with.</li>
+      <li><code>noticed = False</code> — becomes <code>True</code> when an NPC spots you (used in dialog flow).</li>
+    </ul>
+    <div class="box green" style="margin-top:0.6rem;">
+      <p class="small"><strong>inheritance:</strong> <code>super().__init__()</code> runs the parent class constructor. Everything Entity builds (rect, hitbox, speed…) is then available as <code>self.rect</code>, <code>self.speed</code>, etc.</p>
+    </div>
+  </div>
+
+  <!-- ─────────────── SLIDE 9: get_pressed vs get_just_pressed ─────────────── -->
+  <div class="slide">
+    <div class="tag">Concept</div>
+    <h2>Two ways to read the keyboard</h2>
+    <div class="two-col" style="margin-top:0.8rem;">
+      <div>
+        <h3 style="color:var(--green);">get_pressed()</h3>
+        <div class="box green">
+          <p class="small">Returns a list: <code>True</code> every frame the key is held down.<br><br>
+          Perfect for <strong>movement</strong> — player keeps walking while you hold the key.<br><br>
+          <code>keys = pygame.key.get_pressed()</code><br>
+          <code>if keys[pygame.K_RIGHT]: ...</code></p>
+        </div>
+      </div>
+      <div>
+        <h3 style="color:var(--fire);">get_just_pressed()</h3>
+        <div class="box fire">
+          <p class="small">Returns <code>True</code> only on the single frame the key was first pressed.<br><br>
+          Perfect for <strong>dialog advance, menu clicks</strong> — fires once per keypress no matter how long you hold.<br><br>
+          <code>keys = pygame.key.get_just_pressed()</code><br>
+          <code>if keys[pygame.K_SPACE]: ...</code></p>
+        </div>
+      </div>
+    </div>
+    <div class="box water" style="margin-top:0.8rem;">
+      <p><strong>Rule of thumb:</strong> movement → <code>get_pressed()</code> &nbsp;|&nbsp; "press to confirm" → <code>get_just_pressed()</code></p>
+    </div>
+  </div>
+
+  <!-- ─────────────── SLIDE 10: Step 7 Player.input ─────────────── -->
+  <div class="slide left-align">
+    <div class="step-badge">
+      <div class="step-num fire">7</div>
+      <div>
+        <div class="tag fire" style="margin-bottom:0.2rem;">entities.py — Player</div>
+        <span class="step-title">input() — read the keyboard</span>
+      </div>
+    </div>
+    <pre class="fire-border"><span class="kw">def</span> <span class="fn">input</span>(<span class="at">self</span>)<span class="op">:</span>
+    keys <span class="op">=</span> <span class="fn">pygame</span><span class="op">.</span><span class="fn">key</span><span class="op">.</span><span class="fn">get_pressed</span><span class="op">()</span>
+    input_vector <span class="op">=</span> <span class="fn">vector</span><span class="op">()</span>            <span class="cm"># starts at (0, 0)</span>
+    <span class="kw">if</span> keys<span class="op">[</span><span class="fn">pygame</span><span class="op">.</span><span class="nm">K_UP</span><span class="op">]:</span>    input_vector<span class="op">.</span><span class="at">y</span> <span class="op">-=</span> <span class="nm">1</span>
+    <span class="kw">if</span> keys<span class="op">[</span><span class="fn">pygame</span><span class="op">.</span><span class="nm">K_DOWN</span><span class="op">]:</span>  input_vector<span class="op">.</span><span class="at">y</span> <span class="op">+=</span> <span class="nm">1</span>
+    <span class="kw">if</span> keys<span class="op">[</span><span class="fn">pygame</span><span class="op">.</span><span class="nm">K_LEFT</span><span class="op">]:</span>  input_vector<span class="op">.</span><span class="at">x</span> <span class="op">-=</span> <span class="nm">1</span>
+    <span class="kw">if</span> keys<span class="op">[</span><span class="fn">pygame</span><span class="op">.</span><span class="nm">K_RIGHT</span><span class="op">]:</span> input_vector<span class="op">.</span><span class="at">x</span> <span class="op">+=</span> <span class="nm">1</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">direction</span> <span class="op">=</span> input_vector<span class="op">.</span><span class="fn">normalize</span><span class="op">()</span> <span class="kw">if</span> input_vector <span class="kw">else</span> input_vector</pre>
+    <div class="box green" style="margin-top:0.4rem;">
+      <p class="small"><strong>Why <code>if input_vector else input_vector</code>?</strong> Calling <code>.normalize()</code> on a zero-length vector (no key held) crashes with a <code>ValueError</code> — dividing by zero. The check skips normalize when no key is pressed.</p>
+    </div>
+  </div>
+
+  <!-- ─────────────── SLIDE 11: Step 8 Player.move ─────────────── -->
+  <div class="slide left-align">
+    <div class="step-badge">
+      <div class="step-num water">8</div>
+      <div>
+        <div class="tag water" style="margin-bottom:0.2rem;">entities.py — Player</div>
+        <span class="step-title">move(dt) — move in two passes</span>
+      </div>
+    </div>
+    <pre class="water-border"><span class="kw">def</span> <span class="fn">move</span>(<span class="at">self</span>, dt)<span class="op">:</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">rect</span><span class="op">.</span><span class="at">centerx</span>  <span class="op">+=</span> <span class="at">self</span><span class="op">.</span><span class="at">direction</span><span class="op">.</span><span class="at">x</span> <span class="op">*</span> <span class="at">self</span><span class="op">.</span><span class="at">speed</span> <span class="op">*</span> dt  <span class="cm"># ① move x</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">hitbox</span><span class="op">.</span><span class="at">centerx</span> <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">rect</span><span class="op">.</span><span class="at">centerx</span>                   <span class="cm"># ② sync hitbox</span>
+    <span class="at">self</span><span class="op">.</span><span class="fn">collisions</span><span class="op">(</span><span class="st">'horizontal'</span><span class="op">)</span>                             <span class="cm"># ③ push back x</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">rect</span><span class="op">.</span><span class="at">centery</span>  <span class="op">+=</span> <span class="at">self</span><span class="op">.</span><span class="at">direction</span><span class="op">.</span><span class="at">y</span> <span class="op">*</span> <span class="at">self</span><span class="op">.</span><span class="at">speed</span> <span class="op">*</span> dt  <span class="cm"># ④ move y</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">hitbox</span><span class="op">.</span><span class="at">centery</span> <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">rect</span><span class="op">.</span><span class="at">centery</span>                   <span class="cm"># ⑤ sync hitbox</span>
+    <span class="at">self</span><span class="op">.</span><span class="fn">collisions</span><span class="op">(</span><span class="st">'vertical'</span><span class="op">)</span>                               <span class="cm"># ⑥ push back y</span></pre>
+    <div class="box water" style="margin-top:0.4rem;">
+      <p class="small"><strong>Why not move x+y together?</strong> If the player hits a corner, pygame can't tell which wall to push back from. Resolving x first, then y, means each collision is unambiguous — the player slides smoothly along walls instead of getting stuck.</p>
+    </div>
+  </div>
+
+  <!-- ─────────────── SLIDE 12: Concept: hitbox ─────────────── -->
+  <div class="slide">
+    <div class="tag">Concept</div>
+    <h2>The hitbox — smaller than the sprite</h2>
+    <p style="margin-bottom:1rem;">The <strong>visible image</strong> is taller than the collision area. The hitbox only covers the character's feet — so they can walk close to trees without the leaves blocking them.</p>
+    <div class="hb-demo">
+      <div class="hb-item">
+        <div class="hb-sprite">
+          <div class="hb-full"></div>
+        </div>
+        <div class="hb-label" style="color:var(--red);">❌ full rect hitbox</div>
+        <div class="hb-label">collision at shoulders</div>
+      </div>
+      <div class="hb-item">
+        <div class="hb-sprite">
+          <div class="hb-small"></div>
+        </div>
+        <div class="hb-label" style="color:var(--green);">✅ inflate(-w/2, -60)</div>
+        <div class="hb-label">collision only at feet</div>
+      </div>
+    </div>
+    <div class="box green">
+      <p class="small"><code>self.hitbox = self.rect.inflate(-self.rect.width / 2, -60)</code><br>
+      <code>inflate(-x, -y)</code> shrinks the rect by <code>x</code> px on each side horizontally and <code>y</code> px on each side vertically.<br>
+      Always keep hitbox and rect in sync after moving: <code>self.hitbox.centerx = self.rect.centerx</code></p>
+    </div>
+  </div>
+
+  <!-- ─────────────── SLIDE 13: Step 9 collisions ─────────────── -->
+  <div class="slide left-align">
+    <div class="step-badge">
+      <div class="step-num gold">9</div>
+      <div>
+        <div class="tag gold" style="margin-bottom:0.2rem;">entities.py — Player</div>
+        <span class="step-title">collisions(axis) — push back</span>
+      </div>
+    </div>
+    <pre class="gold-border sm"><span class="kw">def</span> <span class="fn">collisions</span>(<span class="at">self</span>, axis)<span class="op">:</span>
+    <span class="kw">for</span> sprite <span class="kw">in</span> <span class="at">self</span><span class="op">.</span><span class="at">collision_sprites</span><span class="op">:</span>
+        <span class="kw">if</span> sprite<span class="op">.</span><span class="at">hitbox</span><span class="op">.</span><span class="fn">colliderect</span><span class="op">(</span><span class="at">self</span><span class="op">.</span><span class="at">hitbox</span><span class="op">):</span>
+            <span class="kw">if</span> axis <span class="op">==</span> <span class="st">'horizontal'</span><span class="op">:</span>
+                <span class="kw">if</span> <span class="at">self</span><span class="op">.</span><span class="at">direction</span><span class="op">.</span><span class="at">x</span> <span class="op">&gt;</span> <span class="nm">0</span><span class="op">:</span> <span class="at">self</span><span class="op">.</span><span class="at">hitbox</span><span class="op">.</span><span class="at">right</span> <span class="op">=</span> sprite<span class="op">.</span><span class="at">hitbox</span><span class="op">.</span><span class="at">left</span>
+                <span class="kw">if</span> <span class="at">self</span><span class="op">.</span><span class="at">direction</span><span class="op">.</span><span class="at">x</span> <span class="op">&lt;</span> <span class="nm">0</span><span class="op">:</span> <span class="at">self</span><span class="op">.</span><span class="at">hitbox</span><span class="op">.</span><span class="at">left</span>  <span class="op">=</span> sprite<span class="op">.</span><span class="at">hitbox</span><span class="op">.</span><span class="at">right</span>
+                <span class="at">self</span><span class="op">.</span><span class="at">rect</span><span class="op">.</span><span class="at">centerx</span> <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">hitbox</span><span class="op">.</span><span class="at">centerx</span>
+            <span class="kw">else</span><span class="op">:</span>
+                <span class="kw">if</span> <span class="at">self</span><span class="op">.</span><span class="at">direction</span><span class="op">.</span><span class="at">y</span> <span class="op">&gt;</span> <span class="nm">0</span><span class="op">:</span> <span class="at">self</span><span class="op">.</span><span class="at">hitbox</span><span class="op">.</span><span class="at">bottom</span> <span class="op">=</span> sprite<span class="op">.</span><span class="at">hitbox</span><span class="op">.</span><span class="at">top</span>
+                <span class="kw">if</span> <span class="at">self</span><span class="op">.</span><span class="at">direction</span><span class="op">.</span><span class="at">y</span> <span class="op">&lt;</span> <span class="nm">0</span><span class="op">:</span> <span class="at">self</span><span class="op">.</span><span class="at">hitbox</span><span class="op">.</span><span class="at">top</span>    <span class="op">=</span> sprite<span class="op">.</span><span class="at">hitbox</span><span class="op">.</span><span class="at">bottom</span>
+                <span class="at">self</span><span class="op">.</span><span class="at">rect</span><span class="op">.</span><span class="at">centery</span> <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">hitbox</span><span class="op">.</span><span class="at">centery</span></pre>
+    <div class="box green" style="margin-top:0.2rem; padding:0.6rem 1rem;">
+      <p class="small">Moving right → push hitbox's right edge to the sprite's left edge. Then sync rect back to hitbox. Always update <em>both</em> rect and hitbox after a push.</p>
+    </div>
+  </div>
+
+  <!-- ─────────────── SLIDE 14: Steps 10–12 sprites.py ─────────────── -->
+  <div class="slide left-align">
+    <div class="step-badge">
+      <div class="step-num">10</div>
+      <div>
+        <div class="tag" style="margin-bottom:0.2rem;">sprites.py</div>
+        <span class="step-title">Three sprite classes</span>
+      </div>
+    </div>
+    <pre style="margin-bottom:0.5rem;"><span class="cm"># Sprite — general visible object (bg tiles, obstacles)</span>
+<span class="kw">class</span> <span class="fn">Sprite</span><span class="op">(</span>pygame<span class="op">.</span>sprite<span class="op">.</span><span class="fn">Sprite</span><span class="op">):</span>
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="at">self</span>, pos, surf, groups, z<span class="op">=</span>WORLD_LAYERS<span class="op">[</span><span class="st">'bg'</span><span class="op">]):</span>
+        <span class="fn">super</span><span class="op">().</span><span class="fn">__init__</span><span class="op">(</span>groups<span class="op">)</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">image</span>  <span class="op">=</span> surf<span class="op">;</span>  <span class="at">self</span><span class="op">.</span><span class="at">rect</span>   <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">image</span><span class="op">.</span><span class="fn">get_frect</span><span class="op">(</span>topleft<span class="op">=</span>pos<span class="op">)</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">hitbox</span> <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">rect</span><span class="op">.</span><span class="fn">copy</span><span class="op">();</span> <span class="at">self</span><span class="op">.</span><span class="at">y_sort</span> <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">rect</span><span class="op">.</span><span class="at">centery</span><span class="op">;</span> <span class="at">self</span><span class="op">.</span><span class="at">z</span> <span class="op">=</span> z</pre>
+    <div class="two-col" style="max-width:860px;">
+      <pre style="margin:0;" class="fire-border sm"><span class="cm"># Steps 11 — BorderSprite (invisible wall)</span>
+<span class="kw">class</span> <span class="fn">BorderSprite</span><span class="op">(</span>pygame<span class="op">.</span>sprite<span class="op">.</span><span class="fn">Sprite</span><span class="op">):</span>
+  <span class="kw">def</span> <span class="fn">__init__</span>(<span class="at">self</span>, pos, surf, groups)<span class="op">:</span>
+    <span class="fn">super</span><span class="op">().</span><span class="fn">__init__</span><span class="op">(</span>groups<span class="op">)</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">image</span>  <span class="op">=</span> surf
+    <span class="at">self</span><span class="op">.</span><span class="at">rect</span>   <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">image</span><span class="op">.</span><span class="fn">get_frect</span><span class="op">(</span>topleft<span class="op">=</span>pos<span class="op">)</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">hitbox</span> <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">rect</span><span class="op">.</span><span class="fn">copy</span><span class="op">()</span>   <span class="cm"># full size</span></pre>
+      <pre style="margin:0;" class="water-border sm"><span class="cm"># Step 12 — CollidableSprite (tree/fence)</span>
+<span class="kw">class</span> <span class="fn">CollidableSprite</span><span class="op">(</span>pygame<span class="op">.</span>sprite<span class="op">.</span><span class="fn">Sprite</span><span class="op">):</span>
+  <span class="kw">def</span> <span class="fn">__init__</span>(<span class="at">self</span>, pos, surf, groups)<span class="op">:</span>
+    <span class="fn">super</span><span class="op">().</span><span class="fn">__init__</span><span class="op">(</span>groups<span class="op">)</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">image</span>  <span class="op">=</span> surf
+    <span class="at">self</span><span class="op">.</span><span class="at">rect</span>   <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">image</span><span class="op">.</span><span class="fn">get_frect</span><span class="op">(</span>topleft<span class="op">=</span>pos<span class="op">)</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">hitbox</span> <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">rect</span><span class="op">.</span><span class="fn">inflate</span><span class="op">(-</span><span class="nm">10</span><span class="op">, -</span><span class="nm">10</span><span class="op">)</span>  <span class="cm"># shrunk</span></pre>
+    </div>
+  </div>
+
+  <!-- ─────────────── SLIDE 15: Step 13 main.py setup ─────────────── -->
+  <div class="slide left-align">
+    <div class="step-badge">
+      <div class="step-num gold">13</div>
+      <div>
+        <div class="tag gold" style="margin-bottom:0.2rem;">main.py</div>
+        <span class="step-title">setup() — player + four walls</span>
+      </div>
+    </div>
+    <pre class="gold-border sm"><span class="kw">def</span> <span class="fn">setup</span>(<span class="at">self</span>)<span class="op">:</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">player</span> <span class="op">=</span> <span class="fn">Player</span><span class="op">(</span>
+        pos<span class="op">=(</span><span class="nm">WINDOW_WIDTH</span> <span class="op">/</span> <span class="nm">2</span>, <span class="nm">WINDOW_HEIGHT</span> <span class="op">/</span> <span class="nm">2</span><span class="op">),</span>
+        frames<span class="op">=</span><span class="at">self</span><span class="op">.</span><span class="at">overworld_frames</span><span class="op">[</span><span class="st">'characters'</span><span class="op">][</span><span class="st">'player'</span><span class="op">],</span>
+        groups<span class="op">=</span><span class="at">self</span><span class="op">.</span><span class="at">all_sprites</span><span class="op">,</span>
+        facing_direction<span class="op">=</span><span class="st">'down'</span><span class="op">,</span>
+        collision_sprites<span class="op">=</span><span class="at">self</span><span class="op">.</span><span class="at">collision_sprites</span><span class="op">)</span>
+    <span class="cm"># four invisible border walls</span>
+    <span class="fn">BorderSprite</span><span class="op">((</span><span class="nm">0</span>, <span class="nm">0</span><span class="op">),</span>                        <span class="fn">pygame</span><span class="op">.</span><span class="fn">Surface</span><span class="op">((</span><span class="nm">WINDOW_WIDTH</span>, <span class="nm">20</span><span class="op">)),</span>   <span class="at">self</span><span class="op">.</span><span class="at">collision_sprites</span><span class="op">)</span>  <span class="cm"># top</span>
+    <span class="fn">BorderSprite</span><span class="op">((</span><span class="nm">0</span>, <span class="nm">WINDOW_HEIGHT</span> <span class="op">-</span> <span class="nm">20</span><span class="op">),</span>       <span class="fn">pygame</span><span class="op">.</span><span class="fn">Surface</span><span class="op">((</span><span class="nm">WINDOW_WIDTH</span>, <span class="nm">20</span><span class="op">)),</span>   <span class="at">self</span><span class="op">.</span><span class="at">collision_sprites</span><span class="op">)</span>  <span class="cm"># bottom</span>
+    <span class="fn">BorderSprite</span><span class="op">((</span><span class="nm">0</span>, <span class="nm">0</span><span class="op">),</span>                        <span class="fn">pygame</span><span class="op">.</span><span class="fn">Surface</span><span class="op">((</span><span class="nm">20</span>, <span class="nm">WINDOW_HEIGHT</span><span class="op">)),</span>   <span class="at">self</span><span class="op">.</span><span class="at">collision_sprites</span><span class="op">)</span>  <span class="cm"># left</span>
+    <span class="fn">BorderSprite</span><span class="op">((</span><span class="nm">WINDOW_WIDTH</span> <span class="op">-</span> <span class="nm">20</span>, <span class="nm">0</span><span class="op">),</span>       <span class="fn">pygame</span><span class="op">.</span><span class="fn">Surface</span><span class="op">((</span><span class="nm">20</span>, <span class="nm">WINDOW_HEIGHT</span><span class="op">)),</span>   <span class="at">self</span><span class="op">.</span><span class="at">collision_sprites</span><span class="op">)</span>  <span class="cm"># right</span></pre>
+    <div class="box green" style="margin-top:0.4rem; padding:0.6rem 1rem;">
+      <p class="small"><strong>Note:</strong> <code>BorderSprite</code> only goes in <code>self.collision_sprites</code> — not <code>all_sprites</code>. Invisible walls don't need to be drawn.</p>
+    </div>
+  </div>
+
+  <!-- ─────────────── SLIDE 16: What you should see ─────────────── -->
+  <div class="slide">
+    <div class="tag">Expected result</div>
+    <h2>What you should see</h2>
+    <div style="display:flex; align-items:center; gap:2.5rem; margin-top:0.5rem;">
+      <div class="window-preview">
+        <div class="window-bar">
+          <div class="window-dot" style="background:#f03131;"></div>
+          <div class="window-dot" style="background:#ffd700;"></div>
+          <div class="window-dot" style="background:#64a990;"></div>
+          <span style="margin-left:8px;">Monster Game</span>
+        </div>
+        <div class="window-screen">
+          <div class="ws-border-h" style="top:0;"></div>
+          <div class="ws-border-h" style="bottom:0;"></div>
+          <div class="ws-border-v" style="left:0;"></div>
+          <div class="ws-border-v" style="right:0;"></div>
+          <div class="player-rect"></div>
+        </div>
+      </div>
+      <ul style="flex:1;">
+        <li>Player sprite appears at the <strong>centre</strong> of the screen</li>
+        <li><strong>Arrow keys</strong> move the player in all four directions</li>
+        <li>Walk animation plays while moving; <strong>idle</strong> animation when still</li>
+        <li>Player faces the correct direction when turning</li>
+        <li>Player <strong>cannot leave</strong> any edge of the screen</li>
+        <li>Diagonal movement feels the <strong>same speed</strong> as straight</li>
+      </ul>
+    </div>
+    <div class="box green" style="margin-top:1rem;">
+      <p class="small">Run it: <code>cd sessions\session-2</code> then <code>python main.py</code></p>
+    </div>
+  </div>
+
+  <!-- ─────────────── SLIDE 17: Extensions ─────────────── -->
+  <div class="slide left-align">
+    <div class="tag gold">Extensions</div>
+    <h2>Bonus challenges</h2>
+    <div class="ext-grid" style="margin-top:0.8rem;">
+      <div class="ext-card">
+        <h4>⚡ Add a sprint</h4>
+        <p>In <code>Player.input()</code>, check <code>keys[pygame.K_LSHIFT]</code>. If held, set <code>self.speed = 400</code>, otherwise <code>250</code>. Notice the animation also speeds up — why?</p>
+      </div>
+      <div class="ext-card">
+        <h4>🧱 Add an obstacle</h4>
+        <p>In <code>setup()</code>, create a coloured square:<br>
+        <code>surf = pygame.Surface((64, 64))</code><br>
+        <code>surf.fill(COLORS['fire'])</code><br>
+        <code>CollidableSprite((400, 300), surf,</code><br>
+        <code>&nbsp;&nbsp;(self.all_sprites, self.collision_sprites))</code></p>
+      </div>
+      <div class="ext-card">
+        <h4>🔍 Break normalize()</h4>
+        <p>In <code>input()</code>, remove the <code>if input_vector else</code> check and always call <code>.normalize()</code>. What error do you get when no key is pressed? Why does dividing by zero happen?</p>
+      </div>
+      <div class="ext-card">
+        <h4>⏱ Timer demo</h4>
+        <p>In <code>Game.__init__</code>, add:<br>
+        <code>self.t = Timer(2000,</code><br>
+        <code>&nbsp;&nbsp;func=lambda: print('2s!'))</code><br>
+        <code>self.t.activate()</code><br>
+        Call <code>self.t.update()</code> in <code>run()</code> and watch the terminal.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── SLIDE 18: Recap ─────────────── -->
+  <div class="slide">
+    <div class="tag">Session 2 — done!</div>
+    <h2>What you learned</h2>
+    <ul style="margin:1rem auto; max-width:680px;">
+      <li>A <strong>Vector2</strong> stores x + y direction together — <code>normalize()</code> keeps diagonal speed equal</li>
+      <li>The <strong>Timer</strong> class: activate → count → expire → call func → deactivate (or repeat)</li>
+      <li><code>get_pressed()</code> — True every frame a key is held (movement)</li>
+      <li><code>get_just_pressed()</code> — True only the frame a key is first pressed (actions)</li>
+      <li>Move <strong>x first, resolve x</strong>, then <strong>y, resolve y</strong> — corner collisions stay clean</li>
+      <li>The <strong>hitbox</strong> is smaller than the sprite so collision feels natural at the feet</li>
+      <li><code>inflate(-x, -y)</code> shrinks a rect; <code>inflate(+x, +y)</code> expands it</li>
+    </ul>
+    <div class="box fire" style="text-align:center; margin-top:0.5rem;">
+      <p><strong>Session 3 →</strong> tile maps, the camera, animated world sprites — the game gets a real world!</p>
+    </div>
+  </div>
+
+</div><!-- end #deck -->
+
+<button id="prev">&#8592;</button>
+<button id="next">&#8594;</button>
+<div id="nav"></div>
+<div id="slide-counter"></div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let current = 0;
+
+  const nav = document.getElementById('nav');
+  const counter = document.getElementById('slide-counter');
+
+  slides.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.addEventListener('click', () => goTo(i));
+    nav.appendChild(dot);
+  });
+
+  function goTo(n) {
+    slides[current].classList.remove('active');
+    nav.children[current].classList.remove('active');
+    current = Math.max(0, Math.min(n, slides.length - 1));
+    slides[current].classList.add('active');
+    nav.children[current].classList.add('active');
+    counter.textContent = `${current + 1} / ${slides.length}`;
+  }
+
+  document.getElementById('prev').addEventListener('click', () => goTo(current - 1));
+  document.getElementById('next').addEventListener('click', () => goTo(current + 1));
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') goTo(current + 1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')                    goTo(current - 1);
+  });
+
+  goTo(0);
+</script>
+</body>
+</html>
