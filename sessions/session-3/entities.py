@@ -4,7 +4,7 @@ from settings import WORLD_LAYERS, ANIMATION_SPEED
 from support import check_connections
 from timer import Timer
 from random import choice
-from monster import Monster
+# from monster import Monster
 
 class Entity(pygame.sprite.Sprite):
 	def __init__(self, pos, frames, groups, facing_direction):

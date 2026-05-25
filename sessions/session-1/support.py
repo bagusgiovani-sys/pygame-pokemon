@@ -1,5 +1,6 @@
 import pygame
 from os.path import join
+from os import walk
 
 # ┌─────────────────────────────────────────────────────────┐
 # │ PRE-SCAFFOLD — teacher walks through this, you use it   │
@@ -17,10 +18,11 @@ from os.path import join
 # │ as you need — join() stitches them together.            │
 # └─────────────────────────────────────────────────────────┘
 
-def import_image(*path, alpha=True, format='png'):
-	full_path = join(*path) + f'.{format}'
-	if alpha:
-		surf = pygame.image.load(full_path).convert_alpha()
-	else:
-		surf = pygame.image.load(full_path).convert()
-	return surf
+
+def import_image(*path, alpha=True, format="png"):
+    full_path = join(*path) + f".{format}"
+    if alpha:
+        surf = pygame.image.load(full_path).convert_alpha()
+    else:
+        surf = pygame.image.load(full_path).convert()
+    return surf

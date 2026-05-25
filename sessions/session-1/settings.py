@@ -17,10 +17,10 @@ from pygame.math import Vector2 as vector
 # │   ANIMATION_SPEED = 6   (frames per second of animation)│
 # └─────────────────────────────────────────────────────────┘
 
-WINDOW_WIDTH  = ???
-WINDOW_HEIGHT = ???
-TILE_SIZE     = ???
-ANIMATION_SPEED = ???
+WINDOW_WIDTH  = 1280
+WINDOW_HEIGHT = 720
+TILE_SIZE     = 64
+ANIMATION_SPEED = 6
 
 # ┌─────────────────────────────────────────────────────────┐
 # │ PRE-SCAFFOLD — teacher walks through this, you use it   │
