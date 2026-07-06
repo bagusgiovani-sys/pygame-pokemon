@@ -476,10 +476,10 @@ Student showcase prompt:
 
 # Teacher answer key
 
-The complete runnable answer files are in:
+The complete runnable reference build lives outside the `Python-Monsters` folder, in the project root:
 
 ```text
-session-2/answer_key/
+finished/session-2/
 ```
 
-Use them as reference. The student-facing files in the main `session-2` folder intentionally contain `TODO` and `pass`.
+Use it as reference. The student-facing files in this `session-2` folder intentionally contain `TODO` and `pass`.

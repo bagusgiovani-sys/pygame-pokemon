@@ -19,7 +19,7 @@ class Sprite(pygame.sprite.Sprite):
 	# │   image, rect, hitbox, z, y_sort                         │
 	# │ z controls layer. y_sort controls draw order.            │
 	# └─────────────────────────────────────────────────────────┘
-	def __init__(self, pos, surf, groups, z=WORLD_LAYERS['main']):
+	def __init__(self, pos, surf, groups, z=WORLD_LAYERS['bg']):
 		# TODO: your code here
 		pass  # remove this when you're done
 
@@ -29,9 +29,9 @@ class CollidableSprite(pygame.sprite.Sprite):
 	# │ YOUR CODE — Step 11: CollidableSprite.__init__           │
 	# │ Same as Sprite, but it also goes into collision_sprites.│
 	# │ The hitbox is slightly smaller so collision feels better│
-	# │ when the player touches rocks/walls.                    │
+	# │ when the player touches rocks/walls. z is always 'main'.│
 	# └─────────────────────────────────────────────────────────┘
-	def __init__(self, pos, surf, groups, z=WORLD_LAYERS['main']):
+	def __init__(self, pos, surf, groups):
 		# TODO: your code here
 		pass  # remove this when you're done
 
@@ -65,6 +65,8 @@ class BorderSprite(pygame.sprite.Sprite):
 		self.image = surf
 		self.rect = self.image.get_frect(topleft=pos)
 		self.hitbox = self.rect.copy()
+		self.z = WORLD_LAYERS['bg']
+		self.y_sort = self.rect.centery
 
 
 # ┌─────────────────────────────────────────────────────────┐

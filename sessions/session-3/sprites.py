@@ -33,6 +33,8 @@ class BorderSprite(pygame.sprite.Sprite):
 		self.image  = surf
 		self.rect   = self.image.get_frect(topleft=pos)
 		self.hitbox = self.rect.copy()
+		self.z      = WORLD_LAYERS['bg']
+		self.y_sort = self.rect.centery
 
 
 class CollidableSprite(pygame.sprite.Sprite):
@@ -41,6 +43,8 @@ class CollidableSprite(pygame.sprite.Sprite):
 		self.image  = surf
 		self.rect   = self.image.get_frect(topleft=pos)
 		self.hitbox = self.rect.inflate(-10, -10)
+		self.z      = WORLD_LAYERS['main']
+		self.y_sort = self.rect.centery
 
 
 # --------------- NEW SESSION 3 SPRITES ---------------
