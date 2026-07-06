@@ -235,10 +235,28 @@ TMX is the format used by the free map editor "Tiled". It stores tile layers (te
 ### Why two passes for entities?
 NPCs (Characters) need a reference to `self.player` when they're created. If we spawn NPCs and the player on the same pass, there's a risk `self.player` doesn't exist yet when the first NPC is created. By spawning the player first, we guarantee it exists for all NPCs.
 
+### Why does every sprite have both a `rect` and a `hitbox`?
+They do two different jobs, and one box can't do both well.
+
+- `rect` matches the actual image size exactly (128x128 for the player) — it has to, because it's the box `blit()` uses to draw the artwork. Shrink it and the sprite renders cropped or offset.
+- `hitbox` is deliberately smaller. Character art has empty space baked into the frame (room above the head, room around the feet, so the walk animation doesn't jitter), and `hitbox` is placed inside that empty space to match the actual body.
+
+If collisions used `rect` instead of `hitbox`, we'd stop walking — or trigger a door — while still visibly a gap away from it, because the empty space around the sprite would count as "touching." Every collision in this game (walls, rocks, characters, and now doors) always compares `hitbox`.
+
 ### What is `spritecollide`?
 `pygame.sprite.spritecollide(sprite, group, dokill)` returns a list of all sprites in `group` whose `rect` overlaps `sprite.rect`. If `dokill=True` it removes the colliding sprites. We use `False` so transition zones persist.
 
-By default it compares `.rect`, but our player's `.rect` is the full sprite frame (128x128) — much bigger than the `.hitbox` (64x68) used for movement collision everywhere else. If we don't override this, doorways trigger from several tiles away, and a player can spawn already overlapping the exit door on the other side of a transition (bouncing straight back out). Passing `collided=lambda a, b: a.hitbox.colliderect(b.hitbox)` makes it compare hitboxes instead, matching the rest of the collision logic.
+By default it compares `.rect` — but per the note above, collisions should compare `.hitbox`. Passing `collided=lambda a, b: a.hitbox.colliderect(b.hitbox)` overrides the default so doors follow the same rule as every other collision in the game.
+
+### How does the fade-to-black transition actually work?
+`transition_check()` only sets `self.tint_mode = 'tint'`. The fade itself lives in `tint_screen(dt)`, which runs every frame regardless of what's happening:
+
+- `tint_surf` is a plain black surface covering the whole window. `tint_progress` is one number from 0 to 255 that doubles as its alpha value via `tint_surf.set_alpha(tint_progress)` — 0 is invisible, 255 is solid black.
+- While `tint_mode == 'tint'`, `tint_progress` climbs toward 255 each frame.
+- The instant it reaches 255 — the screen is completely black — `setup()` is called to swap in the new map, then `tint_mode` flips to `'untint'`.
+- While `tint_mode == 'untint'`, `tint_progress` falls back toward 0, revealing the new map.
+
+Swapping the map exactly at full black is what makes the transition look seamless: the old map never visibly disappears and the new one never visibly pops in.
 
 ---
 

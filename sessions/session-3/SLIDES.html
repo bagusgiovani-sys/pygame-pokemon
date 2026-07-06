@@ -177,6 +177,13 @@
   .ls-purple { border-color: var(--purple); color: var(--purple); } .ls-red { border-color: var(--red); color: var(--red); }
   .arrow { font-size: 1.05rem; color: var(--lgray); padding: 0 3px; flex-shrink: 0; }
 
+  .hb-demo   { display: flex; gap: 2.6rem; align-items: flex-end; justify-content: center; margin: 0.6rem 0; }
+  .hb-item   { text-align: center; }
+  .hb-sprite { position: relative; width: 48px; height: 76px; background: var(--gray); border: 2px solid var(--lgray); border-radius: 4px; margin: 0 auto 0.5rem; }
+  .hb-full   { position: absolute; inset: 0; border: 2px solid var(--red); border-radius: 2px; }
+  .hb-small  { position: absolute; bottom: 0; left: 10px; right: 10px; height: 36px; border: 2px solid var(--green); border-radius: 2px; }
+  .hb-label  { font-size: 0.75rem; color: var(--light); }
+
   .stack { display: flex; flex-direction: column-reverse; gap: 4px; max-width: 320px; margin: 0.5rem auto; }
   .stack-layer { border-radius: 6px; padding: 0.35rem 0.75rem; font-size: 0.78rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
   .sl-water { background: rgba(68,196,240,0.18); border: 1px solid var(--water); color: var(--water); }
@@ -243,7 +250,7 @@
   <div class="icon-big">🗺️</div>
   <div class="tag tag-build">Session 3 of 7</div>
   <h1>Building the<br><span style="color:var(--green);">Real Map</span></h1>
-  <p class="subtitle">Last time your trainer walked around a test field you built by hand. Today that field is replaced by an actual map file, with doors between rooms and NPCs you can talk to.</p>
+  <p class="subtitle">Last time we walked around a test field we built by hand. Today that field is replaced by an actual map file, with doors between rooms and NPCs we can talk to.</p>
   <p style="margin-top:1.6rem; color:var(--lgray);" class="small">← → arrow keys to navigate &nbsp;·&nbsp; click dots below</p>
 </div>
 
@@ -379,6 +386,36 @@
         <p class="small">On the <code>main</code> layer only, sprites are sorted by <code>y_sort</code> before drawing — the one lower on screen draws last, so it appears in front.</p>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- SLIDE 6b: Concept — why two boxes, not one -->
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals</div>
+  <h2>Why every sprite carries two boxes, not one</h2>
+  <p style="max-width:860px;">A sprite's <code>rect</code> and its <code>hitbox</code> are not the same rectangle on purpose. They do two different jobs, and using one box for both jobs breaks one of them.</p>
+  <div class="two-col" style="max-width:900px;">
+    <div class="box fire">
+      <h3 style="color:var(--fire);">🖼️ rect draws the picture</h3>
+      <p class="small"><code>rect</code> always matches the actual image size — for the player, 128×128. It has to: this is the box <code>blit()</code> uses to place the artwork on screen. Shrink it, and the artwork gets cropped or offset.</p>
+    </div>
+    <div class="box green">
+      <h3 style="color:var(--green);">🤝 hitbox decides what's touching what</h3>
+      <p class="small">Character art usually has empty space baked into the frame — room above the head, room around the feet, so the walk animation doesn't jitter. <code>hitbox</code> is a smaller box placed inside that empty space, matching the actual body.</p>
+    </div>
+  </div>
+  <div class="hb-demo">
+    <div class="hb-item">
+      <div class="hb-sprite"><div class="hb-full"></div></div>
+      <div class="hb-label" style="color:var(--red);">rect — the full 128×128 frame</div>
+    </div>
+    <div class="hb-item">
+      <div class="hb-sprite"><div class="hb-small"></div></div>
+      <div class="hb-label" style="color:var(--green);">hitbox — just the body</div>
+    </div>
+  </div>
+  <div class="box gold" style="max-width:900px; width:100%;">
+    <p class="small"><strong>Only one box existed?</strong> Use <code>rect</code> for collisions and we'd stop walking — or trigger a door — while still a visible gap away from it, because empty space around the sprite counts as "touching." Use <code>hitbox</code> for drawing and the artwork gets squashed into a box too small for it. Two boxes, two jobs: every collision in this game — walls, rocks, NPCs, doors — always compares <code>hitbox</code>, never <code>rect</code>.</p>
   </div>
 </div>
 
@@ -811,10 +848,10 @@
 <!-- SLIDE 22: Concept 18 -->
 <div class="slide bg-concept left-align" data-section="build">
   <div class="tag tag-concept">Fundamentals — Step 18</div>
-  <h2>transition_check(): comparing the right box</h2>
-  <p style="max-width:860px;">Every sprite carries two boxes: <code>rect</code> (the full drawn image, 128×128 for the player) and <code>hitbox</code> (a tighter box used for every other collision in the game — walls, rocks, characters). Doors should be no different.</p>
+  <h2>transition_check(): applying the two-box rule to doors</h2>
+  <p style="max-width:860px;"><code>pygame.sprite.spritecollide()</code> compares <code>.rect</code> by default — but we just established that collisions should always compare <code>hitbox</code>. Doors are a collision like any other, so this function needs to be told explicitly to check the smaller box.</p>
   <div class="box fire" style="max-width:860px; width:100%;">
-    <p class="small"><code>pygame.sprite.spritecollide()</code> compares <code>.rect</code> by default. Passing <code>collided=lambda a, b: a.hitbox.colliderect(b.hitbox)</code> tells it to compare hitboxes instead — matching how collisions work everywhere else in this game.</p>
+    <p class="small">Passing <code>collided=lambda a, b: a.hitbox.colliderect(b.hitbox)</code> overrides the default comparison. Without it, the door would react to the player's full 128×128 frame — triggering while still visibly outside the doorway.</p>
   </div>
 </div>
 
@@ -845,6 +882,26 @@
         <span class="at">self</span><span class="op">.</span><span class="at">transition_target</span> <span class="op">=</span> sprites<span class="op">[</span><span class="nm">0</span><span class="op">].</span><span class="at">target</span>
         <span class="at">self</span><span class="op">.</span><span class="at">tint_mode</span> <span class="op">=</span> <span class="st">'tint'</span></pre>
     </div>
+  </div>
+</div>
+
+<!-- SLIDE 23b: Concept — how the fade transition works -->
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — tint_screen()</div>
+  <h2>What makes the screen actually fade to black</h2>
+  <p style="max-width:860px;"><code>transition_check()</code> only sets <code>self.tint_mode = 'tint'</code>. The fade itself, and the moment the map actually swaps, happen in <code>tint_screen(dt)</code> — already written, running every single frame no matter what.</p>
+  <div class="box gold" style="max-width:900px; width:100%;">
+    <p class="small"><code>tint_surf</code> is a plain black rectangle covering the whole window. <code>tint_progress</code> is one number from 0 to 255 that doubles as that rectangle's transparency: <code>tint_surf.set_alpha(tint_progress)</code>. At 0 it's invisible; at 255 it's solid black.</p>
+  </div>
+  <div class="loop-diagram">
+    <div class="loop-step ls-fire">mode='tint'<br>progress 0→255</div><div class="arrow">→</div>
+    <div class="loop-step ls-red">screen fully black</div><div class="arrow">→</div>
+    <div class="loop-step ls-purple">setup() swaps<br>the map</div><div class="arrow">→</div>
+    <div class="loop-step ls-water">mode='untint'<br>progress 255→0</div><div class="arrow">→</div>
+    <div class="loop-step ls-green">new map<br>revealed</div>
+  </div>
+  <div class="box fire" style="max-width:900px; width:100%;">
+    <p class="small">The map swap is written to happen <em>only</em> the instant <code>tint_progress</code> reaches 255 — the exact moment the screen is completely black. That's why we never see the old map disappear or the new one pop in: it's already switched behind a black screen before the fade back in even starts.</p>
   </div>
 </div>
 

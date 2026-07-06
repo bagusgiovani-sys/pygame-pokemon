@@ -244,11 +244,8 @@ class Game:
 	# │ 1. Use pygame.sprite.spritecollide to find any          │
 	# │    transition sprites the player overlaps. Pass a       │
 	# │    collided= function that compares HITBOXES, not the   │
-	# │    default rects — the player's rect is the full 128x128│
-	# │    sprite frame, much bigger than the real hitbox, so    │
-	# │    the door would trigger from far away (and could      │
-	# │    immediately re-trigger the exit right after spawning │
-	# │    inside a building):                                  │
+	# │    default rects — same rule as every other collision   │
+	# │    in this game (walls, rocks, characters):              │
 	# │      sprites = pygame.sprite.spritecollide(             │
 	# │          self.player, self.transition_sprites, False,   │
 	# │          collided=lambda a, b: a.hitbox.colliderect(b.hitbox))│
@@ -265,8 +262,15 @@ class Game:
 	# ┌─────────────────────────────────────────────────────────┐
 	# │ PRE-SCAFFOLD — teacher walks through this, you use it   │
 	# │                                                         │
-	# │ tint_screen fades the screen to black (tint mode) then  │
-	# │ loads the new map, then fades back in (untint mode).    │
+	# │ tint_surf is a black rectangle covering the window.     │
+	# │ tint_progress (0-255) doubles as its alpha value via    │
+	# │ tint_surf.set_alpha(tint_progress) — 0 is invisible,    │
+	# │ 255 is solid black.                                     │
+	# │                                                         │
+	# │ 'tint' mode climbs progress toward 255 (fading out).    │
+	# │ The instant it hits 255 the screen is fully black, so   │
+	# │ setup() swaps the map right there before switching to   │
+	# │ 'untint' mode, which lets progress fall back to 0.      │
 	# └─────────────────────────────────────────────────────────┘
 	def tint_screen(self, dt):
 		if self.tint_mode == 'untint':
