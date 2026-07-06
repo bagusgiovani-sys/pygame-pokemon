@@ -34,326 +34,201 @@
     user-select: none;
   }
 
-  /* ── Section progress bar ── */
-  #progress-bar {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    height: 4px;
-    background: var(--lgray);
-    z-index: 200;
-  }
-  #progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--green), var(--gold));
-    transition: width 0.3s ease;
-  }
+  #progress-bar { position: fixed; top: 0; left: 0; right: 0; height: 4px; background: var(--lgray); z-index: 200; }
+  #progress-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--gold)); transition: width 0.3s ease; }
 
   #deck { width: 100vw; height: 100vh; position: relative; }
 
   .slide {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 56px 80px;
-    opacity: 0;
-    pointer-events: none;
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    padding: 48px 80px;
+    opacity: 0; pointer-events: none;
     transition: opacity 0.25s ease;
     text-align: center;
   }
   .slide.active { opacity: 1; pointer-events: all; }
   .slide.left-align { align-items: flex-start; text-align: left; }
+  .slide.bg-practice {
+    justify-content: flex-start;
+    overflow-y: auto;
+    padding-bottom: 90px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--lgray) transparent;
+  }
 
-  /* ── Slide backgrounds ── */
   .bg-title    { background: radial-gradient(ellipse at 55% 40%, #1a3a2a 0%, #12101a 70%); }
   .bg-recap    { background: radial-gradient(ellipse at 30% 40%, #223a1a 0%, #1e1c22 70%); }
-  .bg-build    { background: radial-gradient(ellipse at 20% 60%, #1a2a3a 0%, #1e1c22 70%); }
   .bg-concept  { background: radial-gradient(ellipse at 70% 30%, #1a2a3a 0%, #12101a 70%); }
-  .bg-bug      { background: radial-gradient(ellipse at 50% 50%, #3a1a1a 0%, #12101a 70%); }
+  .bg-practice { background: radial-gradient(ellipse at 20% 60%, #2a2410 0%, #1e1c22 70%); }
   .bg-extend   { background: radial-gradient(ellipse at 70% 30%, #2a1a3a 0%, #12101a 70%); }
   .bg-showcase { background: radial-gradient(ellipse at 50% 50%, #2a2018 0%, #12101a 70%); }
 
-  /* ── Typography ── */
-  h1 { font-size: 3.4rem; font-weight: 800; line-height: 1.1; }
-  h2 { font-size: 2rem;   font-weight: 700; margin-bottom: 0.5rem; }
-  h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.3rem; }
-  p  { font-size: 1.1rem; line-height: 1.7; color: var(--light); max-width: 820px; }
-  .subtitle  { font-size: 1.35rem; color: var(--green); margin-top: 0.7rem; font-weight: 600; }
-  .small     { font-size: 0.92rem; color: var(--light); }
-  .tiny      { font-size: 0.8rem;  color: var(--lgray); }
-  .big       { font-size: 1.5rem; font-weight: 700; }
+  h1 { font-size: 3.2rem; font-weight: 800; line-height: 1.1; }
+  h2 { font-size: 1.9rem; font-weight: 700; margin-bottom: 0.5rem; }
+  h3 { font-size: 1.2rem;  font-weight: 600; margin-bottom: 0.3rem; }
+  p  { font-size: 1.05rem; line-height: 1.6; color: var(--light); max-width: 820px; }
+  .subtitle  { font-size: 1.25rem; color: var(--green); margin-top: 0.6rem; font-weight: 600; max-width: 760px; }
+  .small     { font-size: 0.9rem; color: var(--light); }
+  .tiny      { font-size: 0.78rem;  color: var(--lgray); }
 
-  /* ── Tags / badges ── */
   .tag {
-    display: inline-block;
-    font-size: 0.72rem; font-weight: 800;
+    display: inline-block; font-size: 0.7rem; font-weight: 800;
     letter-spacing: 0.1em; text-transform: uppercase;
-    padding: 3px 12px; border-radius: 20px;
-    margin-bottom: 0.9rem;
+    padding: 3px 12px; border-radius: 20px; margin-bottom: 0.8rem;
   }
-  .tag-build   { background: var(--green);  color: #0a1f14; }
-  .tag-recap   { background: var(--lime);   color: #10200a; }
-  .tag-concept { background: var(--water);  color: #0a1a28; }
-  .tag-gold    { background: var(--gold);   color: #1a1000; }
-  .tag-fire    { background: var(--fire);   color: #1a0800; }
-  .tag-bug     { background: var(--red);    color: #240008; }
-  .tag-extend  { background: var(--purple); color: #1a0a2e; }
+  .tag-build    { background: var(--green);  color: #0a1f14; }
+  .tag-recap    { background: var(--lime);   color: #10200a; }
+  .tag-concept  { background: var(--water);  color: #0a1a28; }
+  .tag-practice { background: var(--fire);   color: #1a0800; }
+  .tag-answer   { background: var(--green);  color: #0a1f14; }
+  .tag-extend   { background: var(--purple); color: #1a0a2e; }
+  .tag-gold     { background: var(--gold);   color: #1a1000; }
 
-  /* ── Step badge ── */
-  .step-badge { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 0.9rem; }
+  .step-badge { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.7rem; }
   .step-num {
-    width: 48px; height: 48px; border-radius: 50%;
-    font-size: 1.4rem; font-weight: 800;
+    width: 44px; height: 44px; border-radius: 50%;
+    font-size: 1.25rem; font-weight: 800;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0; color: #0a1a10;
   }
-  .sn-green  { background: var(--green); }
-  .sn-fire   { background: var(--fire);  color: #1a0800; }
   .sn-water  { background: var(--water); color: #0a1a28; }
-  .sn-gold   { background: var(--gold);  color: #1a1000; }
-  .sn-red    { background: var(--red);   color: #ffffff; }
-  .sn-purple { background: var(--purple);color: #1a0a2e; }
-  .step-title { font-size: 1.4rem; font-weight: 700; }
-  .step-file  { font-size: 0.85rem; color: var(--light); }
+  .sn-fire   { background: var(--fire);  color: #1a0800; }
+  .sn-green  { background: var(--green); }
+  .step-title { font-size: 1.25rem; font-weight: 700; }
+  .step-file  { font-size: 0.82rem; color: var(--light); }
 
-  /* ── Code blocks ── */
   pre {
     background: var(--code-bg);
     border: 1px solid var(--lgray);
     border-left: 4px solid var(--green);
     border-radius: 10px;
-    padding: 1rem 1.3rem;
+    padding: 0.9rem 1.2rem;
     text-align: left;
-    font-size: 0.97rem;
-    line-height: 1.65;
+    font-size: 0.92rem;
+    line-height: 1.55;
     overflow-x: auto;
-    max-width: 860px; width: 100%;
-    margin: 0.6rem 0;
+    max-width: 900px; width: 100%;
+    margin: 0.5rem 0;
     font-family: 'Consolas', 'Fira Code', monospace;
   }
-  pre.sm   { font-size: 0.85rem; padding: 0.8rem 1rem; }
-  pre.xs   { font-size: 0.76rem; padding: 0.7rem 0.9rem; }
-  pre.fire { border-left-color: var(--fire); }
-  pre.water{ border-left-color: var(--water); }
-  pre.gold { border-left-color: var(--gold); }
-  pre.purple{ border-left-color: var(--purple); }
-  pre.red  { border-left-color: var(--red); }
-  pre.lime { border-left-color: var(--lime); }
+  pre.sm { font-size: 0.82rem; padding: 0.7rem 1rem; }
+  pre.xs { font-size: 0.74rem; padding: 0.6rem 0.85rem; }
+  pre.water  { border-left-color: var(--water); }
+  pre.fire   { border-left-color: var(--fire); }
+  pre.gold   { border-left-color: var(--gold); }
+  pre.green  { border-left-color: var(--green); }
+  pre.purple { border-left-color: var(--purple); }
+  pre.blank  { border-left-color: var(--fire); border-style: dashed; }
 
-  .kw { color: #c084fc; }
-  .fn { color: #7dd3fc; }
-  .st { color: #86efac; }
-  .cm { color: #4a4565; font-style: italic; }
-  .nm { color: var(--fire); }
-  .at { color: var(--gold); }
-  .op { color: var(--light); }
+  .kw { color: #c084fc; } .fn { color: #7dd3fc; } .st { color: #86efac; }
+  .cm { color: #6b6785; font-style: italic; } .nm { color: var(--fire); }
+  .at { color: var(--gold); } .op { color: var(--light); }
+  .todo { color: var(--fire); font-weight: 700; }
 
-  /* ── Info boxes ── */
   .box {
-    background: var(--gray);
-    border: 1px solid var(--lgray);
-    border-radius: 10px;
-    padding: 0.9rem 1.3rem;
-    margin: 0.5rem 0;
-    text-align: left;
-    max-width: 860px; width: 100%;
+    background: var(--gray); border: 1px solid var(--lgray); border-radius: 10px;
+    padding: 0.8rem 1.2rem; margin: 0.4rem 0; text-align: left;
+    max-width: 900px; width: 100%;
   }
   .box.green  { border-left: 4px solid var(--green); }
   .box.fire   { border-left: 4px solid var(--fire); }
   .box.water  { border-left: 4px solid var(--water); }
   .box.gold   { border-left: 4px solid var(--gold); }
   .box.purple { border-left: 4px solid var(--purple); }
-  .box.red    { border-left: 4px solid var(--red); }
-  .box.lime   { border-left: 4px solid var(--lime); }
 
-  /* ── Lists ── */
-  ul, ol { padding-left: 1.4rem; text-align: left; max-width: 820px; }
-  li { font-size: 1.05rem; line-height: 1.85; color: var(--light); }
+  ul, ol { padding-left: 1.3rem; text-align: left; max-width: 820px; }
+  li { font-size: 1rem; line-height: 1.7; color: var(--light); }
   li strong { color: var(--white); }
   li code { font-size: 0.92em; }
 
-  /* ── Two column ── */
-  .two-col {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 1rem; max-width: 900px; width: 100%; text-align: left;
-  }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 900px; width: 100%; text-align: left; }
 
-  /* ── Cards (recap / goal / extension) ── */
-  .creativity-grid {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 1rem; max-width: 920px; width: 100%;
-  }
-  .creativity-grid.wide   { grid-template-columns: 1fr 1fr 1fr; }
-  .creativity-grid.narrow { grid-template-columns: 1fr; }
-
+  .creativity-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; max-width: 920px; width: 100%; }
+  .creativity-grid.wide { grid-template-columns: 1fr 1fr 1fr; }
   .c-card {
-    background: var(--gray);
-    border: 1px solid var(--lgray);
-    border-radius: 14px;
-    padding: 1.1rem 1.3rem;
-    text-align: left;
-    position: relative;
-    overflow: hidden;
+    background: var(--gray); border: 1px solid var(--lgray); border-radius: 14px;
+    padding: 1rem 1.2rem; text-align: left; position: relative; overflow: hidden;
   }
-  .c-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; height: 3px;
-  }
-  .c-card.cv-purple::before { background: var(--purple); }
-  .c-card.cv-fire::before   { background: var(--fire); }
-  .c-card.cv-lime::before   { background: var(--lime); }
-  .c-card.cv-cyan::before   { background: var(--cyan); }
-  .c-card.cv-gold::before   { background: var(--gold); }
-  .c-card.cv-pink::before   { background: var(--pink); }
-  .c-card.cv-water::before  { background: var(--water); }
-  .c-card.cv-green::before  { background: var(--green); }
-  .c-card.cv-red::before    { background: var(--red); }
-
-  .c-card .c-letter {
-    font-size: 0.7rem; font-weight: 800;
-    letter-spacing: 0.12em; text-transform: uppercase;
-    margin-bottom: 0.3rem; opacity: 0.8;
-  }
-  .c-card.cv-purple .c-letter { color: var(--purple); }
-  .c-card.cv-fire   .c-letter { color: var(--fire); }
-  .c-card.cv-lime   .c-letter { color: var(--lime); }
-  .c-card.cv-cyan   .c-letter { color: var(--cyan); }
-  .c-card.cv-gold   .c-letter { color: var(--gold); }
-  .c-card.cv-pink   .c-letter { color: var(--pink); }
-  .c-card.cv-water  .c-letter { color: var(--water); }
-  .c-card.cv-green  .c-letter { color: var(--green); }
-  .c-card.cv-red    .c-letter { color: var(--red); }
-
-  .c-card h4 { font-size: 1.05rem; font-weight: 700; color: var(--white); margin-bottom: 0.35rem; }
-  .c-card p  { font-size: 0.88rem; max-width: none; margin-bottom: 0.5rem; }
+  .c-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .c-card.cv-purple::before { background: var(--purple); } .c-card.cv-fire::before   { background: var(--fire); }
+  .c-card.cv-lime::before   { background: var(--lime); }   .c-card.cv-cyan::before   { background: var(--cyan); }
+  .c-card.cv-gold::before   { background: var(--gold); }   .c-card.cv-pink::before   { background: var(--pink); }
+  .c-card.cv-water::before  { background: var(--water); }  .c-card.cv-green::before  { background: var(--green); }
+  .c-card .c-letter { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.3rem; opacity: 0.8; }
+  .c-card.cv-purple .c-letter { color: var(--purple); } .c-card.cv-fire   .c-letter { color: var(--fire); }
+  .c-card.cv-lime   .c-letter { color: var(--lime); }   .c-card.cv-cyan   .c-letter { color: var(--cyan); }
+  .c-card.cv-gold   .c-letter { color: var(--gold); }   .c-card.cv-pink   .c-letter { color: var(--pink); }
+  .c-card.cv-water  .c-letter { color: var(--water); }  .c-card.cv-green  .c-letter { color: var(--green); }
+  .c-card h4 { font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 0.3rem; }
+  .c-card p  { font-size: 0.85rem; max-width: none; margin-bottom: 0.4rem; }
   .c-card .activate {
-    display: inline-block;
-    font-size: 0.75rem; font-weight: 700;
-    font-family: 'Consolas', monospace;
-    background: #12101a; color: var(--green);
-    padding: 2px 8px; border-radius: 4px;
-    border: 1px solid var(--lgray);
+    display: inline-block; font-size: 0.72rem; font-weight: 700; font-family: 'Consolas', monospace;
+    background: #12101a; color: var(--green); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--lgray);
   }
 
-  /* ── Loop / pipeline diagram ── */
-  .loop-diagram {
-    display: flex; align-items: center; gap: 0;
-    flex-wrap: wrap; max-width: 900px; margin: 1rem auto;
-    justify-content: center;
-  }
+  .loop-diagram { display: flex; align-items: center; gap: 0; flex-wrap: wrap; max-width: 900px; margin: 0.8rem auto; justify-content: center; }
   .loop-step {
-    background: var(--gray); border: 2px solid var(--lgray);
-    border-radius: 8px; padding: 0.55rem 0.75rem;
-    font-size: 0.82rem; font-weight: 600;
-    color: var(--white); text-align: center;
-    min-width: 90px; flex: 1;
+    background: var(--gray); border: 2px solid var(--lgray); border-radius: 8px;
+    padding: 0.5rem 0.7rem; font-size: 0.8rem; font-weight: 600; color: var(--white); text-align: center; min-width: 85px; flex: 1;
   }
-  .ls-green  { border-color: var(--green);  color: var(--green); }
-  .ls-fire   { border-color: var(--fire);   color: var(--fire); }
-  .ls-water  { border-color: var(--water);  color: var(--water); }
-  .ls-gold   { border-color: var(--gold);   color: var(--gold); }
-  .ls-purple { border-color: var(--purple); color: var(--purple); }
-  .ls-red    { border-color: var(--red);    color: var(--red); }
-  .arrow     { font-size: 1.1rem; color: var(--lgray); padding: 0 3px; flex-shrink: 0; }
+  .ls-green { border-color: var(--green); color: var(--green); } .ls-fire { border-color: var(--fire); color: var(--fire); }
+  .ls-water { border-color: var(--water); color: var(--water); } .ls-gold { border-color: var(--gold); color: var(--gold); }
+  .ls-purple { border-color: var(--purple); color: var(--purple); } .ls-red { border-color: var(--red); color: var(--red); }
+  .arrow { font-size: 1.05rem; color: var(--lgray); padding: 0 3px; flex-shrink: 0; }
 
-  /* ── Hitbox demo ── */
-  .hb-demo   { display: flex; gap: 3rem; align-items: flex-end; justify-content: center; margin: 0.8rem 0; }
-  .hb-item   { text-align: center; }
-  .hb-sprite { position: relative; width: 48px; height: 76px; background: var(--gray); border: 2px solid var(--lgray); border-radius: 4px; margin: 0 auto 0.5rem; }
-  .hb-full   { position: absolute; inset: 0; border: 2px solid var(--red); border-radius: 2px; }
-  .hb-small  { position: absolute; bottom: 0; left: 10px; right: 10px; height: 36px; border: 2px solid var(--green); border-radius: 2px; }
-  .hb-label  { font-size: 0.75rem; color: var(--light); }
-  .hb-door   { width: 60px; height: 10px; background: var(--gold); border-radius: 2px; margin: 0 auto 0.5rem; align-self: flex-end; margin-bottom: 26px; }
+  .stack { display: flex; flex-direction: column-reverse; gap: 4px; max-width: 320px; margin: 0.5rem auto; }
+  .stack-layer { border-radius: 6px; padding: 0.35rem 0.75rem; font-size: 0.78rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+  .sl-water { background: rgba(68,196,240,0.18); border: 1px solid var(--water); color: var(--water); }
+  .sl-bg    { background: rgba(163,230,53,0.14); border: 1px solid var(--lime);  color: var(--lime); }
+  .sl-main  { background: rgba(255,210,77,0.16); border: 1px solid var(--gold); color: var(--gold); }
+  .sl-top   { background: rgba(255,124,64,0.16); border: 1px solid var(--fire); color: var(--fire); }
+  .sl-num   { font-family: 'Consolas', monospace; opacity: 0.7; font-size: 0.7rem; }
 
-  /* ── Layer stack visual ── */
-  .stack { display: flex; flex-direction: column-reverse; gap: 4px; max-width: 320px; margin: 0.6rem auto; }
-  .stack-layer {
-    border-radius: 6px; padding: 0.4rem 0.8rem; font-size: 0.8rem; font-weight: 700;
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .sl-water  { background: rgba(68,196,240,0.18); border: 1px solid var(--water); color: var(--water); }
-  .sl-bg     { background: rgba(163,230,53,0.14); border: 1px solid var(--lime); color: var(--lime); }
-  .sl-main   { background: rgba(255,210,77,0.16); border: 1px solid var(--gold); color: var(--gold); }
-  .sl-top    { background: rgba(255,124,64,0.16); border: 1px solid var(--fire); color: var(--fire); }
-  .sl-num    { font-family: 'Consolas', monospace; opacity: 0.7; font-size: 0.72rem; }
+  .icon-big { font-size: 3.6rem; line-height: 1; margin-bottom: 0.4rem; }
 
-  /* ── Big emoji / icon ── */
-  .icon-big { font-size: 4rem; line-height: 1; margin-bottom: 0.5rem; }
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem; max-width: 900px; width: 100%; margin: 0.6rem 0; }
+  .stat-card { background: var(--gray); border: 2px solid var(--lgray); border-radius: 12px; padding: 0.6rem; text-align: center; }
+  .stat-card .s-num { font-size: 1.5rem; font-weight: 800; color: var(--gold); }
+  .stat-card .s-lbl { font-size: 0.75rem; color: var(--light); }
 
-  /* ── Summary stat cards ── */
-  .stat-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 0.8rem; max-width: 900px; width: 100%; margin: 0.8rem 0;
-  }
-  .stat-card {
-    background: var(--gray); border: 2px solid var(--lgray);
-    border-radius: 12px; padding: 0.8rem; text-align: center;
-  }
-  .stat-card .s-num { font-size: 1.6rem; font-weight: 800; color: var(--gold); }
-  .stat-card .s-lbl { font-size: 0.78rem; color: var(--light); }
-
-  /* ── Line-range table ── */
-  .range-table {
-    width: 100%; max-width: 900px; border-collapse: collapse;
-    text-align: left; font-size: 0.86rem;
-  }
-  .range-table th {
-    color: var(--gold); font-size: 0.7rem; text-transform: uppercase;
-    letter-spacing: 0.06em; padding: 0.25rem 0.7rem; border-bottom: 2px solid var(--lgray);
-  }
-  .range-table td { padding: 0.22rem 0.7rem; border-bottom: 1px solid var(--lgray); color: var(--light); }
+  .range-table { width: 100%; max-width: 900px; border-collapse: collapse; text-align: left; font-size: 0.8rem; }
+  .range-table th { color: var(--gold); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.22rem 0.7rem; border-bottom: 2px solid var(--lgray); }
+  .range-table td { padding: 0.2rem 0.7rem; border-bottom: 1px solid var(--lgray); color: var(--light); }
   .range-table td.step  { color: var(--white); font-weight: 700; white-space: nowrap; }
-  .range-table td.lines { font-family: 'Consolas', monospace; color: var(--green); white-space: nowrap; }
-  .range-table tr.done td.lines { color: var(--lime); }
+  .range-table td.lines { font-family: 'Consolas', monospace; color: var(--lime); white-space: nowrap; }
 
-  code {
-    background: var(--code-bg); padding: 1px 5px; border-radius: 3px;
-    font-family: 'Consolas', 'Fira Code', monospace;
-    font-size: 0.88em; color: var(--green);
-  }
+  code { background: var(--code-bg); padding: 1px 5px; border-radius: 3px; font-family: 'Consolas', 'Fira Code', monospace; font-size: 0.87em; color: var(--green); }
 
-  /* ── Navigation ── */
-  #nav {
-    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-    display: flex; align-items: center; gap: 8px; z-index: 100;
-    max-width: 90vw; flex-wrap: wrap; justify-content: center;
+  /* ── Practice / Answer reveal ── */
+  .practice-wrap { max-width: 900px; width: 100%; }
+  .hint-list { max-width: 900px; width: 100%; margin: 0.4rem 0; }
+  .hint-list li { font-size: 0.9rem; }
+  .reveal-btn {
+    background: var(--green); color: #0a1f14; border: none; border-radius: 8px;
+    padding: 0.45rem 1rem; font-weight: 700; font-size: 0.82rem; cursor: pointer;
+    font-family: inherit; margin-top: 0.3rem;
   }
-  .dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--lgray); cursor: pointer;
-    transition: background 0.2s, transform 0.2s;
-  }
+  .reveal-btn:hover { filter: brightness(1.08); }
+  .answer-block { display: none; margin-top: 0.5rem; max-width: 900px; width: 100%; }
+  .answer-block.shown { display: block; }
+
+  #nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 7px; z-index: 100; max-width: 90vw; flex-wrap: wrap; justify-content: center; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--lgray); cursor: pointer; transition: background 0.2s, transform 0.2s; }
   .dot.active { background: var(--green); transform: scale(1.5); }
   .dot.extend.active { background: var(--purple); }
 
   #prev, #next {
     position: fixed; top: 50%; transform: translateY(-50%);
-    background: rgba(46,43,53,0.8);
-    border: 1px solid var(--lgray); color: var(--light);
-    font-size: 1.3rem; width: 42px; height: 42px; border-radius: 50%;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    z-index: 100; transition: background 0.2s;
+    background: rgba(46,43,53,0.8); border: 1px solid var(--lgray); color: var(--light);
+    font-size: 1.2rem; width: 40px; height: 40px; border-radius: 50%;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 100; transition: background 0.2s;
   }
   #prev:hover, #next:hover { background: var(--lgray); }
-  #prev { left: 18px; }
-  #next { right: 18px; }
+  #prev { left: 16px; } #next { right: 16px; }
 
-  #slide-counter {
-    position: fixed; top: 14px; right: 20px;
-    font-size: 0.78rem; color: var(--lgray);
-    font-family: 'Consolas', monospace; z-index: 100;
-  }
-
-  #section-label {
-    position: fixed; top: 14px; left: 20px;
-    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
-    text-transform: uppercase; z-index: 100;
-    padding: 3px 10px; border-radius: 20px;
-    transition: background 0.3s, color 0.3s;
-  }
+  #slide-counter { position: fixed; top: 12px; right: 18px; font-size: 0.75rem; color: var(--lgray); font-family: 'Consolas', monospace; z-index: 100; }
+  #section-label { position: fixed; top: 12px; left: 18px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; z-index: 100; padding: 3px 10px; border-radius: 20px; transition: background 0.3s, color 0.3s; }
 </style>
 </head>
 <body>
@@ -363,152 +238,132 @@
 
 <div id="deck">
 
-<!-- ══════════════════════════════════════════════════
-     TITLE
-══════════════════════════════════════════════════ -->
-
 <!-- SLIDE 1: Title -->
 <div class="slide bg-title active" data-section="build">
   <div class="icon-big">🗺️</div>
   <div class="tag tag-build">Session 3 of 7</div>
   <h1>Building the<br><span style="color:var(--green);">Real Map</span></h1>
-  <p class="subtitle">From a fake practice field → an actual Tiled world</p>
-  <p style="margin-top:1.8rem; color:var(--lgray);" class="small">← → arrow keys to navigate &nbsp;·&nbsp; click dots below</p>
+  <p class="subtitle">Last time your trainer walked around a test field you built by hand. Today that field is replaced by an actual map file, with doors between rooms and NPCs you can talk to.</p>
+  <p style="margin-top:1.6rem; color:var(--lgray);" class="small">← → arrow keys to navigate &nbsp;·&nbsp; click dots below</p>
 </div>
 
-<!-- ══════════════════════════════════════════════════
-     RECAP OF SESSION 2  (slides 2–3)
-══════════════════════════════════════════════════ -->
-
-<!-- SLIDE 2: Recap session 2 -->
+<!-- SLIDE 2: Recap -->
 <div class="slide bg-recap" data-section="build">
   <div class="tag tag-recap">Last time — Session 2</div>
-  <h2>What you already built</h2>
-  <div class="creativity-grid wide" style="margin-top:0.9rem;">
+  <h2>What's already in your code</h2>
+  <div class="creativity-grid wide" style="margin-top:0.8rem;">
     <div class="c-card cv-lime">
       <div class="c-letter">timer.py</div>
-      <h4>⏱️ The Timer class</h4>
-      <p>activate → count → expire → call a function → deactivate (or repeat).</p>
+      <h4>⏱️ Timer</h4>
+      <p><code>activate()</code> starts a clock, <code>update()</code> checks if time's up, then calls a function and either stops or repeats.</p>
     </div>
     <div class="c-card cv-water">
       <div class="c-letter">entities.py</div>
       <h4>🏃 Entity + Player</h4>
-      <p><code>animate()</code>, <code>input()</code>, <code>move()</code>, <code>collisions()</code> — your trainer walks and bumps into walls.</p>
+      <p><code>input()</code> reads keys, <code>move()</code> applies speed, <code>collisions()</code> stops you at walls. All still used, unchanged.</p>
     </div>
     <div class="c-card cv-gold">
       <div class="c-letter">sprites.py</div>
-      <h4>🧱 Sprite classes</h4>
-      <p><code>Sprite</code>, <code>BorderSprite</code>, <code>CollidableSprite</code> — visible things, some solid.</p>
+      <h4>🧱 Sprite, BorderSprite, CollidableSprite</h4>
+      <p>Three classes you finished last session. Today you add three more <em>next to</em> them in the same file.</p>
     </div>
     <div class="c-card cv-green">
       <div class="c-letter">main.py</div>
-      <h4>🏟️ A practice map</h4>
-      <p>A fake map with a speed-test track, flags, and rocks — just to test movement.</p>
+      <h4>🏟️ A hand-built practice field</h4>
+      <p>Checkered floor, grey walls, a speed track — all made from coloured rectangles in <code>create_temporary_map()</code>. That method gets replaced today.</p>
     </div>
     <div class="c-card cv-purple">
-      <div class="c-letter">creativity</div>
-      <h4>🎨 Your own style</h4>
-      <p>WASD, sprint/sneak/dash, chaos mode — you customised how your trainer feels.</p>
+      <div class="c-letter">your input()</div>
+      <h4>🎨 WASD / sprint / sneak / dash</h4>
+      <p>Whatever movement options you turned on last time still work exactly the same — nothing there changes today.</p>
     </div>
     <div class="c-card cv-pink">
       <div class="c-letter">key idea</div>
-      <h4>📦 The hitbox</h4>
-      <p>Smaller than the sprite image — only the <em>feet</em> collide, not the whole body.</p>
+      <h4>📦 rect vs hitbox</h4>
+      <p><code>rect</code> is the drawn image. <code>hitbox</code> is a smaller box used only for collisions. You'll need this distinction again today.</p>
     </div>
   </div>
 </div>
 
-<!-- SLIDE 3: What's new today -->
+<!-- SLIDE 3: Today's goal -->
 <div class="slide bg-recap" data-section="build">
   <div class="tag tag-build">Today's goal</div>
-  <h2>What you'll see when you're done</h2>
-  <div class="creativity-grid wide" style="margin-top:0.9rem;">
+  <h2>What exists by the end of this session</h2>
+  <div class="creativity-grid wide" style="margin-top:0.8rem;">
     <div class="c-card cv-green">
-      <div class="c-letter">Real map</div>
-      <h4>🌍 A Tiled world</h4>
-      <p>Built by an artist in a program called <strong>Tiled</strong> — grass, paths, buildings, all real art.</p>
+      <div class="c-letter">world.tmx</div>
+      <h4>🌍 A real map file</h4>
+      <p>Drawn tile-by-tile in an editor called Tiled — grass, dirt paths, buildings — loaded from <code>data/maps/</code>.</p>
     </div>
     <div class="c-card cv-water">
-      <div class="c-letter">Animation</div>
-      <h4>🌊 Water that ripples</h4>
-      <p>Water and coastlines animate on their own, all around the map.</p>
+      <div class="c-letter">frame cycling</div>
+      <h4>🌊 Moving water and coastline</h4>
+      <p>Every water and coast tile cycles through a list of images on its own, frame by frame.</p>
     </div>
     <div class="c-card cv-fire">
-      <div class="c-letter">Doors</div>
-      <h4>🚪 Walk between areas</h4>
-      <p>Step through a doorway and the screen fades to a brand new map.</p>
+      <div class="c-letter">7 map files</div>
+      <h4>🚪 Doors between areas</h4>
+      <p>world, house, hospital, hospital2, water, fire, plant — walk into one map, spawn inside another.</p>
     </div>
     <div class="c-card cv-gold">
-      <div class="c-letter">NPCs</div>
-      <h4>💬 Characters who talk</h4>
-      <p>Press SPACE near an NPC and read what they have to say.</p>
+      <div class="c-letter">SPACE key</div>
+      <h4>💬 NPCs with dialog</h4>
+      <p>Stand near a character, press SPACE, read what they say, press SPACE again to continue.</p>
     </div>
     <div class="c-card cv-lime">
-      <div class="c-letter">Monsters</div>
-      <h4>🌿 Tall grass patches</h4>
-      <p>Marked zones where wild monsters could appear (battles come in session 5).</p>
+      <div class="c-letter">tall grass</div>
+      <h4>🌿 Monster patches</h4>
+      <p>Marked zones on the map that will trigger battles once session 5 wires up combat.</p>
     </div>
     <div class="c-card cv-purple">
-      <div class="c-letter">Your choice</div>
-      <h4>🧩 Extension challenges</h4>
-      <p>After everything works — 4 bonus challenges to make the world feel more alive.</p>
+      <div class="c-letter">after all TODOs</div>
+      <h4>🧩 4 extension challenges</h4>
+      <p>Small code changes to try once every TODO in this session is filled in and working.</p>
     </div>
   </div>
 </div>
-
-<!-- ══════════════════════════════════════════════════
-     AGENDA + CONCEPTS  (slides 4–6)
-══════════════════════════════════════════════════ -->
 
 <!-- SLIDE 4: Agenda -->
-<div class="slide bg-build left-align" data-section="build">
+<div class="slide bg-recap left-align" data-section="build">
   <div class="tag tag-build">Build order</div>
-  <h2>What you're building today</h2>
-  <ul style="margin: 0.8rem 0 1rem;">
-    <li><strong>Step 14&nbsp;&nbsp;</strong><code>sprites.py</code> — <code>AnimatedSprite</code> — cycles through frames (water, coast)</li>
-    <li><strong>Step 15&nbsp;&nbsp;</strong><code>sprites.py</code> — <code>MonsterPatchSprite</code> — tall-grass encounter zones</li>
-    <li><strong>Step 16&nbsp;&nbsp;</strong><code>sprites.py</code> — <code>TransitionSprite</code> — invisible doorways</li>
-    <li><strong>Step 17&nbsp;&nbsp;</strong><code>main.py</code> — <code>setup()</code> — read all 9 layers of the real map</li>
-    <li><strong>Step 18&nbsp;&nbsp;</strong><code>main.py</code> — <code>transition_check()</code> — detect when you walk through a door</li>
+  <h2>5 things to write today</h2>
+  <ul style="margin: 0.7rem 0 0.9rem;">
+    <li><strong>Step 14</strong> &nbsp;<code>sprites.py</code> — <code>AnimatedSprite</code>, 3 short methods</li>
+    <li><strong>Step 15</strong> &nbsp;<code>sprites.py</code> — <code>MonsterPatchSprite</code>, 1 method</li>
+    <li><strong>Step 16</strong> &nbsp;<code>sprites.py</code> — <code>TransitionSprite</code>, 1 method</li>
+    <li><strong>Step 17</strong> &nbsp;<code>main.py</code> — <code>setup()</code>, 9 short loops in one method</li>
+    <li><strong>Step 18</strong> &nbsp;<code>main.py</code> — <code>transition_check()</code>, 1 method</li>
   </ul>
   <div class="box gold">
-    <p class="small">🧩 <strong>Then:</strong> Extension challenges! Try different starting rooms, debug prints, and animation tweaks.</p>
+    <p class="small">Every step below follows the same order: <strong>what it means</strong> → <strong>the blank code you start from</strong> → <strong>reveal the answer key when you want to check your work</strong>.</p>
   </div>
 </div>
 
-<!-- SLIDE 5: Concept — TMX / Tiled maps -->
+<!-- SLIDE 5: Concept — TMX -->
 <div class="slide bg-concept" data-section="build">
-  <div class="tag tag-concept">Key concept</div>
-  <h2>What is a Tiled (.tmx) map?</h2>
+  <div class="tag tag-concept">Fundamentals</div>
+  <h2>What a .tmx map file actually contains</h2>
+  <p style="max-width:860px; margin-bottom:0.6rem;">A <strong>.tmx</strong> file is made in a free editor called Tiled. It is not one picture — it's a stack of named layers, and each layer is one of two kinds.</p>
   <div class="two-col" style="max-width:900px;">
-    <div class="box water">
-      <h3 style="color:var(--water);">🖌️ Tiled = a map-drawing app</h3>
-      <p class="small">An artist paints the world in a free program called <strong>Tiled</strong> and saves it as a <code>.tmx</code> file — grass, water, buildings, doors, everything.</p>
-    </div>
-    <div class="box green">
-      <h3 style="color:var(--green);">🐍 pytmx = the Python reader</h3>
-      <p class="small"><code>tmx_importer()</code> loads every <code>.tmx</code> file in <code>data/maps/</code> into Python objects your game can loop through.</p>
-    </div>
-  </div>
-  <div class="two-col" style="max-width:900px; margin-top:0.6rem;">
     <div class="box gold">
       <h3 style="color:var(--gold);">🧱 Tile layers</h3>
-      <p class="small"><code>layer.tiles()</code> gives you <code>(col, row, image)</code> for every tile — used for <strong>Terrain</strong>.</p>
+      <p class="small">A grid of tiles. Reading one gives you <code>(col, row, image)</code> for every square — used once, for <strong>Terrain</strong>.</p>
     </div>
     <div class="box fire">
       <h3 style="color:var(--fire);">📦 Object layers</h3>
-      <p class="small">Rectangles with custom data — <code>obj.x</code>, <code>obj.y</code>, <code>obj.properties['key']</code>. Used for <strong>Water, Coast, Objects, Transition, Collisions, Monsters, Entities</strong>.</p>
+      <p class="small">A list of placed rectangles, each with its own <code>x</code>, <code>y</code>, <code>width</code>, <code>height</code>, and custom <code>properties</code> set by the map artist.</p>
     </div>
   </div>
+  <p class="small" style="max-width:860px; margin-top:0.5rem;">This map has <strong>8 layers</strong>: Terrain, Terrain Top, Water, Coast, Objects, Transition, Collisions, Monsters, Entities. <code>tmx_map.get_layer_by_name('Water')</code> gets you exactly one of them.</p>
 </div>
 
-<!-- SLIDE 6: Concept — camera & z-sorting -->
+<!-- SLIDE 6: Concept — layers & camera -->
 <div class="slide bg-concept" data-section="build">
-  <div class="tag tag-concept">Key concept</div>
-  <h2>Layers &amp; the camera (recap + new)</h2>
+  <div class="tag tag-concept">Fundamentals</div>
+  <h2>Draw order and the camera</h2>
   <div class="two-col" style="max-width:900px;">
     <div>
-      <p class="small" style="margin-bottom:0.4rem;">Every sprite has a <code>z</code> layer. Sprites draw bottom-to-top:</p>
+      <p class="small" style="margin-bottom:0.4rem;">Every sprite carries a <code>z</code> number. The game draws low <code>z</code> first, so higher numbers sit on top:</p>
       <div class="stack">
         <div class="stack-layer sl-top">top <span class="sl-num">z=4</span></div>
         <div class="stack-layer sl-main">main <span class="sl-num">z=3</span></div>
@@ -516,408 +371,562 @@
         <div class="stack-layer sl-water">water <span class="sl-num">z=0</span></div>
       </div>
     </div>
-    <div style="display:flex; flex-direction:column; gap:0.6rem; justify-content:center;">
+    <div style="display:flex; flex-direction:column; gap:0.5rem; justify-content:center;">
       <div class="box water" style="margin:0;">
-        <p class="small"><strong>Camera</strong> = an offset. Every sprite is drawn shifted so the player always sits at screen-centre:<br><code>offset.x = -(player.centerx - WINDOW_WIDTH/2)</code></p>
+        <p class="small"><code>offset.x = -(player.centerx - WINDOW_WIDTH/2)</code> — every sprite is drawn shifted by this amount, which keeps the player fixed at screen-centre while the world slides underneath.</p>
       </div>
       <div class="box gold" style="margin:0;">
-        <p class="small"><strong>y_sort</strong>: on the <code>main</code> layer, sprites with a bigger y (lower on screen) draw <em>on top</em> — so you can walk behind a tree and in front of a fence.</p>
+        <p class="small">On the <code>main</code> layer only, sprites are sorted by <code>y_sort</code> before drawing — the one lower on screen draws last, so it appears in front.</p>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════
-     STEPS 14–16 · sprites.py  (slides 7–9)
-══════════════════════════════════════════════════ -->
+<!-- ══════════════════ STEP 14 ══════════════════ -->
 
-<!-- SLIDE 7: Step 14 AnimatedSprite -->
-<div class="slide bg-build left-align" data-section="build">
+<!-- SLIDE 7: Concept 14 -->
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — Step 14</div>
+  <h2>AnimatedSprite: cycling through a list of images</h2>
+  <p style="max-width:860px;">Water and coast tiles are each a short list of frames — separate images, not one moving picture. <code>frame_index</code> is a counter that climbs every frame; converting it to an integer and picking <code>frames[index]</code> is what makes the image change.</p>
+  <div class="box water" style="max-width:860px; width:100%;">
+    <p class="small"><strong>Worked example:</strong> say there are 4 water frames and <code>ANIMATION_SPEED = 6</code>. After 1 second, <code>frame_index</code> has climbed to <code>6</code>. <code>6 % 4 = 2</code>, so the sprite shows <code>frames[2]</code>. Once <code>frame_index</code> passes 4, <code>%</code> wraps it back toward 0 — the loop never runs out of frames.</p>
+  </div>
+  <div class="box gold" style="max-width:860px; width:100%;">
+    <p class="small"><code>AnimatedSprite</code> inherits from <code>pygame.sprite.Sprite</code> directly — it needs its own <code>image</code>, <code>rect</code>, <code>hitbox</code>, <code>z</code>, and <code>y_sort</code>, same fields as last session's <code>Sprite</code> class, just built from a list of frames instead of one surface.</p>
+  </div>
+</div>
+
+<!-- SLIDE 8: Practice 14 -->
+<div class="slide bg-practice left-align" data-section="build">
   <div class="step-badge">
-    <div class="step-num sn-water">14</div>
+    <div class="step-num sn-fire">14</div>
     <div>
       <div class="step-file">📂 sprites.py</div>
-      <span class="step-title">AnimatedSprite — frames that loop</span>
+      <span class="step-title">AnimatedSprite — your turn</span>
     </div>
   </div>
-  <div class="two-col" style="max-width:900px;">
-    <pre class="water sm" style="margin:0;"><span class="kw">class</span> <span class="fn">AnimatedSprite</span>(pygame.sprite.Sprite)<span class="op">:</span>
-  <span class="kw">def</span> <span class="fn">__init__</span>(<span class="at">self</span>, pos, frames, groups, z<span class="op">=</span><span class="nm">3</span>)<span class="op">:</span>
-    <span class="at">self</span><span class="op">.</span><span class="at">frame_index</span> <span class="op">=</span> <span class="nm">0</span>
-    <span class="at">self</span><span class="op">.</span><span class="at">frames</span> <span class="op">=</span> frames
-    <span class="fn">super</span><span class="op">().</span><span class="fn">__init__</span><span class="op">(</span>groups<span class="op">)</span>
-    <span class="at">self</span><span class="op">.</span><span class="at">image</span> <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">frames</span><span class="op">[</span><span class="nm">0</span><span class="op">]</span>
-    <span class="at">self</span><span class="op">.</span><span class="at">rect</span> <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">image</span><span class="op">.</span><span class="fn">get_frect</span><span class="op">(</span>topleft<span class="op">=</span>pos<span class="op">)</span>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank sm"><span class="kw">class</span> <span class="fn">AnimatedSprite</span>(pygame.sprite.Sprite)<span class="op">:</span>
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="at">self</span>, pos, frames, groups, z<span class="op">=</span>WORLD_LAYERS<span class="op">[</span><span class="st">'main'</span><span class="op">]):</span>
+        <span class="cm"># TODO: your code here</span>
+        <span class="kw">pass</span>  <span class="cm"># remove this when you're done</span>
 
-  <span class="kw">def</span> <span class="fn">animate</span>(<span class="at">self</span>, dt)<span class="op">:</span>
-    <span class="at">self</span><span class="op">.</span><span class="at">frame_index</span> <span class="op">+=</span> <span class="nm">ANIMATION_SPEED</span> <span class="op">*</span> dt
-    <span class="at">self</span><span class="op">.</span><span class="at">image</span> <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">frames</span><span class="op">[</span>
-      <span class="fn">int</span><span class="op">(</span><span class="at">self</span><span class="op">.</span><span class="at">frame_index</span> <span class="op">%</span> <span class="fn">len</span><span class="op">(</span><span class="at">self</span><span class="op">.</span><span class="at">frames</span><span class="op">))]</span></pre>
-    <div style="display:flex; flex-direction:column; gap:0.6rem; justify-content:center;">
-      <div class="box water" style="margin:0;">
-        <p class="small">🎞️ Just like a flipbook! A list of images, and every frame we move a tiny bit further through the list.</p>
-      </div>
-      <div class="box green" style="margin:0;">
-        <p class="small"><code>%</code> (modulo) wraps back to frame 0 when we reach the end — the ripple never stops.</p>
-      </div>
-      <div class="box gold" style="margin:0;">
-        <p class="small">Used for both <strong>water</strong> and <strong>coast foam</strong> in <code>setup()</code>.</p>
-      </div>
+    <span class="kw">def</span> <span class="fn">animate</span>(<span class="at">self</span>, dt)<span class="op">:</span>
+        <span class="cm"># TODO: your code here</span>
+        <span class="kw">pass</span>
+
+    <span class="kw">def</span> <span class="fn">update</span>(<span class="at">self</span>, dt)<span class="op">:</span>
+        <span class="cm"># TODO: your code here</span>
+        <span class="kw">pass</span></pre>
+    <ul class="hint-list">
+      <li><strong>__init__</strong>: store <code>frames</code> and <code>frame_index = 0</code>, then set <code>image</code>, <code>rect</code>, <code>hitbox</code>, <code>z</code>, <code>y_sort</code> the same way last session's <code>Sprite</code> did.</li>
+      <li><strong>animate</strong>: <code>frame_index += ANIMATION_SPEED * dt</code>, then pick <code>frames[int(frame_index % len(frames))]</code>.</li>
+      <li><strong>update</strong>: just calls <code>animate(dt)</code>.</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">Answer key</div>
+      <pre class="green sm"><span class="kw">class</span> <span class="fn">AnimatedSprite</span>(pygame.sprite.Sprite)<span class="op">:</span>
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="at">self</span>, pos, frames, groups, z<span class="op">=</span>WORLD_LAYERS<span class="op">[</span><span class="st">'main'</span><span class="op">]):</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">frame_index</span> <span class="op">=</span> <span class="nm">0</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">frames</span> <span class="op">=</span> frames
+        <span class="fn">super</span><span class="op">().</span><span class="fn">__init__</span><span class="op">(</span>groups<span class="op">)</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">image</span>  <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">frames</span><span class="op">[</span><span class="nm">0</span><span class="op">]</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">rect</span>   <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">image</span><span class="op">.</span><span class="fn">get_frect</span><span class="op">(</span>topleft<span class="op">=</span>pos<span class="op">)</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">z</span>      <span class="op">=</span> z
+        <span class="at">self</span><span class="op">.</span><span class="at">hitbox</span> <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">rect</span><span class="op">.</span><span class="fn">copy</span><span class="op">()</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">y_sort</span> <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">rect</span><span class="op">.</span><span class="at">centery</span>
+
+    <span class="kw">def</span> <span class="fn">animate</span>(<span class="at">self</span>, dt)<span class="op">:</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">frame_index</span> <span class="op">+=</span> <span class="nm">ANIMATION_SPEED</span> <span class="op">*</span> dt
+        <span class="at">self</span><span class="op">.</span><span class="at">image</span> <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">frames</span><span class="op">[</span><span class="fn">int</span><span class="op">(</span><span class="at">self</span><span class="op">.</span><span class="at">frame_index</span> <span class="op">%</span> <span class="fn">len</span><span class="op">(</span><span class="at">self</span><span class="op">.</span><span class="at">frames</span><span class="op">))]</span>
+
+    <span class="kw">def</span> <span class="fn">update</span>(<span class="at">self</span>, dt)<span class="op">:</span>
+        <span class="at">self</span><span class="op">.</span><span class="fn">animate</span>(dt)</pre>
     </div>
   </div>
 </div>
 
-<!-- SLIDE 8: Step 15 MonsterPatchSprite -->
-<div class="slide bg-build left-align" data-section="build">
+<!-- ══════════════════ STEP 15 ══════════════════ -->
+
+<!-- SLIDE 9: Concept 15 -->
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — Step 15</div>
+  <h2>MonsterPatchSprite: marking an encounter zone</h2>
+  <p style="max-width:860px;">A monster patch is a tile placed by the map artist with three custom properties: <code>biome</code>, <code>monsters</code>, and <code>level</code>. It inherits from <code>AnimatedSprite</code> — same frame-cycling, plus three extra pieces of data.</p>
+  <div class="two-col" style="max-width:900px;">
+    <div class="box lime" style="border-left:4px solid var(--lime);">
+      <h3 style="color:var(--lime);">🌾 Sand draws behind, grass draws level</h3>
+      <p class="small">Sand patches use <code>z = bg</code> so the player appears to walk <em>over</em> the sand. Every other biome uses <code>z = main</code> like a normal obstacle.</p>
+    </div>
+    <div class="box gold">
+      <h3 style="color:var(--gold);">📝 monsters is one string, not a list</h3>
+      <p class="small">Tiled stores <code>'Atrox,Pouch'</code> as plain text. <code>.split(',')</code> turns it into <code>['Atrox', 'Pouch']</code> — one of several monsters that patch can produce.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 10: Practice 15 -->
+<div class="slide bg-practice left-align" data-section="build">
   <div class="step-badge">
-    <div class="step-num sn-green">15</div>
+    <div class="step-num sn-fire">15</div>
     <div>
       <div class="step-file">📂 sprites.py</div>
-      <span class="step-title">MonsterPatchSprite — tall grass</span>
+      <span class="step-title">MonsterPatchSprite — your turn</span>
     </div>
   </div>
-  <div class="two-col" style="max-width:900px;">
-    <pre class="sm" style="margin:0; border-left-color:var(--green);"><span class="kw">class</span> <span class="fn">MonsterPatchSprite</span>(AnimatedSprite)<span class="op">:</span>
-  <span class="kw">def</span> <span class="fn">__init__</span>(<span class="at">self</span>, pos, frames, groups,
-               biome, monsters, level)<span class="op">:</span>
-    z <span class="op">=</span> <span class="nm">3</span> <span class="kw">if</span> biome <span class="op">!=</span> <span class="st">'sand'</span> <span class="kw">else</span> <span class="nm">1</span>
-    <span class="fn">super</span><span class="op">().</span><span class="fn">__init__</span><span class="op">(</span>pos, frames, groups, z<span class="op">)</span>
-    <span class="at">self</span><span class="op">.</span><span class="at">y_sort</span> <span class="op">-=</span> <span class="nm">40</span>
-    <span class="at">self</span><span class="op">.</span><span class="at">biome</span> <span class="op">=</span> biome
-    <span class="at">self</span><span class="op">.</span><span class="at">monsters</span> <span class="op">=</span> monsters<span class="op">.</span><span class="fn">split</span><span class="op">(</span><span class="st">','</span><span class="op">)</span>
-    <span class="at">self</span><span class="op">.</span><span class="at">level</span> <span class="op">=</span> level</pre>
-    <div style="display:flex; flex-direction:column; gap:0.6rem; justify-content:center;">
-      <div class="box green" style="margin:0;">
-        <p class="small">🌿 These are the grass patches where wild monsters could jump out — one patch can hold several possible monsters, split from a string like <code>'Atrox,Pouch'</code>.</p>
-      </div>
-      <div class="box gold" style="margin:0;">
-        <p class="small">Sand patches draw <em>behind</em> the player (<code>z=bg</code>) so footprints look right; grass draws at <code>z=main</code>.</p>
-      </div>
-      <div class="box fire" style="margin:0;">
-        <p class="small">⚠️ Tiled gives one image, not a list — wrap it: <code>[obj.image]</code> so <code>AnimatedSprite</code> is happy.</p>
-      </div>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank sm"><span class="kw">class</span> <span class="fn">MonsterPatchSprite</span>(AnimatedSprite)<span class="op">:</span>
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="at">self</span>, pos, frames, groups, biome, monsters, level)<span class="op">:</span>
+        <span class="cm"># TODO: your code here</span>
+        <span class="kw">pass</span>  <span class="cm"># remove this when you're done</span></pre>
+    <ul class="hint-list">
+      <li>Pick <code>z = WORLD_LAYERS['main'] if biome != 'sand' else WORLD_LAYERS['bg']</code>.</li>
+      <li>Call <code>super().__init__(pos, frames, groups, z)</code> to reuse everything <code>AnimatedSprite</code> already does.</li>
+      <li>Then set <code>self.y_sort -= 40</code>, <code>self.biome = biome</code>, <code>self.monsters = monsters.split(',')</code>, <code>self.level = level</code>.</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">Answer key</div>
+      <pre class="green sm"><span class="kw">class</span> <span class="fn">MonsterPatchSprite</span>(AnimatedSprite)<span class="op">:</span>
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="at">self</span>, pos, frames, groups, biome, monsters, level)<span class="op">:</span>
+        z <span class="op">=</span> WORLD_LAYERS<span class="op">[</span><span class="st">'main'</span><span class="op">]</span> <span class="kw">if</span> biome <span class="op">!=</span> <span class="st">'sand'</span> <span class="kw">else</span> WORLD_LAYERS<span class="op">[</span><span class="st">'bg'</span><span class="op">]</span>
+        <span class="fn">super</span><span class="op">().</span><span class="fn">__init__</span><span class="op">(</span>pos, frames, groups, z<span class="op">)</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">y_sort</span>  <span class="op">-=</span> <span class="nm">40</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">biome</span>    <span class="op">=</span> biome
+        <span class="at">self</span><span class="op">.</span><span class="at">monsters</span> <span class="op">=</span> monsters<span class="op">.</span><span class="fn">split</span><span class="op">(</span><span class="st">','</span><span class="op">)</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">level</span>    <span class="op">=</span> level</pre>
     </div>
   </div>
 </div>
 
-<!-- SLIDE 9: Step 16 TransitionSprite -->
-<div class="slide bg-build left-align" data-section="build">
+<!-- ══════════════════ STEP 16 ══════════════════ -->
+
+<!-- SLIDE 11: Concept 16 -->
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — Step 16</div>
+  <h2>TransitionSprite: a zone the game checks, never draws</h2>
+  <p style="max-width:860px;">Doorways in the map aren't pictures — they're plain rectangles the map artist places over doors, cave mouths, and area edges. <code>TransitionSprite</code> only ever gets added to <code>self.transition_sprites</code>, never to <code>self.all_sprites</code>, so it's invisible on screen but still checkable.</p>
+  <div class="box purple" style="max-width:860px; width:100%;">
+    <p class="small"><code>target</code> is a tuple: <code>(map_name, spawn_point_name)</code>. Step 17 builds this tuple from the map's own data; step 18 reads it back to know which map to load and where the player should appear.</p>
+  </div>
+</div>
+
+<!-- SLIDE 12: Practice 16 -->
+<div class="slide bg-practice left-align" data-section="build">
   <div class="step-badge">
-    <div class="step-num sn-gold">16</div>
+    <div class="step-num sn-fire">16</div>
     <div>
       <div class="step-file">📂 sprites.py</div>
-      <span class="step-title">TransitionSprite — an invisible doorway</span>
+      <span class="step-title">TransitionSprite — your turn</span>
     </div>
   </div>
-  <div class="two-col" style="max-width:900px;">
-    <pre class="gold sm" style="margin:0;"><span class="kw">class</span> <span class="fn">TransitionSprite</span>(pygame.sprite.Sprite)<span class="op">:</span>
-  <span class="kw">def</span> <span class="fn">__init__</span>(<span class="at">self</span>, pos, size, target, groups)<span class="op">:</span>
-    <span class="fn">super</span><span class="op">().</span><span class="fn">__init__</span><span class="op">(</span>groups<span class="op">)</span>
-    surf <span class="op">=</span> <span class="fn">pygame</span><span class="op">.</span><span class="fn">Surface</span><span class="op">(</span>size<span class="op">)</span>
-    <span class="at">self</span><span class="op">.</span><span class="at">image</span>  <span class="op">=</span> surf
-    <span class="at">self</span><span class="op">.</span><span class="at">rect</span>   <span class="op">=</span> surf<span class="op">.</span><span class="fn">get_frect</span><span class="op">(</span>topleft<span class="op">=</span>pos<span class="op">)</span>
-    <span class="at">self</span><span class="op">.</span><span class="at">target</span> <span class="op">=</span> target  <span class="cm"># (map_name, spawn_point)</span>
-    <span class="at">self</span><span class="op">.</span><span class="at">hitbox</span> <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">rect</span><span class="op">.</span><span class="fn">copy</span><span class="op">()</span></pre>
-    <div style="display:flex; flex-direction:column; gap:0.6rem; justify-content:center;">
-      <div class="box gold" style="margin:0;">
-        <p class="small">🚪 This sprite is never drawn — it's not added to <code>all_sprites</code>, only to <code>transition_sprites</code>. It's a trigger zone, not a picture.</p>
-      </div>
-      <div class="box purple" style="margin:0;">
-        <p class="small"><code>target</code> is a tuple: which map to load, and which spawn point to appear at — e.g. <code>('house', 'world')</code>.</p>
-      </div>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank sm"><span class="kw">class</span> <span class="fn">TransitionSprite</span>(pygame.sprite.Sprite)<span class="op">:</span>
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="at">self</span>, pos, size, target, groups)<span class="op">:</span>
+        <span class="cm"># TODO: your code here</span>
+        <span class="kw">pass</span>  <span class="cm"># remove this when you're done</span></pre>
+    <ul class="hint-list">
+      <li><code>super().__init__(groups)</code>, then build <code>surf = pygame.Surface(size)</code>.</li>
+      <li>Set <code>self.image</code>, <code>self.rect</code> (using <code>get_frect(topleft=pos)</code>), and <code>self.target = target</code>.</li>
+      <li><code>self.hitbox = self.rect.copy()</code>, <code>self.z = WORLD_LAYERS['bg']</code>, <code>self.y_sort = self.rect.centery</code>.</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">Answer key</div>
+      <pre class="green sm"><span class="kw">class</span> <span class="fn">TransitionSprite</span>(pygame.sprite.Sprite)<span class="op">:</span>
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="at">self</span>, pos, size, target, groups)<span class="op">:</span>
+        <span class="fn">super</span><span class="op">().</span><span class="fn">__init__</span><span class="op">(</span>groups<span class="op">)</span>
+        surf         <span class="op">=</span> <span class="fn">pygame</span><span class="op">.</span><span class="fn">Surface</span><span class="op">(</span>size<span class="op">)</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">image</span>   <span class="op">=</span> surf
+        <span class="at">self</span><span class="op">.</span><span class="at">rect</span>    <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">image</span><span class="op">.</span><span class="fn">get_frect</span><span class="op">(</span>topleft<span class="op">=</span>pos<span class="op">)</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">target</span>  <span class="op">=</span> target
+        <span class="at">self</span><span class="op">.</span><span class="at">hitbox</span>  <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">rect</span><span class="op">.</span><span class="fn">copy</span><span class="op">()</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">z</span>       <span class="op">=</span> WORLD_LAYERS<span class="op">[</span><span class="st">'bg'</span><span class="op">]</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">y_sort</span>  <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">rect</span><span class="op">.</span><span class="at">centery</span></pre>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════
-     STEP 17 · main.py setup()  (slides 10–14)
-══════════════════════════════════════════════════ -->
+<!-- ══════════════════ STEP 17 ══════════════════ -->
 
-<!-- SLIDE 10: Step 17 overview -->
-<div class="slide bg-build" data-section="build">
+<!-- SLIDE 13: Step 17 overview -->
+<div class="slide bg-concept" data-section="build">
   <div class="step-badge" style="justify-content:center;">
-    <div class="step-num sn-fire">17</div>
+    <div class="step-num sn-water">17</div>
     <div style="text-align:left;">
       <div class="step-file">📂 main.py</div>
-      <span class="step-title">setup() — the big one: 9 sub-steps</span>
+      <span class="step-title">setup() — one method, 9 loops</span>
     </div>
   </div>
+  <p style="max-width:860px;">setup() runs once when the game starts, and again every single time the player walks through a door — same 9 loops, a different <code>tmx_map</code> argument.</p>
   <div class="loop-diagram">
-    <div class="loop-step ls-red">17a<br>clear groups</div>
-    <div class="arrow">→</div>
-    <div class="loop-step ls-green">17b<br>terrain</div>
-    <div class="arrow">→</div>
-    <div class="loop-step ls-water">17c<br>water</div>
-    <div class="arrow">→</div>
-    <div class="loop-step ls-water">17d<br>coast</div>
-    <div class="arrow">→</div>
-    <div class="loop-step ls-gold">17e<br>objects</div>
+    <div class="loop-step ls-red">17a clear groups</div><div class="arrow">→</div>
+    <div class="loop-step ls-green">17b terrain</div><div class="arrow">→</div>
+    <div class="loop-step ls-water">17c water</div><div class="arrow">→</div>
+    <div class="loop-step ls-water">17d coast</div><div class="arrow">→</div>
+    <div class="loop-step ls-gold">17e objects</div>
   </div>
   <div class="loop-diagram">
-    <div class="loop-step ls-fire">17f<br>transitions</div>
-    <div class="arrow">→</div>
-    <div class="loop-step ls-fire">17g<br>collisions</div>
-    <div class="arrow">→</div>
-    <div class="loop-step ls-green">17h<br>monsters</div>
-    <div class="arrow">→</div>
-    <div class="loop-step ls-purple">17i<br>entities</div>
+    <div class="loop-step ls-fire">17f transitions</div><div class="arrow">→</div>
+    <div class="loop-step ls-fire">17g collisions</div><div class="arrow">→</div>
+    <div class="loop-step ls-green">17h monsters</div><div class="arrow">→</div>
+    <div class="loop-step ls-purple">17i entities</div>
   </div>
-  <div class="box water" style="margin-top:1rem;">
-    <p class="small">📖 <strong>One method, one map.</strong> Every time the player walks through a door, <code>setup()</code> runs again for the new map — same 9 steps, different <code>.tmx</code> file.</p>
+  <div class="box water" style="margin-top:0.7rem;">
+    <p class="small">Every loop follows the same shape: <code>for obj in tmx_map.get_layer_by_name(NAME):</code> then create one sprite per object, reading whatever <code>obj.properties</code> that layer defines.</p>
   </div>
 </div>
 
-<!-- SLIDE 11: Step 17a-c -->
-<div class="slide bg-build left-align" data-section="build">
+<!-- SLIDE 14: Concept 17a-c -->
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — 17a–c</div>
+  <h2>Clearing the old map, then painting the new one</h2>
+  <ul>
+    <li><strong>17a</strong> — every sprite group gets <code>.empty()</code> called on it first. Skip this and the previous map's sprites keep existing underneath the new one.</li>
+    <li><strong>17b</strong> — <code>Terrain</code> and <code>Terrain Top</code> are <em>tile</em> layers, so they're read with <code>.tiles()</code>, not looped as objects.</li>
+    <li><strong>17c</strong> — <code>Water</code> is an <em>object</em> layer: a rectangle. The loop fills that rectangle with animated tiles, <code>TILE_SIZE</code> apart in both directions.</li>
+  </ul>
+</div>
+
+<!-- SLIDE 15: Practice 17a-c -->
+<div class="slide bg-practice left-align" data-section="build">
   <div class="step-badge">
-    <div class="step-num sn-red">a–c</div>
-    <div>
-      <div class="step-file">📂 main.py → setup()</div>
-      <span class="step-title">Clear the old map, paint terrain, animate water</span>
-    </div>
+    <div class="step-num sn-fire">17a–c</div>
+    <div><div class="step-file">📂 main.py → setup()</div><span class="step-title">clear groups, terrain, water — your turn</span></div>
   </div>
-  <pre class="red sm" style="max-width:900px;"><span class="cm"># 17a — wipe every group so the OLD map disappears</span>
-<span class="kw">for</span> group <span class="kw">in</span> (<span class="at">self</span><span class="op">.</span><span class="at">all_sprites</span>, <span class="at">self</span><span class="op">.</span><span class="at">collision_sprites</span>, ...)<span class="op">:</span>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank xs"><span class="cm"># ── Step 17a: Clear all groups so the old map is gone ──</span>
+<span class="cm"># Hint: call .empty() on each group.</span>
+<span class="todo"># TODO: your code here</span>
+
+<span class="cm"># ── Step 17b: Terrain tiles ──</span>
+<span class="cm"># Loop through the 'Terrain' and 'Terrain Top' layers.</span>
+<span class="cm"># For each tile at (x, y) call:</span>
+<span class="cm">#   Sprite((x * TILE_SIZE, y * TILE_SIZE), surf,</span>
+<span class="cm">#           self.all_sprites, WORLD_LAYERS['bg'])</span>
+<span class="todo"># TODO: your code here</span>
+
+<span class="cm"># ── Step 17c: Water animated sprites ──</span>
+<span class="cm"># For each obj in tmx_map.get_layer_by_name('Water'):</span>
+<span class="cm">#   fill the rectangle with AnimatedSprite tiles</span>
+<span class="todo"># TODO: your code here</span></pre>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">Answer key</div>
+      <pre class="green xs"><span class="kw">for</span> group <span class="kw">in</span> (<span class="at">self</span><span class="op">.</span><span class="at">all_sprites</span>, <span class="at">self</span><span class="op">.</span><span class="at">collision_sprites</span>,
+              <span class="at">self</span><span class="op">.</span><span class="at">transition_sprites</span>, <span class="at">self</span><span class="op">.</span><span class="at">character_sprites</span>,
+              <span class="at">self</span><span class="op">.</span><span class="at">monster_sprites</span>)<span class="op">:</span>
     group<span class="op">.</span><span class="fn">empty</span><span class="op">()</span>
 
-<span class="cm"># 17b — terrain tiles (a TILE layer, not objects!)</span>
 <span class="kw">for</span> layer <span class="kw">in</span> [<span class="st">'Terrain'</span>, <span class="st">'Terrain Top'</span>]<span class="op">:</span>
     <span class="kw">for</span> x, y, surf <span class="kw">in</span> tmx_map<span class="op">.</span><span class="fn">get_layer_by_name</span><span class="op">(</span>layer<span class="op">).</span><span class="fn">tiles</span><span class="op">():</span>
-        <span class="fn">Sprite</span><span class="op">((</span>x <span class="op">*</span> TILE_SIZE, y <span class="op">*</span> TILE_SIZE<span class="op">),</span> surf, <span class="at">self</span><span class="op">.</span><span class="at">all_sprites</span><span class="op">,</span> <span class="nm">bg</span><span class="op">)</span>
+        <span class="fn">Sprite</span><span class="op">((</span>x <span class="op">*</span> TILE_SIZE, y <span class="op">*</span> TILE_SIZE<span class="op">),</span> surf,
+               <span class="at">self</span><span class="op">.</span><span class="at">all_sprites</span>, WORLD_LAYERS<span class="op">[</span><span class="st">'bg'</span><span class="op">])</span>
 
-<span class="cm"># 17c — water tiles animated across each rectangle</span>
 <span class="kw">for</span> obj <span class="kw">in</span> tmx_map<span class="op">.</span><span class="fn">get_layer_by_name</span><span class="op">(</span><span class="st">'Water'</span><span class="op">):</span>
     <span class="kw">for</span> x <span class="kw">in</span> <span class="fn">range</span><span class="op">(</span><span class="fn">int</span><span class="op">(</span>obj<span class="op">.</span><span class="at">x</span><span class="op">),</span> <span class="fn">int</span><span class="op">(</span>obj<span class="op">.</span><span class="at">x</span> <span class="op">+</span> obj<span class="op">.</span><span class="at">width</span><span class="op">),</span> TILE_SIZE<span class="op">):</span>
-        <span class="kw">for</span> y <span class="kw">in</span> <span class="fn">range</span><span class="op">(...):</span> <span class="fn">AnimatedSprite</span><span class="op">((</span>x, y<span class="op">), ...,</span> <span class="nm">water</span><span class="op">)</span></pre>
-  <div class="box red" style="max-width:900px; width:100%;">
-    <p class="small">🧹 <strong>Why clear first?</strong> If we didn't empty the groups, the OLD map's sprites would still be sitting there when the NEW map loads — a messy double-world!</p>
+        <span class="kw">for</span> y <span class="kw">in</span> <span class="fn">range</span><span class="op">(</span><span class="fn">int</span><span class="op">(</span>obj<span class="op">.</span><span class="at">y</span><span class="op">),</span> <span class="fn">int</span><span class="op">(</span>obj<span class="op">.</span><span class="at">y</span> <span class="op">+</span> obj<span class="op">.</span><span class="at">height</span><span class="op">),</span> TILE_SIZE<span class="op">):</span>
+            <span class="fn">AnimatedSprite</span><span class="op">((</span>x, y<span class="op">),</span> <span class="at">self</span><span class="op">.</span><span class="at">overworld_frames</span><span class="op">[</span><span class="st">'water'</span><span class="op">],</span>
+                           <span class="at">self</span><span class="op">.</span><span class="at">all_sprites</span>, WORLD_LAYERS<span class="op">[</span><span class="st">'water'</span><span class="op">])</span></pre>
+    </div>
   </div>
 </div>
 
-<!-- SLIDE 12: Step 17d-e -->
-<div class="slide bg-build left-align" data-section="build">
-  <div class="step-badge">
-    <div class="step-num sn-water">d–e</div>
-    <div>
-      <div class="step-file">📂 main.py → setup()</div>
-      <span class="step-title">Coastline foam &amp; solid objects</span>
-    </div>
+<!-- SLIDE 16: Concept 17d-e -->
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — 17d–e</div>
+  <h2>Coastline foam and solid scenery</h2>
+  <ul>
+    <li><strong>17d</strong> — each <code>Coast</code> object stores which <code>terrain</code> (grass, sand, rock, ice) and which <code>side</code> (top, left, bottomright...) it is. That pair picks one specific animation out of <code>self.overworld_frames['coast']</code>.</li>
+    <li><strong>17e</strong> — an object named exactly <code>'top'</code> draws on the <code>top</code> layer, in front of the player. Everything else in <code>Objects</code> is solid scenery — a <code>CollidableSprite</code>.</li>
+  </ul>
+  <div class="box gold" style="max-width:860px; width:100%;">
+    <p class="small">A tree is usually two objects: the trunk (solid, <code>main</code> layer) and the leafy top (drawn <em>over</em> the player, <code>top</code> layer) — that's the "walking under a tree canopy" look.</p>
   </div>
-  <div class="two-col" style="max-width:900px;">
-    <pre class="water sm" style="margin:0;"><span class="cm"># 17d — coast (each tile knows its own side)</span>
-<span class="kw">for</span> obj <span class="kw">in</span> tmx_map<span class="op">.</span><span class="fn">get_layer_by_name</span><span class="op">(</span><span class="st">'Coast'</span><span class="op">):</span>
+</div>
+
+<!-- SLIDE 17: Practice 17d-e -->
+<div class="slide bg-practice left-align" data-section="build">
+  <div class="step-badge">
+    <div class="step-num sn-fire">17d–e</div>
+    <div><div class="step-file">📂 main.py → setup()</div><span class="step-title">coast, objects — your turn</span></div>
+  </div>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank xs"><span class="cm"># ── Step 17d: Coast animated sprites ──</span>
+<span class="cm"># Coast tiles have 'terrain' and 'side' properties.</span>
+<span class="todo"># TODO: your code here</span>
+
+<span class="cm"># ── Step 17e: Objects (trees, buildings, etc.) ──</span>
+<span class="cm"># Objects named 'top' draw in front; everything</span>
+<span class="cm"># else is a CollidableSprite.</span>
+<span class="todo"># TODO: your code here</span></pre>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">Answer key</div>
+      <pre class="green xs"><span class="kw">for</span> obj <span class="kw">in</span> tmx_map<span class="op">.</span><span class="fn">get_layer_by_name</span><span class="op">(</span><span class="st">'Coast'</span><span class="op">):</span>
     terrain <span class="op">=</span> obj<span class="op">.</span><span class="at">properties</span><span class="op">[</span><span class="st">'terrain'</span><span class="op">]</span>
-    side <span class="op">=</span> obj<span class="op">.</span><span class="at">properties</span><span class="op">[</span><span class="st">'side'</span><span class="op">]</span>
+    side    <span class="op">=</span> obj<span class="op">.</span><span class="at">properties</span><span class="op">[</span><span class="st">'side'</span><span class="op">]</span>
     <span class="fn">AnimatedSprite</span><span class="op">((</span>obj<span class="op">.</span><span class="at">x</span>, obj<span class="op">.</span><span class="at">y</span><span class="op">),</span>
-       frames<span class="op">[</span>terrain<span class="op">][</span>side<span class="op">], ...)</span></pre>
-    <pre class="gold sm" style="margin:0;"><span class="cm"># 17e — 'top' objects draw over the player,</span>
-<span class="cm"># everything else is solid</span>
+                   <span class="at">self</span><span class="op">.</span><span class="at">overworld_frames</span><span class="op">[</span><span class="st">'coast'</span><span class="op">][</span>terrain<span class="op">][</span>side<span class="op">],</span>
+                   <span class="at">self</span><span class="op">.</span><span class="at">all_sprites</span>, WORLD_LAYERS<span class="op">[</span><span class="st">'bg'</span><span class="op">])</span>
+
 <span class="kw">for</span> obj <span class="kw">in</span> tmx_map<span class="op">.</span><span class="fn">get_layer_by_name</span><span class="op">(</span><span class="st">'Objects'</span><span class="op">):</span>
     <span class="kw">if</span> obj<span class="op">.</span><span class="at">name</span> <span class="op">==</span> <span class="st">'top'</span><span class="op">:</span>
-        <span class="fn">Sprite</span><span class="op">((</span>obj<span class="op">.</span><span class="at">x</span>,obj<span class="op">.</span><span class="at">y</span><span class="op">),</span> obj<span class="op">.</span><span class="at">image</span><span class="op">, ...,</span> <span class="nm">top</span><span class="op">)</span>
+        <span class="fn">Sprite</span><span class="op">((</span>obj<span class="op">.</span><span class="at">x</span>, obj<span class="op">.</span><span class="at">y</span><span class="op">),</span> obj<span class="op">.</span><span class="at">image</span>,
+               <span class="at">self</span><span class="op">.</span><span class="at">all_sprites</span>, WORLD_LAYERS<span class="op">[</span><span class="st">'top'</span><span class="op">])</span>
     <span class="kw">else</span><span class="op">:</span>
-        <span class="fn">CollidableSprite</span><span class="op">((</span>obj<span class="op">.</span><span class="at">x</span>,obj<span class="op">.</span><span class="at">y</span><span class="op">), ...)</span></pre>
-  </div>
-  <div class="box gold" style="max-width:900px; width:100%;">
-    <p class="small">🌳 <strong>Treetop trick:</strong> a tree's trunk is <code>main</code> (behind the player when walking past), but its leafy top is a separate <code>'top'</code> object drawn <em>in front</em> — that's how you can walk "into" a tree canopy.</p>
+        <span class="fn">CollidableSprite</span><span class="op">((</span>obj<span class="op">.</span><span class="at">x</span>, obj<span class="op">.</span><span class="at">y</span><span class="op">),</span> obj<span class="op">.</span><span class="at">image</span>,
+                          <span class="op">(</span><span class="at">self</span><span class="op">.</span><span class="at">all_sprites</span>, <span class="at">self</span><span class="op">.</span><span class="at">collision_sprites</span><span class="op">))</span></pre>
+    </div>
   </div>
 </div>
 
-<!-- SLIDE 13: Step 17f-g -->
-<div class="slide bg-build left-align" data-section="build">
+<!-- SLIDE 18: Concept 17f-g -->
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — 17f–g</div>
+  <h2>Doorways and invisible walls</h2>
+  <ul>
+    <li><strong>17f</strong> — each <code>Transition</code> object carries <code>target</code> (which map to load) and <code>pos</code> (which spawn point to use there). Together they become the tuple stored on the sprite.</li>
+    <li><strong>17g</strong> — <code>Collisions</code> objects have no picture at all — a designer draws a plain rectangle in Tiled wherever the world should block movement, like the edge of a lake.</li>
+  </ul>
+</div>
+
+<!-- SLIDE 19: Practice 17f-g -->
+<div class="slide bg-practice left-align" data-section="build">
   <div class="step-badge">
-    <div class="step-num sn-fire">f–g</div>
-    <div>
-      <div class="step-file">📂 main.py → setup()</div>
-      <span class="step-title">Doorways &amp; invisible walls</span>
-    </div>
+    <div class="step-num sn-fire">17f–g</div>
+    <div><div class="step-file">📂 main.py → setup()</div><span class="step-title">transitions, collisions — your turn</span></div>
   </div>
-  <div class="two-col" style="max-width:900px;">
-    <pre class="fire sm" style="margin:0;"><span class="cm"># 17f — doorways</span>
-<span class="kw">for</span> obj <span class="kw">in</span> tmx_map<span class="op">.</span><span class="fn">get_layer_by_name</span><span class="op">(</span><span class="st">'Transition'</span><span class="op">):</span>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank xs"><span class="cm"># ── Step 17f: Transition sprites (doorways, cave entrances) ──</span>
+<span class="todo"># TODO: your code here</span>
+
+<span class="cm"># ── Step 17g: Collision borders (invisible walls) ──</span>
+<span class="todo"># TODO: your code here</span></pre>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">Answer key</div>
+      <pre class="green xs"><span class="kw">for</span> obj <span class="kw">in</span> tmx_map<span class="op">.</span><span class="fn">get_layer_by_name</span><span class="op">(</span><span class="st">'Transition'</span><span class="op">):</span>
     <span class="fn">TransitionSprite</span><span class="op">(</span>
         <span class="op">(</span>obj<span class="op">.</span><span class="at">x</span>, obj<span class="op">.</span><span class="at">y</span><span class="op">),</span>
         <span class="op">(</span>obj<span class="op">.</span><span class="at">width</span>, obj<span class="op">.</span><span class="at">height</span><span class="op">),</span>
-        <span class="op">(</span>obj<span class="op">.</span><span class="at">properties</span><span class="op">[</span><span class="st">'target'</span><span class="op">],</span>
-         obj<span class="op">.</span><span class="at">properties</span><span class="op">[</span><span class="st">'pos'</span><span class="op">]),</span>
-        <span class="at">self</span><span class="op">.</span><span class="at">transition_sprites</span><span class="op">)</span></pre>
-    <pre class="fire sm" style="margin:0;"><span class="cm"># 17g — invisible collision borders</span>
+        <span class="op">(</span>obj<span class="op">.</span><span class="at">properties</span><span class="op">[</span><span class="st">'target'</span><span class="op">],</span> obj<span class="op">.</span><span class="at">properties</span><span class="op">[</span><span class="st">'pos'</span><span class="op">]),</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">transition_sprites</span><span class="op">)</span>
+
 <span class="kw">for</span> obj <span class="kw">in</span> tmx_map<span class="op">.</span><span class="fn">get_layer_by_name</span><span class="op">(</span><span class="st">'Collisions'</span><span class="op">):</span>
-    <span class="fn">BorderSprite</span><span class="op">(</span>
-        <span class="op">(</span>obj<span class="op">.</span><span class="at">x</span>, obj<span class="op">.</span><span class="at">y</span><span class="op">),</span>
-        <span class="fn">pygame</span><span class="op">.</span><span class="fn">Surface</span><span class="op">((</span>obj<span class="op">.</span><span class="at">width</span>,obj<span class="op">.</span><span class="at">height</span><span class="op">)),</span>
-        <span class="at">self</span><span class="op">.</span><span class="at">collision_sprites</span><span class="op">)</span></pre>
-  </div>
-  <div class="box fire" style="max-width:900px; width:100%;">
-    <p class="small">🗺️ These come from a designer drawing invisible rectangles in Tiled — a lake, a fence, the edge of the world — with no picture at all, just a blocking zone.</p>
+    <span class="fn">BorderSprite</span><span class="op">((</span>obj<span class="op">.</span><span class="at">x</span>, obj<span class="op">.</span><span class="at">y</span><span class="op">),</span>
+                 <span class="fn">pygame</span><span class="op">.</span><span class="fn">Surface</span><span class="op">((</span>obj<span class="op">.</span><span class="at">width</span>, obj<span class="op">.</span><span class="at">height</span><span class="op">)),</span>
+                 <span class="at">self</span><span class="op">.</span><span class="at">collision_sprites</span><span class="op">)</span></pre>
+    </div>
   </div>
 </div>
 
-<!-- SLIDE 14: Step 17h-i -->
-<div class="slide bg-build left-align" data-section="build">
-  <div class="step-badge">
-    <div class="step-num sn-green">h–i</div>
-    <div>
-      <div class="step-file">📂 main.py → setup()</div>
-      <span class="step-title">Monster patches &amp; the two-pass trick</span>
-    </div>
+<!-- SLIDE 20: Concept 17h-i -->
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — 17h–i</div>
+  <h2>Monster patches, and why the player spawns first</h2>
+  <ul>
+    <li><strong>17h</strong> — <code>obj.image</code> from Tiled is a single surface, not a list. <code>MonsterPatchSprite</code> expects a list, so it's wrapped as <code>[obj.image]</code> — a one-frame animation.</li>
+    <li><strong>17i</strong> — <code>Entities</code> holds both the player's spawn point and every NPC. NPCs are built with a reference to <code>self.player</code>, so the player has to exist first — that means two separate loops over the same layer, not one.</li>
+  </ul>
+  <div class="loop-diagram" style="max-width:700px;">
+    <div class="loop-step ls-purple">pass 1 — find Player</div><div class="arrow">→</div>
+    <div class="loop-step ls-green">self.player exists</div><div class="arrow">→</div>
+    <div class="loop-step ls-gold">pass 2 — spawn NPCs</div>
   </div>
-  <pre class="sm" style="max-width:900px; border-left-color:var(--purple);"><span class="cm"># 17i — spawn the PLAYER first...</span>
+</div>
+
+<!-- SLIDE 21: Practice 17h-i -->
+<div class="slide bg-practice left-align" data-section="build">
+  <div class="step-badge">
+    <div class="step-num sn-fire">17h–i</div>
+    <div><div class="step-file">📂 main.py → setup()</div><span class="step-title">monster patches, entities — your turn</span></div>
+  </div>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank xs"><span class="cm"># ── Step 17h: Monster patch sprites ──</span>
+<span class="cm"># obj.image is one surface — MonsterPatchSprite wants a list.</span>
+<span class="todo"># TODO: your code here</span>
+
+<span class="cm"># ── Step 17i: Entities (Player + NPCs) ──</span>
+<span class="cm"># Spawn the Player BEFORE NPCs so self.player exists.</span>
+<span class="cm"># Use .get() with a default for 'direction'/'radius' —</span>
+<span class="cm"># not every NPC in every map defines both.</span>
+<span class="todo"># TODO: your code here</span>
+<span class="kw">pass</span></pre>
+    <ul class="hint-list">
+      <li>Loop the <code>Entities</code> layer once for <code>obj.name == 'Player'</code> where <code>obj.properties['pos'] == player_start_pos</code>.</li>
+      <li>Loop it a second time for everything else, building a <code>Character</code> per NPC.</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">Answer key</div>
+      <pre class="green xs"><span class="kw">for</span> obj <span class="kw">in</span> tmx_map<span class="op">.</span><span class="fn">get_layer_by_name</span><span class="op">(</span><span class="st">'Monsters'</span><span class="op">):</span>
+    <span class="fn">MonsterPatchSprite</span><span class="op">(</span>
+        <span class="op">(</span>obj<span class="op">.</span><span class="at">x</span>, obj<span class="op">.</span><span class="at">y</span><span class="op">),</span> <span class="op">[</span>obj<span class="op">.</span><span class="at">image</span><span class="op">],</span>
+        <span class="op">(</span><span class="at">self</span><span class="op">.</span><span class="at">all_sprites</span>, <span class="at">self</span><span class="op">.</span><span class="at">monster_sprites</span><span class="op">),</span>
+        obj<span class="op">.</span><span class="at">properties</span><span class="op">[</span><span class="st">'biome'</span><span class="op">],</span> obj<span class="op">.</span><span class="at">properties</span><span class="op">[</span><span class="st">'monsters'</span><span class="op">],</span>
+        obj<span class="op">.</span><span class="at">properties</span><span class="op">[</span><span class="st">'level'</span><span class="op">])</span>
+
 <span class="kw">for</span> obj <span class="kw">in</span> tmx_map<span class="op">.</span><span class="fn">get_layer_by_name</span><span class="op">(</span><span class="st">'Entities'</span><span class="op">):</span>
     <span class="kw">if</span> obj<span class="op">.</span><span class="at">name</span> <span class="op">==</span> <span class="st">'Player'</span> <span class="kw">and</span> obj<span class="op">.</span><span class="at">properties</span><span class="op">[</span><span class="st">'pos'</span><span class="op">]</span> <span class="op">==</span> player_start_pos<span class="op">:</span>
-        <span class="at">self</span><span class="op">.</span><span class="at">player</span> <span class="op">=</span> <span class="fn">Player</span><span class="op">(...)</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">player</span> <span class="op">=</span> <span class="fn">Player</span><span class="op">(</span>
+            pos<span class="op">=(</span>obj<span class="op">.</span><span class="at">x</span>, obj<span class="op">.</span><span class="at">y</span><span class="op">),</span>
+            frames<span class="op">=</span><span class="at">self</span><span class="op">.</span><span class="at">overworld_frames</span><span class="op">[</span><span class="st">'characters'</span><span class="op">][</span><span class="st">'player'</span><span class="op">],</span>
+            groups<span class="op">=</span><span class="at">self</span><span class="op">.</span><span class="at">all_sprites</span>,
+            facing_direction<span class="op">=</span>obj<span class="op">.</span><span class="at">properties</span><span class="op">[</span><span class="st">'direction'</span><span class="op">],</span>
+            collision_sprites<span class="op">=</span><span class="at">self</span><span class="op">.</span><span class="at">collision_sprites</span><span class="op">)</span>
 
-<span class="cm"># ...THEN spawn NPCs, because they need to point at self.player</span>
 <span class="kw">for</span> obj <span class="kw">in</span> tmx_map<span class="op">.</span><span class="fn">get_layer_by_name</span><span class="op">(</span><span class="st">'Entities'</span><span class="op">):</span>
     <span class="kw">if</span> obj<span class="op">.</span><span class="at">name</span> <span class="op">!=</span> <span class="st">'Player'</span><span class="op">:</span>
-        <span class="fn">Character</span><span class="op">(..., player</span><span class="op">=</span><span class="at">self</span><span class="op">.</span><span class="at">player</span><span class="op">, ...)</span></pre>
-  <div class="loop-diagram" style="max-width:700px;">
-    <div class="loop-step ls-purple">Pass 1<br>find Player</div>
-    <div class="arrow">→</div>
-    <div class="loop-step ls-green">self.player<br>exists ✓</div>
-    <div class="arrow">→</div>
-    <div class="loop-step ls-gold">Pass 2<br>spawn NPCs</div>
-  </div>
-  <div class="box purple" style="max-width:900px; width:100%;">
-    <p class="small">🤔 <strong>Why two loops?</strong> If we tried to make Player and NPCs in ONE pass, an NPC created before the player might try to reference <code>self.player</code> before it exists → crash. Player always goes first.</p>
+        char_id <span class="op">=</span> obj<span class="op">.</span><span class="at">properties</span><span class="op">[</span><span class="st">'character_id'</span><span class="op">]</span>
+        data <span class="op">=</span> TRAINER_DATA<span class="op">.</span><span class="fn">get</span><span class="op">(</span>char_id, TRAINER_DATA<span class="op">[</span><span class="st">'o1'</span><span class="op">])</span>
+        <span class="fn">Character</span><span class="op">(</span>
+            pos<span class="op">=(</span>obj<span class="op">.</span><span class="at">x</span>, obj<span class="op">.</span><span class="at">y</span><span class="op">),</span>
+            frames<span class="op">=</span><span class="at">self</span><span class="op">.</span><span class="at">overworld_frames</span><span class="op">[</span><span class="st">'characters'</span><span class="op">][</span>obj<span class="op">.</span><span class="at">properties</span><span class="op">[</span><span class="st">'graphic'</span><span class="op">]],</span>
+            groups<span class="op">=(</span><span class="at">self</span><span class="op">.</span><span class="at">all_sprites</span>, <span class="at">self</span><span class="op">.</span><span class="at">collision_sprites</span>, <span class="at">self</span><span class="op">.</span><span class="at">character_sprites</span><span class="op">),</span>
+            facing_direction<span class="op">=</span>obj<span class="op">.</span><span class="at">properties</span><span class="op">.</span><span class="fn">get</span><span class="op">(</span><span class="st">'direction'</span>, <span class="st">'down'</span><span class="op">),</span>
+            character_data<span class="op">=</span>data,
+            player<span class="op">=</span><span class="at">self</span><span class="op">.</span><span class="at">player</span>,
+            create_dialog<span class="op">=</span><span class="at">self</span><span class="op">.</span><span class="fn">create_dialog</span>,
+            collision_sprites<span class="op">=</span><span class="at">self</span><span class="op">.</span><span class="at">collision_sprites</span>,
+            radius<span class="op">=</span>obj<span class="op">.</span><span class="at">properties</span><span class="op">.</span><span class="fn">get</span><span class="op">(</span><span class="st">'radius'</span>, <span class="nm">0</span><span class="op">),</span>
+            nurse<span class="op">=(</span>char_id <span class="op">==</span> <span class="st">'Nurse'</span><span class="op">),</span>
+            notice_sound<span class="op">=</span><span class="fn">pygame</span><span class="op">.</span><span class="fn">mixer</span><span class="op">.</span><span class="fn">Sound</span><span class="op">(</span>
+                <span class="fn">join</span><span class="op">(</span><span class="st">'..'</span>, <span class="st">'..'</span>, <span class="st">'audio'</span>, <span class="st">'notice.wav'</span><span class="op">)))</span></pre>
+    </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════
-     STEP 18 + THE REAL BUG  (slide 15)
-══════════════════════════════════════════════════ -->
+<!-- ══════════════════ STEP 18 ══════════════════ -->
 
-<!-- SLIDE 15: Step 18 + hitbox bug -->
-<div class="slide bg-bug left-align" data-section="build">
+<!-- SLIDE 22: Concept 18 -->
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — Step 18</div>
+  <h2>transition_check(): comparing the right box</h2>
+  <p style="max-width:860px;">Every sprite carries two boxes: <code>rect</code> (the full drawn image, 128×128 for the player) and <code>hitbox</code> (a tighter box used for every other collision in the game — walls, rocks, characters). Doors should be no different.</p>
+  <div class="box fire" style="max-width:860px; width:100%;">
+    <p class="small"><code>pygame.sprite.spritecollide()</code> compares <code>.rect</code> by default. Passing <code>collided=lambda a, b: a.hitbox.colliderect(b.hitbox)</code> tells it to compare hitboxes instead — matching how collisions work everywhere else in this game.</p>
+  </div>
+</div>
+
+<!-- SLIDE 23: Practice 18 -->
+<div class="slide bg-practice left-align" data-section="build">
   <div class="step-badge">
-    <div class="step-num sn-red">18</div>
-    <div>
-      <div class="step-file">📂 main.py</div>
-      <span class="step-title">transition_check() — and a REAL bug we found!</span>
-    </div>
+    <div class="step-num sn-fire">18</div>
+    <div><div class="step-file">📂 main.py</div><span class="step-title">transition_check() — your turn</span></div>
   </div>
-  <div class="two-col" style="max-width:900px;">
-    <div>
-      <pre class="red sm" style="margin:0;"><span class="kw">def</span> <span class="fn">transition_check</span>(<span class="at">self</span>)<span class="op">:</span>
-  sprites <span class="op">=</span> <span class="fn">pygame</span><span class="op">.</span><span class="fn">sprite</span><span class="op">.</span><span class="fn">spritecollide</span><span class="op">(</span>
-    <span class="at">self</span><span class="op">.</span><span class="at">player</span>, <span class="at">self</span><span class="op">.</span><span class="at">transition_sprites</span>, <span class="kw">False</span><span class="op">,</span>
-    collided<span class="op">=</span><span class="kw">lambda</span> a, b<span class="op">:</span>
-      a<span class="op">.</span><span class="at">hitbox</span><span class="op">.</span><span class="fn">colliderect</span><span class="op">(</span>b<span class="op">.</span><span class="at">hitbox</span><span class="op">))</span>
-  <span class="kw">if</span> sprites<span class="op">:</span>
-    <span class="at">self</span><span class="op">.</span><span class="fn">player</span><span class="op">.</span><span class="fn">block</span><span class="op">()</span>
-    <span class="at">self</span><span class="op">.</span><span class="at">transition_target</span> <span class="op">=</span> sprites<span class="op">[</span><span class="nm">0</span><span class="op">].</span><span class="at">target</span>
-    <span class="at">self</span><span class="op">.</span><span class="at">tint_mode</span> <span class="op">=</span> <span class="st">'tint'</span></pre>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank sm"><span class="kw">def</span> <span class="fn">transition_check</span>(<span class="at">self</span>)<span class="op">:</span>
+    <span class="cm"># TODO: your code here</span>
+    <span class="kw">pass</span>  <span class="cm"># remove this when you're done</span></pre>
+    <ul class="hint-list">
+      <li>Call <code>pygame.sprite.spritecollide(self.player, self.transition_sprites, False, collided=...)</code> comparing hitboxes.</li>
+      <li>If the result list isn't empty: <code>self.player.block()</code>, store <code>sprites[0].target</code>, set <code>self.tint_mode = 'tint'</code>.</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">Answer key</div>
+      <pre class="green sm"><span class="kw">def</span> <span class="fn">transition_check</span>(<span class="at">self</span>)<span class="op">:</span>
+    sprites <span class="op">=</span> <span class="fn">pygame</span><span class="op">.</span><span class="fn">sprite</span><span class="op">.</span><span class="fn">spritecollide</span><span class="op">(</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">player</span>, <span class="at">self</span><span class="op">.</span><span class="at">transition_sprites</span>, <span class="kw">False</span><span class="op">,</span>
+        collided<span class="op">=</span><span class="kw">lambda</span> a, b<span class="op">:</span> a<span class="op">.</span><span class="at">hitbox</span><span class="op">.</span><span class="fn">colliderect</span><span class="op">(</span>b<span class="op">.</span><span class="at">hitbox</span><span class="op">))</span>
+    <span class="kw">if</span> sprites<span class="op">:</span>
+        <span class="at">self</span><span class="op">.</span><span class="fn">player</span><span class="op">.</span><span class="fn">block</span><span class="op">()</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">transition_target</span> <span class="op">=</span> sprites<span class="op">[</span><span class="nm">0</span><span class="op">].</span><span class="at">target</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">tint_mode</span> <span class="op">=</span> <span class="st">'tint'</span></pre>
     </div>
-    <div style="display:flex; flex-direction:column; gap:0.5rem; justify-content:center;">
-      <div class="hb-demo" style="margin:0;">
-        <div class="hb-item">
-          <div class="hb-sprite"><div class="hb-full"></div></div>
-          <div class="hb-label" style="color:var(--red);">❌ default: compares <code>.rect</code></div>
-        </div>
-        <div class="hb-item">
-          <div class="hb-sprite"><div class="hb-small"></div></div>
-          <div class="hb-label" style="color:var(--green);">✅ fixed: compares <code>.hitbox</code></div>
-        </div>
-      </div>
-      <div class="box red" style="margin:0; padding:0.6rem 1rem;">
-        <p class="small">🐛 <code>spritecollide()</code> checks <code>.rect</code> by default — the player's <em>whole sprite frame</em> (128×128), way bigger than the real hitbox!</p>
-      </div>
-    </div>
-  </div>
-  <div class="box gold" style="max-width:900px; width:100%; margin-top:0.4rem;">
-    <p class="small">🔍 <strong>What actually happened:</strong> without the fix, doors triggered from tiles away — and walking into the hospital would instantly bounce you back outside, because your oversized rect already touched the exit door the moment you spawned inside! Passing <code>collided=</code> fixes both problems at once.</p>
   </div>
 </div>
 
-<!-- SLIDE 16: What you should see -->
-<div class="slide bg-build" data-section="build">
+<!-- SLIDE 24: Checkpoint -->
+<div class="slide bg-recap" data-section="build">
   <div class="tag tag-build">Checkpoint</div>
-  <h2>What you should see when it all works</h2>
-  <ul style="margin: 0.8rem auto; max-width:720px;">
+  <h2>Run the game — you should see</h2>
+  <ul style="margin: 0.7rem auto; max-width:720px;">
     <li>🌍 The tile-based world loads with grass, paths, and buildings</li>
     <li>🌊 Water ripples, coast edges animate around the shoreline</li>
-    <li>🚧 You collide with buildings and the edge of the world</li>
-    <li>🚪 Walking through a doorway fades to black → loads a new area</li>
+    <li>🚧 Collisions against buildings and the edge of the world</li>
+    <li>🚪 Walking into a doorway fades to black, then loads a new area</li>
     <li>💬 Pressing SPACE near an NPC shows their dialog</li>
   </ul>
   <div class="box green" style="max-width:720px; text-align:center;">
-    <p><strong>Everything above working? Nice — you're ready for the extension challenges!</strong></p>
+    <p><strong>All five working? Move on to the extension challenges.</strong></p>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════
-     EXTENSION CHALLENGES  (slides 17–20)
-══════════════════════════════════════════════════ -->
+<!-- ══════════════════ EXTENSION ══════════════════ -->
 
-<!-- SLIDE 17: Transition to extensions -->
 <div class="slide bg-extend" data-section="extend">
   <div class="icon-big">🧩</div>
   <div class="tag tag-extend">Extension challenges</div>
-  <h1>All done?<br><span style="color:var(--purple);">Go further</span></h1>
-  <p class="subtitle" style="color:var(--gold);">4 bonus challenges — try them once every TODO above is working</p>
+  <h1>Once everything<br><span style="color:var(--purple);">above works</span></h1>
+  <p class="subtitle" style="color:var(--gold);">4 small changes — try them after every TODO in this session is filled in</p>
 </div>
 
-<!-- SLIDE 18: Challenges 1+2 -->
 <div class="slide bg-extend left-align" data-section="extend">
   <div class="tag tag-extend">Try it yourself</div>
   <h2>Challenge 1 &amp; 2</h2>
-  <div class="creativity-grid" style="margin-top:0.8rem;">
+  <div class="creativity-grid" style="margin-top:0.7rem;">
     <div class="c-card cv-purple">
       <div class="c-letter">Challenge 1</div>
       <h4>🚪 Different starting room</h4>
-      <p>In <code>__init__</code>, change <code>self.setup(self.tmx_maps['world'], 'house')</code> so the second argument is <code>'world'</code> instead. Where do you spawn now?</p>
+      <p>In <code>__init__</code>, change <code>self.setup(self.tmx_maps['world'], 'house')</code> so the second argument is <code>'world'</code>. Where do you spawn now, and why?</p>
       <span class="activate">📂 main.py → __init__</span>
     </div>
     <div class="c-card cv-cyan">
       <div class="c-letter">Challenge 2</div>
-      <h4>🖨️ Debug mode</h4>
+      <h4>🖨️ Print the raw object data</h4>
       <p>Add <code>print(obj.name, obj.properties)</code> inside the Entities loop. Look at the terminal — what data does each NPC actually carry?</p>
       <span class="activate">📂 main.py → setup(), Entities loop</span>
     </div>
   </div>
-  <div class="box gold" style="margin-top:0.8rem;">
-    <p class="small">💡 This is exactly how we found the hospital bug earlier — printing what's really inside the map data!</p>
+  <div class="box gold" style="margin-top:0.7rem;">
+    <p class="small">💡 Printing an object's raw <code>properties</code> is the fastest way to see exactly what a map file stores — useful any time something doesn't behave the way you expect.</p>
   </div>
 </div>
 
-<!-- SLIDE 19: Challenges 3+4 -->
 <div class="slide bg-extend left-align" data-section="extend">
   <div class="tag tag-extend">Try it yourself</div>
   <h2>Challenge 3 &amp; 4</h2>
-  <div class="creativity-grid" style="margin-top:0.8rem;">
+  <div class="creativity-grid" style="margin-top:0.7rem;">
     <div class="c-card cv-water">
       <div class="c-letter">Challenge 3</div>
-      <h4>🌊 Random water offset</h4>
-      <p>In <code>AnimatedSprite.__init__</code>, change <code>self.frame_index = 0</code> to <code>self.frame_index = uniform(0, len(frames))</code> (import <code>uniform</code> from <code>random</code>). Do all tiles still ripple in sync?</p>
+      <h4>🌊 Offset each tile's start frame</h4>
+      <p>In <code>AnimatedSprite.__init__</code>, replace <code>self.frame_index = 0</code> with <code>self.frame_index = uniform(0, len(frames))</code> (import <code>uniform</code> from <code>random</code>). Does every tile still ripple in the same beat?</p>
       <span class="activate">📂 sprites.py → AnimatedSprite</span>
     </div>
     <div class="c-card cv-lime">
       <div class="c-letter">Challenge 4</div>
-      <h4>🐌 Slow coast animation</h4>
-      <p>In <code>AnimatedSprite.animate()</code>, change <code>ANIMATION_SPEED</code> to <code>ANIMATION_SPEED * 0.5</code>. What does the coastline look like now?</p>
+      <h4>🐌 Halve the animation speed</h4>
+      <p>In <code>animate()</code>, change <code>ANIMATION_SPEED * dt</code> to <code>ANIMATION_SPEED * 0.5 * dt</code>. What happens to the coastline?</p>
       <span class="activate">📂 sprites.py → AnimatedSprite.animate()</span>
     </div>
   </div>
 </div>
 
-<!-- SLIDE 20: Answer key -->
 <div class="slide bg-extend" data-section="extend">
   <div class="icon-big">🔑</div>
-  <div class="tag tag-gold">Stuck? Out of time?</div>
-  <h2>The answer key is right there</h2>
-  <p style="max-width:640px;">A complete, running version of today's game lives outside the <code>Python-Monsters</code> folder:</p>
+  <div class="tag tag-gold">Stuck, or short on time?</div>
+  <h2>A complete version already runs</h2>
+  <p style="max-width:640px;">Outside the <code>Python-Monsters</code> folder:</p>
   <pre class="gold" style="max-width:500px;">finished/session-3/</pre>
-  <p class="small" style="max-width:640px;">Run it the same way — <code>cd finished/session-3</code> then <code>python main.py</code> — and compare it side-by-side with your own files.</p>
+  <p class="small" style="max-width:640px;"><code>cd finished/session-3</code> then <code>python main.py</code> — compare it against your own files line by line.</p>
 </div>
 
-<!-- ══════════════════════════════════════════════════
-     FINAL SUMMARY  (slide 21)
-══════════════════════════════════════════════════ -->
-
-<!-- SLIDE 21: Summary with line ranges -->
-<div class="slide bg-build" data-section="build" style="padding:28px 80px; justify-content:flex-start;">
-  <div class="tag tag-build" style="margin-bottom:0.3rem;">Session 3 — done!</div>
-  <h2 style="margin-bottom:0.3rem;">Everything you built today</h2>
+<!-- SLIDE: Final summary -->
+<div class="slide bg-recap" data-section="build" style="padding:28px 80px; justify-content:flex-start;">
+  <div class="tag tag-build" style="margin-bottom:0.3rem;">Session 3 — done</div>
+  <h2 style="margin-bottom:0.3rem;">What's actually in your files now</h2>
 
   <div class="stat-grid" style="margin:0.4rem 0;">
     <div class="stat-card" style="padding:0.5rem;"><div class="s-num">3</div><div class="s-lbl">new sprite classes</div></div>
@@ -927,23 +936,23 @@
 
   <table class="range-table" style="font-size:0.8rem;">
     <tr><th>Step</th><th>What it does</th><th>File</th><th>Lines</th></tr>
-    <tr class="done"><td class="step">14</td><td>AnimatedSprite</td><td>sprites.py</td><td class="lines">40–56</td></tr>
-    <tr class="done"><td class="step">15</td><td>MonsterPatchSprite</td><td>sprites.py</td><td class="lines">59–67</td></tr>
-    <tr class="done"><td class="step">16</td><td>TransitionSprite</td><td>sprites.py</td><td class="lines">70–79</td></tr>
-    <tr class="done"><td class="step">17a</td><td>clear all groups</td><td>main.py</td><td class="lines">119–123</td></tr>
-    <tr class="done"><td class="step">17b</td><td>terrain tiles</td><td>main.py</td><td class="lines">125–129</td></tr>
-    <tr class="done"><td class="step">17c</td><td>animated water</td><td>main.py</td><td class="lines">131–136</td></tr>
-    <tr class="done"><td class="step">17d</td><td>animated coast</td><td>main.py</td><td class="lines">138–144</td></tr>
-    <tr class="done"><td class="step">17e</td><td>objects (top / collidable)</td><td>main.py</td><td class="lines">146–153</td></tr>
-    <tr class="done"><td class="step">17f</td><td>transition doorways</td><td>main.py</td><td class="lines">155–161</td></tr>
-    <tr class="done"><td class="step">17g</td><td>invisible collision borders</td><td>main.py</td><td class="lines">163–167</td></tr>
-    <tr class="done"><td class="step">17h</td><td>monster patches</td><td>main.py</td><td class="lines">169–177</td></tr>
-    <tr class="done"><td class="step">17i</td><td>entities — player + NPCs (2-pass)</td><td>main.py</td><td class="lines">179–204</td></tr>
-    <tr class="done"><td class="step">18</td><td>transition_check() (hitbox-fixed)</td><td>main.py</td><td class="lines">206–218</td></tr>
+    <tr><td class="step">14</td><td>AnimatedSprite</td><td>sprites.py</td><td class="lines">40–56</td></tr>
+    <tr><td class="step">15</td><td>MonsterPatchSprite</td><td>sprites.py</td><td class="lines">59–67</td></tr>
+    <tr><td class="step">16</td><td>TransitionSprite</td><td>sprites.py</td><td class="lines">70–79</td></tr>
+    <tr><td class="step">17a</td><td>clear all groups</td><td>main.py</td><td class="lines">119–123</td></tr>
+    <tr><td class="step">17b</td><td>terrain tiles</td><td>main.py</td><td class="lines">125–129</td></tr>
+    <tr><td class="step">17c</td><td>animated water</td><td>main.py</td><td class="lines">131–136</td></tr>
+    <tr><td class="step">17d</td><td>animated coast</td><td>main.py</td><td class="lines">138–144</td></tr>
+    <tr><td class="step">17e</td><td>objects (top / collidable)</td><td>main.py</td><td class="lines">146–153</td></tr>
+    <tr><td class="step">17f</td><td>transition doorways</td><td>main.py</td><td class="lines">155–161</td></tr>
+    <tr><td class="step">17g</td><td>invisible collision borders</td><td>main.py</td><td class="lines">163–167</td></tr>
+    <tr><td class="step">17h</td><td>monster patches</td><td>main.py</td><td class="lines">169–177</td></tr>
+    <tr><td class="step">17i</td><td>entities — player + NPCs, two passes</td><td>main.py</td><td class="lines">179–204</td></tr>
+    <tr><td class="step">18</td><td>transition_check()</td><td>main.py</td><td class="lines">206–218</td></tr>
   </table>
 
   <div class="box fire" style="text-align:center; margin-top:0.5rem; padding:0.6rem 1.3rem; max-width:900px;">
-    <p style="font-size:1rem;"><strong>Session 4 →</strong> Designing your own monsters! Stats, abilities, and data-driven design with Python dictionaries.</p>
+    <p style="font-size:1rem;"><strong>Session 4 →</strong> designing your own monsters — stats, abilities, and data stored as Python dictionaries.</p>
   </div>
 </div>
 
@@ -955,6 +964,12 @@
 <div id="slide-counter"></div>
 
 <script>
+  function toggleAnswer(btn) {
+    const block = btn.nextElementSibling;
+    block.classList.toggle('shown');
+    btn.textContent = block.classList.contains('shown') ? '🙈 Hide Answer' : '✅ Reveal Answer Key';
+  }
+
   const slides   = document.querySelectorAll('.slide');
   const nav      = document.getElementById('nav');
   const counter  = document.getElementById('slide-counter');
