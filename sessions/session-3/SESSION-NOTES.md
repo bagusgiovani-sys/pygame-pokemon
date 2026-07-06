@@ -205,7 +205,8 @@ Note: use `.get()` with defaults for `direction`/`radius` — the Nurse NPC in `
 ```python
 def transition_check(self):
     sprites = pygame.sprite.spritecollide(
-        self.player, self.transition_sprites, False)
+        self.player, self.transition_sprites, False,
+        collided=lambda a, b: a.hitbox.colliderect(b.hitbox))
     if sprites:
         self.player.block()
         self.transition_target = sprites[0].target
@@ -236,6 +237,8 @@ NPCs (Characters) need a reference to `self.player` when they're created. If we 
 
 ### What is `spritecollide`?
 `pygame.sprite.spritecollide(sprite, group, dokill)` returns a list of all sprites in `group` whose `rect` overlaps `sprite.rect`. If `dokill=True` it removes the colliding sprites. We use `False` so transition zones persist.
+
+By default it compares `.rect`, but our player's `.rect` is the full sprite frame (128x128) — much bigger than the `.hitbox` (64x68) used for movement collision everywhere else. If we don't override this, doorways trigger from several tiles away, and a player can spawn already overlapping the exit door on the other side of a transition (bouncing straight back out). Passing `collided=lambda a, b: a.hitbox.colliderect(b.hitbox)` makes it compare hitboxes instead, matching the rest of the collision logic.
 
 ---
 

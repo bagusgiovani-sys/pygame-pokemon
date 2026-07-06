@@ -242,9 +242,16 @@ class Game:
 	# │ Check if the player is standing on a transition zone.   │
 	# │                                                         │
 	# │ 1. Use pygame.sprite.spritecollide to find any          │
-	# │    transition sprites the player overlaps:              │
+	# │    transition sprites the player overlaps. Pass a       │
+	# │    collided= function that compares HITBOXES, not the   │
+	# │    default rects — the player's rect is the full 128x128│
+	# │    sprite frame, much bigger than the real hitbox, so    │
+	# │    the door would trigger from far away (and could      │
+	# │    immediately re-trigger the exit right after spawning │
+	# │    inside a building):                                  │
 	# │      sprites = pygame.sprite.spritecollide(             │
-	# │          self.player, self.transition_sprites, False)   │
+	# │          self.player, self.transition_sprites, False,   │
+	# │          collided=lambda a, b: a.hitbox.colliderect(b.hitbox))│
 	# │ 2. If sprites is non-empty:                             │
 	# │      self.player.block()                                │
 	# │      self.transition_target = sprites[0].target        │
