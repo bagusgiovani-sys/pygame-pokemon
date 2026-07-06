@@ -258,3 +258,22 @@ NPCs (Characters) need a reference to `self.player` when they're created. If we 
 3. **Random water offset** — In `AnimatedSprite.__init__`, after storing `self.frame_index = 0`, change it to `self.frame_index = uniform(0, len(frames))` (import `uniform` from random). Do all water tiles still ripple in sync?
 
 4. **Slow coast animation** — In `AnimatedSprite.animate()`, change `ANIMATION_SPEED` to `ANIMATION_SPEED * 0.5`. What does it look like?
+
+---
+
+## Answer key
+
+If you get stuck or run out of time, the complete runnable reference build lives outside the `Python-Monsters` folder, in the project root:
+
+```text
+finished/session-3/
+```
+
+Run it the same way as your own session-3 folder:
+
+```bash
+cd finished/session-3
+c:/python313/python.exe main.py
+```
+
+It has the exact same file layout (`main.py`, `sprites.py`, `entities.py`, `groups.py`, `settings.py`, `support.py`, `timer.py`, `dialog.py`) with every `TODO` step above filled in, so you can open it side-by-side and compare against your own code.
