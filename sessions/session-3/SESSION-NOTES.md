@@ -185,16 +185,18 @@ for obj in tmx_map.get_layer_by_name('Entities'):
             pos=(obj.x, obj.y),
             frames=self.overworld_frames['characters'][obj.properties['graphic']],
             groups=(self.all_sprites, self.collision_sprites, self.character_sprites),
-            facing_direction=obj.properties['direction'],
+            facing_direction=obj.properties.get('direction', 'down'),
             character_data=data,
             player=self.player,
             create_dialog=self.create_dialog,
             collision_sprites=self.collision_sprites,
-            radius=obj.properties['radius'],
+            radius=obj.properties.get('radius', 0),
             nurse=(char_id == 'Nurse'),
             notice_sound=pygame.mixer.Sound(
                 join('..', '..', 'audio', 'notice.wav')))
 ```
+
+Note: use `.get()` with defaults for `direction`/`radius` — the Nurse NPC in `hospital2.tmx` doesn't define either property, and a direct `['direction']` lookup crashes when that map loads.
 
 ---
 

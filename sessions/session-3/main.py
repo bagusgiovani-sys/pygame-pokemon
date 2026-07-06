@@ -221,17 +221,19 @@ class Game:
 		#                    obj.properties['graphic']],
 		#         groups=(self.all_sprites, self.collision_sprites,
 		#                 self.character_sprites),
-		#         facing_direction=obj.properties['direction'],
+		#         facing_direction=obj.properties.get('direction', 'down'),
 		#         character_data=data,
 		#         player=self.player,
 		#         create_dialog=self.create_dialog,
 		#         collision_sprites=self.collision_sprites,
-		#         radius=obj.properties['radius'],
+		#         radius=obj.properties.get('radius', 0),
 		#         nurse=(char_id == 'Nurse'),
 		#         notice_sound=pygame.mixer.Sound(
 		#             join('..', '..', 'audio', 'notice.wav')))
 		# Hint: Spawn the Player BEFORE NPCs so self.player exists.
 		#       Do a first pass for 'Player', then a second for NPCs.
+		# Note: use .get() with defaults for 'direction'/'radius' — the
+		#       Nurse NPC in hospital2.tmx doesn't define either property.
 		# TODO: your code here
 		pass  # remove this when you're done
 
