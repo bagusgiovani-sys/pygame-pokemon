@@ -1,127 +1,148 @@
-# Session 5 — Battle! Part 1: Taking Turns
+# Session 5 — Polish and Make It Yours
 
 ## Goal
-Build the `Battle` class so that battles start from trainer encounters and grass patches. By the end of today, you can walk into tall grass, fight a battle, select attacks, and see monsters taking turns.
+Add music and sound effects, trigger the evolution animation, and design your own custom monster. By the end of today, you have a complete, polished game — and it has a piece of you in it.
 
 ## What you are building today
-- `battle.py` — the core battle system (setup, turn order, input, AI)
-- `main.py` — wire battles to trainer dialogs and grass encounters
+- `game_data.py` — add your own custom monster
+- `main.py` — wire up real audio and the evolution system
 
 ## Key concepts
-- **Game states**: the game switches between "overworld mode" and "battle mode"
-- **Initiative system**: monsters fill up a bar based on their speed — faster monsters get turns sooner (instead of strict alternating turns like in classic Pokemon)
-- **match/case**: Python's pattern matching — a cleaner way to write big if/elif chains
-- **Sprite groups**: using different groups to separate player monsters from opponent monsters
+- **Audio in Pygame**: loading sound files, playing music loops, stopping sounds
+- **Game feel**: how sound and animation make a game feel alive
+- **Extending a codebase**: adding new features to a working system without breaking it
+- **Evolution as reward**: triggering a special moment that celebrates the player's progress
 
 ---
 
-## Why an initiative system instead of alternating turns?
+## Why does sound matter so much?
 
-In a simple RPG, you and the enemy just alternate turns — you go, they go, repeat. But that feels boring and predictable. With an initiative bar, a level-50 Gulfin (speed 2.0) will get its turn TWICE before a slow Charmadillo (speed 1.1) gets one turn. This makes speed a meaningful stat and battles feel dynamic.
+Try this: watch any video game footage with sound, then watch the same clip on mute. The game feels completely dead without audio. Sound tells the player "your attack landed", "danger is coming", "you did it!". It communicates information AND emotion simultaneously.
 
-Think of it like a racing game — monsters are constantly filling their bar, and whoever fills it first goes next.
+Even simple games feel professional with good sound design. Adding music loops and hit sounds today will make your game feel like a real game — not just a coding exercise.
 
 ---
 
 ## Step-by-step
 
-### Step 1 — Build `__init__` in `battle.py`
-You receive 8 parameters. Store them all. Then create:
-- Three sprite groups: `BattleSprites()`, and two `pygame.sprite.Group()`
-- Control variables: `current_monster`, `selection_mode`, `selected_attack`, `selection_side`, `battle_over`
-- An `indexes` dict with 5 keys all set to 0
-- A `timers` dict with one entry: `'opponent delay'`
-- Then call `self.setup()`
+### Step 1 — Add your custom monster in `game_data.py`
 
-### Step 2 — Build `setup()`
-Loop through `self.monster_data` for both `'player'` and `'opponent'`. For each side, only process monsters with key <= 2 (first 3 slots). Call `create_monster()` for each. After placing the opponent monsters, delete their entries from `monster_data['opponent']` — they are now on-screen sprites.
+Find the YOUR CODE placeholder at the end of `MONSTER_DATA`. Replace `'YourMonsterName'` with something creative!
 
-### Step 3 — Build `create_monster()`
-This function places one monster on screen with all its UI. The hints in the file walk you through it in order:
-1. Set `monster.paused = False`
-2. Get frames, flip horizontally if entity == 'player'
-3. Pick position from `BATTLE_POSITIONS`
-4. Pick groups based on entity
-5. Create `MonsterSprite`, then `MonsterOutlineSprite`, name, level, stats sprites
+**Design tips:**
+- Give it a theme: lava creature? crystal insect? storm cloud?
+- Match stats to its theme: a fast, fragile creature has high speed + low health; a rock creature has high defense + low speed
+- Pick a type that fits: fire is aggressive, water is balanced, plant is defensive/supportive
 
-### Step 4 — Build `check_active()`
-Loop all player and opponent sprites. If any monster's initiative >= 100:
-- Call `update_all_monsters('pause')` to freeze everything
-- Reset that monster's initiative to 0
-- Call `set_highlight(True)` to flash it
-- Store it as `self.current_monster`
-- If it's a player monster: set `selection_mode = 'general'`
-- If it's an opponent: activate the `'opponent delay'` timer
+**Stat guide:**
+| Role | health | attack | defense | speed |
+|------|--------|--------|---------|-------|
+| Glass cannon | 10-14 | 5-6 | 5-7 | 2.5-3.0 |
+| Tank | 25-30 | 2-3 | 13-15 | 1.0-1.2 |
+| Balanced | 16-20 | 3-4 | 9-11 | 1.5-1.8 |
 
-### Step 5 — Build `update_all_monsters(option)`
-One loop through all sprites in both groups. Set `monster.paused` based on the option.
+**Abilities**: stick to existing ones — `scratch`, `fire`, `spark`, `splash`, `ice`, `heal`, `explosion`, `battlecry`
 
-### Step 6 — Build `input()` (fight + attacks modes first)
-The structure is already there with the match/case. Focus on getting these working:
+After you are done: add your monster to `self.player_monsters` in `main.py` so it appears in your team!
 
-**K_DOWN and K_UP**: change the current index with wrapping (`% limiter`)
+### Step 2 — Add audio in `import_assets()`
 
-**K_SPACE in 'general' mode**:
-- Index 0 (fight): switch to `'attacks'` mode
-- Index 1 (defend): set `monster.defending = True`, resume all, clear `current_monster`
-- Index 2 (switch): switch to `'switch'` mode (EXTENSION)
-- Index 3 (catch): switch to `'target'` mode, set side to `'opponent'` (EXTENSION)
+Find the TODO comments in `import_assets()`. The temporary silent audio dict is there so the game doesn't crash before you replace it. Once you add real audio:
 
-**K_SPACE in 'attacks' mode**:
-- Get the selected ability name from `get_abilities(include_all=False)`
-- Switch to `'target'` mode
-- Set `selected_attack` to that ability
-- Set `selection_side` from `ATTACK_DATA[attack]['target']`
+1. Delete or comment out the `SilentSound` block (lines starting with `self.audio = {}`)
+2. Add these two lines:
+```python
+self.audio = audio_importer('..', '..', 'audio')
+self.start_animation_frames = import_folder('..', '..', 'graphics', 'other', 'star animation')
+```
 
-**K_SPACE in 'target' mode**:
-- Get the target sprite based on `selection_side`
-- Call `current_monster.activate_attack(target_sprite, selected_attack)`
-- Clear `selected_attack`, `current_monster`, `selection_mode` to None
+The game will now have real music and sound effects!
 
-**K_ESCAPE**: go back to `'general'` if in attacks, switch, or target mode
+### Step 3 — Add `from evolution import Evolution` import
 
-**Reset indexes** to 0 after any confirmed action.
+At the top of `main.py`, find the YOUR CODE Step 3 comment. Uncomment the import line.
 
-### Step 7 — Build `opponent_attack()`
-Pick a random ability using `choice(self.current_monster.monster.get_abilities())`. Check `ATTACK_DATA[ability]['target']` — if it's `'player'`, the AI attacks the player's own monster (wait, that doesn't make sense... unless the AI uses heal!). More commonly it attacks `player_sprites`. Use `choice()` to pick a random target sprite.
+Then in `__init__`, find the other Step 3 comment and add `self.evolution = None`.
 
-### Step 8 — Add `end_dialog` battle launching in `main.py`
-Find the YOUR CODE Step 8 block. Replace the simple `unblock()` with the full logic:
-1. If nurse: heal all monsters, unblock
-2. If trainer not defeated: stop music, start battle music, create `Battle(...)`, set tint
-3. If already defeated: just unblock
+### Step 4 — Build `check_evolution()` in `main.py`
 
-### Step 9 — Add `end_battle` in `main.py`
-Stop battle music, set transition to `'level'`, set tint mode. If there's a character: mark defeated and show dialog. Otherwise: unblock player and restart overworld music.
+This is called after every battle ends. It checks if any monster in your team earned enough levels to evolve.
 
-### Step 10 — Add `monster_encounter` in `main.py`
-Check if the player is touching a grass patch and moving. If so, create a Battle with random-level monsters from that patch.
+The logic (from the commented-out hints):
+1. Loop through `self.player_monsters.items()`
+2. If a monster has an evolution (`monster.evolution` is not None) AND its current level matches the required evolution level (`monster.level == monster.evolution[1]`):
+   - Play the evolution sound: `self.audio['evolution'].play()`
+   - Block the player: `self.player.block()`
+   - Create the Evolution overlay and store it: `self.evolution = Evolution(...)`
+   - Replace the monster in the dict with the evolved form: `self.player_monsters[index] = Monster(monster.evolution[0], monster.level)`
+3. If NO evolution happened: restart overworld music
+
+**Evolution constructor arguments:**
+```python
+Evolution(
+    self.monster_frames['monsters'],  # all monster animation frames
+    monster.name,                      # which monster is evolving FROM
+    monster.evolution[0],              # which monster it becomes
+    self.fonts['bold'],                # font for the text
+    self.end_evolution,                # callback when animation finishes
+    self.start_animation_frames)       # the star particles
+```
+
+### Step 5 — Build `end_evolution()` in `main.py`
+
+Called when the evolution animation finishes. Four lines:
+```python
+self.evolution = None
+self.player.unblock()
+self.audio['evolution'].stop()
+self.audio['overworld'].play(-1)
+```
 
 ---
 
 ## Testing
 
-1. Run `main.py`
-2. Walk into a trainer's line of sight — dialog should appear, then battle should start
-3. In battle: press DOWN to cycle through choices, SPACE to select FIGHT
-4. Select an attack with DOWN/SPACE
-5. Select a target with SPACE — the attack animation should play!
-6. Watch the opponent's bar fill up and their turn happen automatically
+1. Run the game — you should hear the overworld music!
+2. Walk into tall grass — the music should switch to battle music
+3. Win a battle — music should switch back to overworld
+4. Level up Sparchu to level 15 (fight a few battles) — the evolution animation should trigger!
+5. Open the monster index (Enter key) — check that your custom monster appears in the team
+
+**Testing evolution quickly**: In `__init__`, temporarily set `Monster('Sparchu', 14)` with `monster.xp += 2000` — it will level up on the first battle and trigger evolution.
 
 ---
 
-## What you should see when done
+## What you see when done
 
-- Battles start from trainer encounters and grass patches
-- Turn order is based on speed (watch the initiative bars at the bottom of each monster)
-- You can select FIGHT → pick an attack → pick a target
-- The opponent takes a turn automatically after a short delay
-- The battle ends and returns to the overworld (even though damage isn't full yet — that's Session 6!)
+You have built a complete game:
+- Overworld with animated maps and characters
+- Dialog system with trainers that challenge you
+- Battle system with initiative turns, type matchups, and faint/replace logic
+- XP and leveling system
+- Evolution animation
+- Full audio with music and sound effects
+- Your own custom monster in the game world
 
 ---
 
-## Extension ideas
-- Implement the SWITCH action in `input()` — look at `draw_switch()` for how the menu works
-- Implement the DEFEND action (it's actually quite simple — just set `monster.defending = True`)
-- Add a "catch" action that calls `delayed_kill` on the opponent if it's low health
-- Make the AI smarter: pick a healing move if health is below 50%
+## You built this! What's next?
+
+Here are some ideas for where you could take this further:
+
+### Battle polish
+- Implement a SWITCH action so you can swap your active monster mid-battle instead of waiting for it to faint
+- Implement a CATCH action to capture wild monsters instead of always defeating them
+- Add a level-up notification in battle ("Sparchu grew to level 16!")
+- Smarter AI: use type advantages when picking attacks
+
+### Game world
+- Add a second custom monster (maybe an evolution of your first?)
+- Add dialog after winning a battle
+- Add a "you lose" screen instead of just quitting
+
+### Sound and feel
+- Add a battle win fanfare sound
+- Add a footstep sound when walking
+- Make the screen flash white when a monster faints
+
+You understand every function in this codebase. You could add any of these features yourself — and now you know how.

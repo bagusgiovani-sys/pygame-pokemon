@@ -20,6 +20,13 @@ from battle import Battle
 from timer import Timer
 from monster import Monster
 
+# ┌─────────────────────────────────────────────────────────┐
+# │ YOUR CODE — Step 3: Import Evolution                    │
+# │ Hint: from evolution import Evolution                   │
+# └─────────────────────────────────────────────────────────┘
+# TODO: add your import here
+# from evolution import Evolution
+
 class Game:
 	def __init__(self):
 		pygame.init()
@@ -28,7 +35,7 @@ class Game:
 		self.clock = pygame.time.Clock()
 		self.encounter_timer = Timer(2000, func = self.monster_encounter)
 
-		# player monsters (from session 4)
+		# player monsters
 		self.player_monsters = {
 			0: Monster('Ivieron', 32),
 			1: Monster('Atrox', 15),
@@ -58,6 +65,11 @@ class Game:
 
 		self.import_assets()
 		self.setup(self.tmx_maps['world'], 'house')
+
+		# ┌─────────────────────────────────────────────────────────┐
+		# │ PRE-SCAFFOLD — teacher walks through this, you use it   │
+		# └─────────────────────────────────────────────────────────┘
+		# Start the overworld music looping. -1 means loop forever.
 		self.audio['overworld'].play(-1)
 
 		# overlays
@@ -66,6 +78,19 @@ class Game:
 		self.index_open = False
 		self.battle = None
 
+		# ┌─────────────────────────────────────────────────────────┐
+		# │ YOUR CODE — Step 3: Add self.evolution = None           │
+		# │ Hint: This stores the Evolution overlay when active.    │
+		# └─────────────────────────────────────────────────────────┘
+		# TODO: self.evolution = None
+
+	# ┌─────────────────────────────────────────────────────────┐
+	# │ YOUR CODE — Step 2: Add audio and star frames loading   │
+	# │ Hint: self.audio = audio_importer('..', '..', 'audio')  │
+	# │       self.start_animation_frames = import_folder(      │
+	# │           '..', '..', 'graphics', 'other',              │
+	# │           'star animation')                             │
+	# └─────────────────────────────────────────────────────────┘
 	def import_assets(self):
 		self.tmx_maps = tmx_importer('..', '..', 'data', 'maps')
 
@@ -91,50 +116,55 @@ class Game:
 		}
 		self.bg_frames = import_folder_dict('..', '..', 'graphics', 'backgrounds')
 
-		self.audio = audio_importer('..', '..', 'audio')
+		# TODO: load audio files
+		# self.audio = audio_importer('..', '..', 'audio')
+
+		# TODO: load star animation frames (for the evolution screen)
+		# self.start_animation_frames = import_folder('..', '..', 'graphics', 'other', 'star animation')
+
+		# Temporary audio dict so the game runs before you add the lines above
+		self.audio = {}
+		import pygame.mixer
+		class SilentSound:
+			def play(self, loops=0): pass
+			def stop(self): pass
+		for name in ['overworld', 'battle', 'notice', 'evolution', 'fire', 'green', 'scratch', 'explosion', 'splash', 'ice']:
+			self.audio[name] = SilentSound()
+		self.start_animation_frames = []
 
 	def setup(self, tmx_map, player_start_pos):
-		# clear the map
 		for group in (self.all_sprites, self.collision_sprites, self.transition_sprites, self.character_sprites):
 			group.empty()
 
-		# terrain
 		for layer in ['Terrain', 'Terrain Top']:
 			for x, y, surf in tmx_map.get_layer_by_name(layer).tiles():
 				Sprite((x * TILE_SIZE, y * TILE_SIZE), surf, self.all_sprites, WORLD_LAYERS['bg'])
 
-		# water
 		for obj in tmx_map.get_layer_by_name('Water'):
 			for x in range(int(obj.x), int(obj.x + obj.width), TILE_SIZE):
 				for y in range(int(obj.y), int(obj.y + obj.height), TILE_SIZE):
 					AnimatedSprite((x,y), self.overworld_frames['water'], self.all_sprites, WORLD_LAYERS['water'])
 
-		# coast
 		for obj in tmx_map.get_layer_by_name('Coast'):
 			terrain = obj.properties['terrain']
 			side = obj.properties['side']
 			AnimatedSprite((obj.x, obj.y), self.overworld_frames['coast'][terrain][side], self.all_sprites, WORLD_LAYERS['bg'])
 
-		# objects
 		for obj in tmx_map.get_layer_by_name('Objects'):
 			if obj.name == 'top':
 				Sprite((obj.x, obj.y), obj.image, self.all_sprites, WORLD_LAYERS['top'])
 			else:
 				CollidableSprite((obj.x, obj.y), obj.image, (self.all_sprites, self.collision_sprites))
 
-		# transition objects
 		for obj in tmx_map.get_layer_by_name('Transition'):
 			TransitionSprite((obj.x, obj.y), (obj.width, obj.height), (obj.properties['target'], obj.properties['pos']), self.transition_sprites)
 
-		# collision objects
 		for obj in tmx_map.get_layer_by_name('Collisions'):
 			BorderSprite((obj.x, obj.y), pygame.Surface((obj.width, obj.height)), self.collision_sprites)
 
-		# grass patches
 		for obj in tmx_map.get_layer_by_name('Monsters'):
 			MonsterPatchSprite((obj.x, obj.y), obj.image, (self.all_sprites, self.monster_sprites), obj.properties['biome'], obj.properties['monsters'], obj.properties['level'])
 
-		# entities
 		for obj in tmx_map.get_layer_by_name('Entities'):
 			if obj.name == 'Player':
 				if obj.properties['pos'] == player_start_pos:
@@ -158,7 +188,6 @@ class Game:
 					nurse = obj.properties['character_id'] == 'Nurse',
 					notice_sound = self.audio['notice'])
 
-	# dialog system
 	def input(self):
 		if not self.dialog_tree and not self.battle:
 			keys = pygame.key.get_just_pressed()
@@ -178,42 +207,29 @@ class Game:
 		if not self.dialog_tree:
 			self.dialog_tree = DialogTree(character, self.player, self.all_sprites, self.fonts['dialog'], self.end_dialog)
 
-	# ┌─────────────────────────────────────────────────────────┐
-	# │ YOUR CODE — Step 8: Build end_dialog(character)         │
-	# │ Hint: if character.nurse: heal all player_monsters      │
-	# │       (set health and energy to max), then unblock.     │
-	# │       elif not character.character_data['defeated']:    │
-	# │           stop overworld music, play battle music,      │
-	# │           create a Battle and store as transition_target,│
-	# │           set tint_mode = 'tint'                        │
-	# │       else: just unblock the player.                    │
-	# └─────────────────────────────────────────────────────────┘
 	def end_dialog(self, character):
 		self.dialog_tree = None
-		# TODO: your code here
-		# if character.nurse:
-		#     for monster in self.player_monsters.values():
-		#         monster.health = monster.get_stat('max_health')
-		#         monster.energy = monster.get_stat('max_energy')
-		#     self.player.unblock()
-		# elif not character.character_data['defeated']:
-		#     self.audio['overworld'].stop()
-		#     self.audio['battle'].play(-1)
-		#     self.transition_target = Battle(
-		#         player_monsters = self.player_monsters,
-		#         opponent_monsters = character.monsters,
-		#         monster_frames = self.monster_frames,
-		#         bg_surf = self.bg_frames[character.character_data['biome']],
-		#         fonts = self.fonts,
-		#         end_battle = self.end_battle,
-		#         character = character,
-		#         sounds = self.audio)
-		#     self.tint_mode = 'tint'
-		# else:
-		#     self.player.unblock()
-		self.player.unblock()  # remove this basic version when you add yours above!
+		if character.nurse:
+			for monster in self.player_monsters.values():
+				monster.health = monster.get_stat('max_health')
+				monster.energy = monster.get_stat('max_energy')
+			self.player.unblock()
+		elif not character.character_data['defeated']:
+			self.audio['overworld'].stop()
+			self.audio['battle'].play(-1)
+			self.transition_target = Battle(
+				player_monsters = self.player_monsters,
+				opponent_monsters = character.monsters,
+				monster_frames = self.monster_frames,
+				bg_surf = self.bg_frames[character.character_data['biome']],
+				fonts = self.fonts,
+				end_battle = self.end_battle,
+				character = character,
+				sounds = self.audio)
+			self.tint_mode = 'tint'
+		else:
+			self.player.unblock()
 
-	# transition system
 	def transition_check(self):
 		sprites = pygame.sprite.spritecollide(self.player, self.transition_sprites, False)
 		if sprites:
@@ -242,57 +258,65 @@ class Game:
 		self.display_surface.blit(self.tint_surf, (0,0))
 
 	# ┌─────────────────────────────────────────────────────────┐
-	# │ YOUR CODE — Step 9: Build end_battle(character)         │
-	# │ Hint: stop battle music, start transition to 'level'    │
-	# │       (set transition_target = 'level', tint_mode='tint')│
-	# │       If character is not None: mark them as defeated   │
-	# │       and create dialog for the "defeated" text.        │
-	# │       If character is None (wild encounter): unblock    │
-	# │       the player and restart overworld music.           │
+	# │ PRE-SCAFFOLD — teacher walks through this, you use it   │
 	# └─────────────────────────────────────────────────────────┘
+	# end_battle now calls check_evolution after the battle clears.
 	def end_battle(self, character):
-		# TODO: your code here
-		# self.audio['battle'].stop()
-		# self.transition_target = 'level'
-		# self.tint_mode = 'tint'
-		# if character:
-		#     character.character_data['defeated'] = True
-		#     self.create_dialog(character)
-		# else:
-		#     self.player.unblock()
-		#     self.audio['overworld'].play(-1)
-		self.battle = None  # remove this basic version when you add yours above!
-		self.player.unblock()
+		self.audio['battle'].stop()
+		self.transition_target = 'level'
+		self.tint_mode = 'tint'
+		if character:
+			character.character_data['defeated'] = True
+			self.create_dialog(character)
+		elif not self.evolution:
+			self.player.unblock()
+			self.check_evolution()
 
 	# ┌─────────────────────────────────────────────────────────┐
-	# │ YOUR CODE — Step 10: Build monster_encounter()          │
-	# │ Hint: check pygame.sprite.spritecollide for monster_sprites│
-	# │       if sprites exist and player is moving:            │
-	# │         randomise encounter_timer.duration (800-2500ms) │
-	# │         block player, stop overworld, play battle music │
-	# │         create Battle with sprite.monsters as opponents │
-	# │         use Monster(name, sprite.level + randint(-3,3)) │
-	# │         for each monster name in the patch              │
+	# │ YOUR CODE — Step 4: Build check_evolution()             │
+	# │ Hint: loop self.player_monsters.items()                 │
+	# │       if monster.evolution is not None AND              │
+	# │          monster.level == monster.evolution[1]:         │
+	# │         play evolution sound                            │
+	# │         block the player                                │
+	# │         create Evolution(...) and store in self.evolution│
+	# │         replace player_monsters[index] with             │
+	# │           Monster(monster.evolution[0], monster.level)  │
+	# │       if no evolution found: restart overworld music    │
 	# └─────────────────────────────────────────────────────────┘
-	def monster_encounter(self):
+	def check_evolution(self):
+		# Check if any player monster should evolve right now.
+		# Evolution happens when a monster's level matches its evolution level.
 		# TODO: your code here
-		# sprites = pygame.sprite.spritecollide(self.player, self.monster_sprites, False)
-		# if sprites and self.player.direction:
-		#     self.encounter_timer.duration = randint(800, 2500)
-		#     self.player.block()
-		#     self.audio['overworld'].stop()
-		#     self.audio['battle'].play(-1)
-		#     self.transition_target = Battle(
-		#         player_monsters = self.player_monsters,
-		#         opponent_monsters = {index: Monster(monster, sprites[0].level + randint(-3,3))
-		#                              for index, monster in enumerate(sprites[0].monsters)},
-		#         monster_frames = self.monster_frames,
-		#         bg_surf = self.bg_frames[sprites[0].biome],
-		#         fonts = self.fonts,
-		#         end_battle = self.end_battle,
-		#         character = None,
-		#         sounds = self.audio)
-		#     self.tint_mode = 'tint'
+		# for index, monster in self.player_monsters.items():
+		#     if monster.evolution:
+		#         if monster.level == monster.evolution[1]:
+		#             self.audio['evolution'].play()
+		#             self.player.block()
+		#             self.evolution = Evolution(
+		#                 self.monster_frames['monsters'],
+		#                 monster.name,
+		#                 monster.evolution[0],
+		#                 self.fonts['bold'],
+		#                 self.end_evolution,
+		#                 self.start_animation_frames)
+		#             self.player_monsters[index] = Monster(monster.evolution[0], monster.level)
+		# if not self.evolution:
+		#     self.audio['overworld'].play(-1)
+		self.audio['overworld'].play(-1)  # remove this basic line when you add yours above!
+
+	# ┌─────────────────────────────────────────────────────────┐
+	# │ YOUR CODE — Step 5: Build end_evolution()               │
+	# │ Hint: clear the evolution overlay, unblock player,      │
+	# │       stop the evolution sound, restart overworld music │
+	# └─────────────────────────────────────────────────────────┘
+	def end_evolution(self):
+		# Called when the evolution animation finishes.
+		# TODO: your code here
+		# self.evolution = None
+		# self.player.unblock()
+		# self.audio['evolution'].stop()
+		# self.audio['overworld'].play(-1)
 		pass  # remove this when you're done
 
 	def check_monster(self):
@@ -300,31 +324,52 @@ class Game:
 			if not self.encounter_timer.active:
 				self.encounter_timer.activate()
 
+	def monster_encounter(self):
+		sprites = pygame.sprite.spritecollide(self.player, self.monster_sprites, False)
+		if sprites and self.player.direction:
+			self.encounter_timer.duration = randint(800, 2500)
+			self.player.block()
+			self.audio['overworld'].stop()
+			self.audio['battle'].play(-1)
+			self.transition_target = Battle(
+				player_monsters = self.player_monsters,
+				opponent_monsters = {index: Monster(monster, sprites[0].level + randint(-3,3)) for index, monster in enumerate(sprites[0].monsters)},
+				monster_frames = self.monster_frames,
+				bg_surf = self.bg_frames[sprites[0].biome],
+				fonts = self.fonts,
+				end_battle = self.end_battle,
+				character = None,
+				sounds = self.audio)
+			self.tint_mode = 'tint'
+
 	def run(self):
 		while True:
 			dt = self.clock.tick() / 1000
 			self.display_surface.fill('black')
 
-			# event loop
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					pygame.quit()
 					exit()
 
-			# update
 			self.encounter_timer.update()
 			self.input()
 			self.transition_check()
 			self.all_sprites.update(dt)
 			self.check_monster()
 
-			# drawing
 			self.all_sprites.draw(self.player)
 
-			# overlays
 			if self.dialog_tree: self.dialog_tree.update()
 			if self.index_open:  self.monster_index.update(dt)
 			if self.battle:      self.battle.update(dt)
+
+			# ┌─────────────────────────────────────────────────────────┐
+			# │ PRE-SCAFFOLD — teacher walks through this, you use it   │
+			# └─────────────────────────────────────────────────────────┘
+			# Draw the evolution overlay if active.
+			if hasattr(self, 'evolution') and self.evolution:
+				self.evolution.update(dt)
 
 			self.tint_screen(dt)
 			pygame.display.update()

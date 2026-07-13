@@ -64,12 +64,12 @@ MONSTER_DATA = {
 	'MyFireMonster': {           # TODO: replace 'MyFireMonster' with a cool name!
 		'stats': {
 			'element': 'fire',
-			'max_health': ???,    # TODO: pick a number, 10-30
-			'max_energy': ???,    # TODO: pick a number, 5-25
-			'attack': ???,        # TODO: pick a number, 1-6
-			'defense': ???,       # TODO: pick a number, 5-15
-			'recovery': ???,      # TODO: pick a float like 1.0 or 1.5
-			'speed': ???},        # TODO: pick a float like 1.0 or 2.0
+			'max_health': 10,     # TODO: pick a number, 10-30 (this is just a placeholder)
+			'max_energy': 5,      # TODO: pick a number, 5-25
+			'attack': 1,          # TODO: pick a number, 1-6
+			'defense': 5,         # TODO: pick a number, 5-15
+			'recovery': 1.0,      # TODO: pick a float like 1.0 or 1.5
+			'speed': 1.0},        # TODO: pick a float like 1.0 or 2.0
 		'abilities': {0: 'scratch', 5: 'fire'},  # unlocks 'fire' at level 5
 		'evolve': None},          # TODO: change to ('EvolvedName', level) if you want an evolution!
 
@@ -77,12 +77,12 @@ MONSTER_DATA = {
 	'MyPlantMonster': {          # TODO: replace 'MyPlantMonster' with a cool name!
 		'stats': {
 			'element': 'plant',
-			'max_health': ???,    # TODO: pick a number
-			'max_energy': ???,    # TODO: pick a number
-			'attack': ???,        # TODO: pick a number
-			'defense': ???,       # TODO: pick a number
-			'recovery': ???,      # TODO: pick a float
-			'speed': ???},        # TODO: pick a float
+			'max_health': 10,     # TODO: pick a number (this is just a placeholder)
+			'max_energy': 5,      # TODO: pick a number
+			'attack': 1,          # TODO: pick a number
+			'defense': 5,         # TODO: pick a number
+			'recovery': 1.0,      # TODO: pick a float
+			'speed': 1.0},        # TODO: pick a float
 		'abilities': {0: 'scratch', 5: 'spark', 10: 'heal'},
 		'evolve': None},          # TODO: or add ('EvolvedName', level)
 
@@ -165,19 +165,19 @@ ATTACK_DATA = {
 	# --- YOUR ATTACKS: fill in the ??? values! ---
 	# 'spark' is a fire attack that does moderate damage.
 	'spark': {
-		'target': '???',     # TODO: 'opponent' or 'player'?
-		'amount': ???,        # TODO: how much damage? (1.0 to 3.0)
-		'cost': ???,          # TODO: energy cost (10 to 100)
-		'element': '???',    # TODO: 'fire', 'water', 'plant', or 'normal'
+		'target': 'opponent', # TODO: 'opponent' or 'player'? (this is just a placeholder)
+		'amount': 1.0,        # TODO: how much damage? (1.0 to 3.0)
+		'cost': 10,           # TODO: energy cost (10 to 100)
+		'element': 'normal',  # TODO: 'fire', 'water', 'plant', or 'normal'
 		'animation': 'fire'  # this stays as 'fire' — uses fire animation
 	},
 
 	# 'heal' restores health to your own monster.
 	# Tip: use a negative amount (like -1.2) to restore health!
 	'heal': {
-		'target': '???',     # TODO: healing goes to 'player', not 'opponent'!
-		'amount': ???,        # TODO: use a negative float like -1.2 to restore health
-		'cost': ???,          # TODO: healing costs a lot of energy — try 600
+		'target': 'opponent', # TODO: healing goes to 'player', not 'opponent'! (this is just a placeholder)
+		'amount': 1.0,        # TODO: use a negative float like -1.2 to restore health
+		'cost': 10,           # TODO: healing costs a lot of energy — try 600
 		'element': 'plant',  # healing is plant-type
 		'animation': 'green'
 	},

@@ -2,8 +2,6 @@ import pygame
 from sys import exit
 from os.path import join
 from random import randint
-from pytmx.util_pygame import load_pygame
-
 from settings import WINDOW_WIDTH, WINDOW_HEIGHT, TILE_SIZE, WORLD_LAYERS
 from game_data import TRAINER_DATA
 from support import (
@@ -17,6 +15,7 @@ from groups import AllSprites
 from dialog import DialogTree
 from timer import Timer
 from monster import Monster
+from battle import Battle
 
 class Game:
 	def __init__(self):
@@ -24,10 +23,10 @@ class Game:
 		self.display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 		pygame.display.set_caption('Monster Hunter')
 		self.clock = pygame.time.Clock()
-		self.encounter_timer = Timer(2000)
+		self.encounter_timer = Timer(2000, autostart=True, repeat=True, func=self.monster_encounter)
 
 		# ┌─────────────────────────────────────────────────────────┐
-		# │ YOUR CODE — Step 1: Create the player's monster team!   │
+		# │ YOUR CODE — Step 10: Create the player's monster team!  │
 		# │ Hint: use Monster('MonsterName', level) to create each. │
 		# │       Keys are 0, 1, 2, ... (one per monster).          │
 		# │       After making the dict, loop through the values    │
@@ -62,9 +61,10 @@ class Game:
 		self.import_assets()
 		self.setup(self.tmx_maps['world'], 'house')
 
+		self.audio['overworld'].play(-1)
+
 		# overlays
 		self.dialog_tree = None
-		self.index_open = False
 		self.battle = None
 
 	def import_assets(self):
@@ -101,7 +101,11 @@ class Game:
 
 		# terrain
 		for layer in ['Terrain', 'Terrain Top']:
-			for x, y, surf in tmx_map.get_layer_by_name(layer).tiles():
+			try:
+				tile_layer = tmx_map.get_layer_by_name(layer)
+			except ValueError:
+				continue  # not every map has both terrain layers (e.g. arena)
+			for x, y, surf in tile_layer.tiles():
 				Sprite((x * TILE_SIZE, y * TILE_SIZE), surf, self.all_sprites, WORLD_LAYERS['bg'])
 
 		# water
@@ -146,17 +150,18 @@ class Game:
 						facing_direction = obj.properties['direction'],
 						collision_sprites = self.collision_sprites)
 			else:
+				char_id = obj.properties['character_id']
 				Character(
 					pos = (obj.x, obj.y),
 					frames = self.overworld_frames['characters'][obj.properties['graphic']],
 					groups = (self.all_sprites, self.collision_sprites, self.character_sprites),
-					facing_direction = obj.properties['direction'],
-					character_data = TRAINER_DATA[obj.properties['character_id']],
+					facing_direction = obj.properties.get('direction', 'down'),
+					character_data = TRAINER_DATA.get(char_id, TRAINER_DATA['o1']),
 					player = self.player,
 					create_dialog = self.create_dialog,
 					collision_sprites = self.collision_sprites,
-					radius = obj.properties['radius'],
-					nurse = obj.properties['character_id'] == 'Nurse',
+					radius = obj.properties.get('radius', 0),
+					nurse = char_id == 'Nurse',
 					notice_sound = self.audio['notice'])
 
 	# dialog system
@@ -175,18 +180,86 @@ class Game:
 		if not self.dialog_tree:
 			self.dialog_tree = DialogTree(character, self.player, self.all_sprites, self.fonts['dialog'], self.end_dialog)
 
+	# ┌─────────────────────────────────────────────────────────┐
+	# │ YOUR CODE — Step 16a: Build end_dialog(character)        │
+	# │ Hint: three cases, in order:                              │
+	# │       if character.nurse: heal every monster in            │
+	# │       self.player_monsters (set health/energy to their     │
+	# │       get_stat('max_health') / get_stat('max_energy')),    │
+	# │       then unblock the player.                             │
+	# │       elif not character.character_data['defeated']:       │
+	# │       stop overworld music, start battle music, and set    │
+	# │       self.transition_target = Battle(                     │
+	# │           player_monsters=self.player_monsters,            │
+	# │           opponent_monsters=character.monsters,             │
+	# │           monster_frames=self.monster_frames,               │
+	# │           bg_surf=self.bg_frames[character.character_data['biome']],│
+	# │           fonts=self.fonts, end_battle=self.end_battle,    │
+	# │           character=character, sounds=self.audio)          │
+	# │       then self.tint_mode = 'tint'.                        │
+	# │       else: just unblock the player (already defeated).    │
+	# └─────────────────────────────────────────────────────────┘
 	def end_dialog(self, character):
 		self.dialog_tree = None
+		# TODO: your code here
+		self.player.unblock()  # remove this basic version when you add yours above!
+
+	# ┌─────────────────────────────────────────────────────────┐
+	# │ YOUR CODE — Step 16b: Build end_battle(character)        │
+	# │ Hint: stop battle music, start the transition back to     │
+	# │       the overworld: self.transition_target = 'level',    │
+	# │       self.tint_mode = 'tint'.                             │
+	# │       if character: mark them defeated                     │
+	# │       (character.character_data['defeated'] = True) and    │
+	# │       show their post-battle dialog with                   │
+	# │       self.create_dialog(character).                       │
+	# │       else (a wild encounter has no character): unblock    │
+	# │       the player and restart the overworld music.          │
+	# └─────────────────────────────────────────────────────────┘
+	def end_battle(self, character):
+		# TODO: your code here
+		self.battle = None  # remove this basic version when you add yours above!
 		self.player.unblock()
+
+	# ┌─────────────────────────────────────────────────────────┐
+	# │ YOUR CODE — Step 16c: Build monster_encounter()          │
+	# │ Hint: sprites = pygame.sprite.spritecollide(self.player,  │
+	# │       self.monster_sprites, False) — is the player          │
+	# │       standing on a grass/sand patch?                       │
+	# │       Only trigger if sprites, the player is moving          │
+	# │       (self.player.direction), there's no battle already    │
+	# │       (not self.battle), and — since this timer fires        │
+	# │       every couple of seconds while you stand there —        │
+	# │       a random chance so it doesn't happen instantly:        │
+	# │       randint(0, 4) == 0.                                    │
+	# │       If it fires: block the player, swap music, and build   │
+	# │       a wild team from every name in sprites[0].monsters:    │
+	# │       opponent_monsters = {i: Monster(name,                  │
+	# │           sprites[0].level + randint(-3, 3))                 │
+	# │           for i, name in enumerate(sprites[0].monsters)}     │
+	# │       Then create the Battle the same way as Step 16a,       │
+	# │       using sprites[0].biome for bg_surf and character=None. │
+	# └─────────────────────────────────────────────────────────┘
+	def monster_encounter(self):
+		# TODO: your code here
+		pass  # remove this when you're done
 
 	# transition system
 	def transition_check(self):
-		sprites = pygame.sprite.spritecollide(self.player, self.transition_sprites, False)
+		sprites = pygame.sprite.spritecollide(
+			self.player, self.transition_sprites, False,
+			collided=lambda a, b: a.hitbox.colliderect(b.hitbox))
 		if sprites:
 			self.player.block()
 			self.transition_target = sprites[0].target
 			self.tint_mode = 'tint'
 
+	# ┌─────────────────────────────────────────────────────────┐
+	# │ PRE-SCAFFOLD — teacher walks through this, you use it   │
+	# │ transition_target can now be a (map, pos) tuple, a live  │
+	# │ Battle object, or the string 'level' (meaning "the fight  │
+	# │ just ended, go back to the map"). This branches on which. │
+	# └─────────────────────────────────────────────────────────┘
 	def tint_screen(self, dt):
 		if self.tint_mode == 'untint':
 			self.tint_progress -= self.tint_speed * dt
@@ -194,7 +267,12 @@ class Game:
 		if self.tint_mode == 'tint':
 			self.tint_progress += self.tint_speed * dt
 			if self.tint_progress >= 255:
-				self.setup(self.tmx_maps[self.transition_target[0]], self.transition_target[1])
+				if isinstance(self.transition_target, Battle):
+					self.battle = self.transition_target
+				elif self.transition_target == 'level':
+					self.battle = None
+				else:
+					self.setup(self.tmx_maps[self.transition_target[0]], self.transition_target[1])
 				self.tint_mode = 'untint'
 				self.transition_target = None
 
@@ -224,6 +302,7 @@ class Game:
 
 			# overlays
 			if self.dialog_tree: self.dialog_tree.update()
+			if self.battle: self.battle.update(dt)
 
 			self.tint_screen(dt)
 			pygame.display.update()

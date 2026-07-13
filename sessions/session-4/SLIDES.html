@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 4 — Designing Your Creatures</title>
+<style>
+  :root {
+    --dark:    #1e1c22;
+    --gray:    #2e2b35;
+    --lgray:   #4a4555;
+    --white:   #f4fefa;
+    --light:   #c8c8d8;
+    --green:   #56d49a;
+    --fire:    #ff7c40;
+    --water:   #44c4f0;
+    --gold:    #ffd24d;
+    --red:     #ff4d6a;
+    --purple:  #c084fc;
+    --lime:    #a3e635;
+    --cyan:    #67e8f9;
+    --pink:    #f472b6;
+    --code-bg: #151319;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--dark);
+    color: var(--white);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  #progress-bar { position: fixed; top: 0; left: 0; right: 0; height: 4px; background: var(--lgray); z-index: 200; }
+  #progress-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--gold)); transition: width 0.3s ease; }
+
+  #deck { width: 100vw; height: 100vh; position: relative; }
+
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    padding: 48px 80px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s ease;
+    text-align: center;
+  }
+  .slide.active { opacity: 1; pointer-events: all; }
+  .slide.left-align { align-items: flex-start; text-align: left; }
+  .slide.bg-practice {
+    justify-content: flex-start;
+    overflow-y: auto;
+    padding-bottom: 90px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--lgray) transparent;
+  }
+
+  .bg-title    { background: radial-gradient(ellipse at 55% 40%, #1a3a2a 0%, #12101a 70%); }
+  .bg-recap    { background: radial-gradient(ellipse at 30% 40%, #223a1a 0%, #1e1c22 70%); }
+  .bg-concept  { background: radial-gradient(ellipse at 70% 30%, #1a2a3a 0%, #12101a 70%); }
+  .bg-practice { background: radial-gradient(ellipse at 20% 60%, #2a2410 0%, #1e1c22 70%); }
+  .bg-extend   { background: radial-gradient(ellipse at 70% 30%, #2a1a3a 0%, #12101a 70%); }
+  .bg-showcase { background: radial-gradient(ellipse at 50% 50%, #2a2018 0%, #12101a 70%); }
+
+  h1 { font-size: 3.2rem; font-weight: 800; line-height: 1.1; }
+  h2 { font-size: 1.9rem; font-weight: 700; margin-bottom: 0.5rem; }
+  h3 { font-size: 1.2rem;  font-weight: 600; margin-bottom: 0.3rem; }
+  p  { font-size: 1.05rem; line-height: 1.6; color: var(--light); max-width: 820px; }
+  .subtitle  { font-size: 1.25rem; color: var(--green); margin-top: 0.6rem; font-weight: 600; max-width: 760px; }
+  .small     { font-size: 0.9rem; color: var(--light); }
+  .tiny      { font-size: 0.78rem;  color: var(--lgray); }
+
+  .tag {
+    display: inline-block; font-size: 0.7rem; font-weight: 800;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 3px 12px; border-radius: 20px; margin-bottom: 0.8rem;
+  }
+  .tag-build    { background: var(--green);  color: #0a1f14; }
+  .tag-recap    { background: var(--lime);   color: #10200a; }
+  .tag-concept  { background: var(--water);  color: #0a1a28; }
+  .tag-practice { background: var(--fire);   color: #1a0800; }
+  .tag-answer   { background: var(--green);  color: #0a1f14; }
+  .tag-extend   { background: var(--purple); color: #1a0a2e; }
+  .tag-gold     { background: var(--gold);   color: #1a1000; }
+
+  .step-badge { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.7rem; }
+  .step-num {
+    width: 44px; height: 44px; border-radius: 50%;
+    font-size: 1.25rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; color: #0a1a10;
+  }
+  .sn-water  { background: var(--water); color: #0a1a28; }
+  .sn-fire   { background: var(--fire);  color: #1a0800; }
+  .sn-green  { background: var(--green); }
+  .step-title { font-size: 1.25rem; font-weight: 700; }
+  .step-file  { font-size: 0.82rem; color: var(--light); }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--lgray);
+    border-left: 4px solid var(--green);
+    border-radius: 10px;
+    padding: 0.9rem 1.2rem;
+    text-align: left;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    overflow-x: auto;
+    max-width: 900px; width: 100%;
+    margin: 0.5rem 0;
+    font-family: 'Consolas', 'Fira Code', monospace;
+  }
+  pre.sm { font-size: 0.82rem; padding: 0.7rem 1rem; }
+  pre.xs { font-size: 0.74rem; padding: 0.6rem 0.85rem; }
+  pre.water  { border-left-color: var(--water); }
+  pre.fire   { border-left-color: var(--fire); }
+  pre.gold   { border-left-color: var(--gold); }
+  pre.green  { border-left-color: var(--green); }
+  pre.purple { border-left-color: var(--purple); }
+  pre.blank  { border-left-color: var(--fire); border-style: dashed; }
+
+  .kw { color: #c084fc; } .fn { color: #7dd3fc; } .st { color: #86efac; }
+  .cm { color: #6b6785; font-style: italic; } .nm { color: var(--fire); }
+  .at { color: var(--gold); } .op { color: var(--light); }
+  .todo { color: var(--fire); font-weight: 700; }
+
+  .box {
+    background: var(--gray); border: 1px solid var(--lgray); border-radius: 10px;
+    padding: 0.8rem 1.2rem; margin: 0.4rem 0; text-align: left;
+    max-width: 900px; width: 100%;
+  }
+  .box.green  { border-left: 4px solid var(--green); }
+  .box.fire   { border-left: 4px solid var(--fire); }
+  .box.water  { border-left: 4px solid var(--water); }
+  .box.gold   { border-left: 4px solid var(--gold); }
+  .box.purple { border-left: 4px solid var(--purple); }
+  .box.lime   { border-left: 4px solid var(--lime); }
+
+  ul, ol { padding-left: 1.3rem; text-align: left; max-width: 820px; }
+  li { font-size: 1rem; line-height: 1.7; color: var(--light); }
+  li strong { color: var(--white); }
+  li code { font-size: 0.92em; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 900px; width: 100%; text-align: left; }
+
+  .creativity-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; max-width: 920px; width: 100%; }
+  .creativity-grid.wide { grid-template-columns: 1fr 1fr 1fr; }
+  .c-card {
+    background: var(--gray); border: 1px solid var(--lgray); border-radius: 14px;
+    padding: 1rem 1.2rem; text-align: left; position: relative; overflow: hidden;
+  }
+  .c-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .c-card.cv-purple::before { background: var(--purple); } .c-card.cv-fire::before   { background: var(--fire); }
+  .c-card.cv-lime::before   { background: var(--lime); }   .c-card.cv-cyan::before   { background: var(--cyan); }
+  .c-card.cv-gold::before   { background: var(--gold); }   .c-card.cv-pink::before   { background: var(--pink); }
+  .c-card.cv-water::before  { background: var(--water); }  .c-card.cv-green::before  { background: var(--green); }
+  .c-card .c-letter { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.3rem; opacity: 0.8; }
+  .c-card.cv-purple .c-letter { color: var(--purple); } .c-card.cv-fire   .c-letter { color: var(--fire); }
+  .c-card.cv-lime   .c-letter { color: var(--lime); }   .c-card.cv-cyan   .c-letter { color: var(--cyan); }
+  .c-card.cv-gold   .c-letter { color: var(--gold); }   .c-card.cv-pink   .c-letter { color: var(--pink); }
+  .c-card.cv-water  .c-letter { color: var(--water); }  .c-card.cv-green  .c-letter { color: var(--green); }
+  .c-card h4 { font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 0.3rem; }
+  .c-card p  { font-size: 0.85rem; max-width: none; margin-bottom: 0.4rem; }
+  .c-card .activate {
+    display: inline-block; font-size: 0.72rem; font-weight: 700; font-family: 'Consolas', monospace;
+    background: #12101a; color: var(--green); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--lgray);
+  }
+
+  .icon-big { font-size: 3.6rem; line-height: 1; margin-bottom: 0.4rem; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem; max-width: 900px; width: 100%; margin: 0.6rem 0; }
+  .stat-card { background: var(--gray); border: 2px solid var(--lgray); border-radius: 12px; padding: 0.6rem; text-align: center; }
+  .stat-card .s-num { font-size: 1.5rem; font-weight: 800; color: var(--gold); }
+  .stat-card .s-lbl { font-size: 0.75rem; color: var(--light); }
+
+  .range-table { width: 100%; max-width: 900px; border-collapse: collapse; text-align: left; font-size: 0.8rem; }
+  .range-table th { color: var(--gold); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.22rem 0.7rem; border-bottom: 2px solid var(--lgray); }
+  .range-table td { padding: 0.2rem 0.7rem; border-bottom: 1px solid var(--lgray); color: var(--light); }
+  .range-table td.step  { color: var(--white); font-weight: 700; white-space: nowrap; }
+  .range-table td.lines { font-family: 'Consolas', monospace; color: var(--lime); white-space: nowrap; }
+
+  code { background: var(--code-bg); padding: 1px 5px; border-radius: 3px; font-family: 'Consolas', 'Fira Code', monospace; font-size: 0.87em; color: var(--green); }
+
+  /* ── Practice / Answer reveal ── */
+  .practice-wrap { max-width: 900px; width: 100%; }
+  .hint-list { max-width: 900px; width: 100%; margin: 0.4rem 0; }
+  .hint-list li { font-size: 0.9rem; }
+  .reveal-btn {
+    background: var(--green); color: #0a1f14; border: none; border-radius: 8px;
+    padding: 0.45rem 1rem; font-weight: 700; font-size: 0.82rem; cursor: pointer;
+    font-family: inherit; margin-top: 0.3rem;
+  }
+  .reveal-btn:hover { filter: brightness(1.08); }
+  .answer-block { display: none; margin-top: 0.5rem; max-width: 900px; width: 100%; }
+  .answer-block.shown { display: block; }
+
+  #nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 7px; z-index: 100; max-width: 90vw; flex-wrap: wrap; justify-content: center; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--lgray); cursor: pointer; transition: background 0.2s, transform 0.2s; }
+  .dot.active { background: var(--green); transform: scale(1.5); }
+  .dot.extend.active { background: var(--purple); }
+
+  #prev, #next {
+    position: fixed; top: 50%; transform: translateY(-50%);
+    background: rgba(46,43,53,0.8); border: 1px solid var(--lgray); color: var(--light);
+    font-size: 1.2rem; width: 40px; height: 40px; border-radius: 50%;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 100; transition: background 0.2s;
+  }
+  #prev:hover, #next:hover { background: var(--lgray); }
+  #prev { left: 16px; } #next { right: 16px; }
+
+  #slide-counter { position: fixed; top: 12px; right: 18px; font-size: 0.75rem; color: var(--lgray); font-family: 'Consolas', monospace; z-index: 100; }
+  #section-label { position: fixed; top: 12px; left: 18px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; z-index: 100; padding: 3px 10px; border-radius: 20px; transition: background 0.3s, color 0.3s; }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"><div id="progress-fill"></div></div>
+<div id="section-label"></div>
+
+<div id="deck">
+
+<!-- SLIDE 1: Title -->
+<div class="slide bg-title active" data-section="build">
+  <div class="icon-big">🐲</div>
+  <div class="tag tag-build">Session 4 of 5</div>
+  <h1>Designing Your Creatures<br><span style="color:var(--green);">& Battling</span></h1>
+  <p class="subtitle">Last time we built a real map with doors and NPCs. Today we design the monsters that live in it, build a Python class to bring them to life, and wire up real turn-based battles.</p>
+  <p style="margin-top:1.6rem; color:var(--lgray);" class="small">← → arrow keys to navigate &nbsp;·&nbsp; click dots below</p>
+</div>
+
+<!-- SLIDE 2: Recap -->
+<div class="slide bg-recap" data-section="build">
+  <div class="tag tag-recap">Last time — Session 3</div>
+  <h2>What's already in your code</h2>
+  <div class="creativity-grid wide" style="margin-top:0.8rem;">
+    <div class="c-card cv-water">
+      <div class="c-letter">main.py</div>
+      <h4>🌍 setup() reads a real map</h4>
+      <p>Terrain, water, coast, objects, transitions, collisions, monster patches, entities — all built from a <code>.tmx</code> file, seven maps deep.</p>
+    </div>
+    <div class="c-card cv-fire">
+      <div class="c-letter">main.py</div>
+      <h4>🚪 transition_check()</h4>
+      <p>Walk onto a doorway hitbox and the screen tints to black, swaps the map, then tints back in.</p>
+    </div>
+    <div class="c-card cv-gold">
+      <div class="c-letter">sprites.py</div>
+      <h4>🌊 AnimatedSprite, MonsterPatchSprite, TransitionSprite</h4>
+      <p>Three classes you finished last session. All three keep running unchanged today.</p>
+    </div>
+    <div class="c-card cv-lime">
+      <div class="c-letter">dialog.py</div>
+      <h4>💬 NPCs that talk</h4>
+      <p>Stand near a character, press SPACE, read their lines. Unchanged today.</p>
+    </div>
+    <div class="c-card cv-purple">
+      <div class="c-letter">tall grass</div>
+      <h4>🌿 Monster patches, marked but empty</h4>
+      <p>Every patch already stores which monster names <em>could</em> appear there — but <code>Monster('Name', level)</code> doesn't work yet, because there's no <code>Monster</code> class.</p>
+    </div>
+    <div class="c-card cv-pink">
+      <div class="c-letter">key idea</div>
+      <h4>📦 rect vs hitbox</h4>
+      <p>Still true today: drawing uses <code>rect</code>, every collision compares <code>hitbox</code>. Nothing about that changes.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3: Today's goal -->
+<div class="slide bg-recap" data-section="build">
+  <div class="tag tag-build">Today's goal</div>
+  <h2>What exists by the end of this session</h2>
+  <div class="creativity-grid wide" style="margin-top:0.8rem;">
+    <div class="c-card cv-green">
+      <div class="c-letter">game_data.py</div>
+      <h4>📖 A monster "database"</h4>
+      <p>Every monster's stats and abilities, and every attack's target/damage/cost, stored as plain Python dictionaries.</p>
+    </div>
+    <div class="c-card cv-water">
+      <div class="c-letter">monster.py</div>
+      <h4>🐉 The Monster class</h4>
+      <p>Turns one dictionary entry plus a level into a living object: current health, current energy, XP, and the moves it knows.</p>
+    </div>
+    <div class="c-card cv-fire">
+      <div class="c-letter">stat scaling</div>
+      <h4>📈 Bigger numbers at higher levels</h4>
+      <p>A level 10 monster is exactly 10× as strong in every stat as the same monster at level 1 — one multiplication does all of it.</p>
+    </div>
+    <div class="c-card cv-gold">
+      <div class="c-letter">main.py</div>
+      <h4>🎒 A team in memory</h4>
+      <p><code>self.player_monsters</code> — 6 or 7 monsters that exist the moment the game starts, ready to fight.</p>
+    </div>
+    <div class="c-card cv-lime">
+      <div class="c-letter">battle.py</div>
+      <h4>⚔️ Real turn-based battles</h4>
+      <p>Walk into tall grass or challenge a trainer and actually fight — menu, turn order, damage, fainting, winning or losing.</p>
+    </div>
+    <div class="c-card cv-purple">
+      <div class="c-letter">after all TODOs</div>
+      <h4>🧩 6 extension challenges</h4>
+      <p>Small additions to try once every blank in this session is filled in and working.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4: Agenda -->
+<div class="slide bg-recap left-align" data-section="build">
+  <div class="tag tag-build">Build order</div>
+  <h2>16 things to write today</h2>
+  <ul style="margin: 0.7rem 0 0.9rem; columns: 2; column-gap: 2.5rem;">
+    <li><strong>Step 1</strong> &nbsp;<code>game_data.py</code> — design two monsters</li>
+    <li><strong>Step 2</strong> &nbsp;<code>game_data.py</code> — design two attacks</li>
+    <li><strong>Step 3</strong> &nbsp;<code>monster.py</code> — <code>__init__</code></li>
+    <li><strong>Step 4</strong> &nbsp;<code>monster.py</code> — <code>get_stat(stat)</code></li>
+    <li><strong>Step 5</strong> &nbsp;<code>monster.py</code> — <code>get_stats()</code></li>
+    <li><strong>Step 6</strong> &nbsp;<code>monster.py</code> — <code>get_abilities(include_all)</code></li>
+    <li><strong>Step 7</strong> &nbsp;<code>monster.py</code> — <code>get_base_damage(attack)</code></li>
+    <li><strong>Step 8</strong> &nbsp;<code>monster.py</code> — <code>update_xp(amount)</code></li>
+    <li><strong>Step 9</strong> &nbsp;<code>monster.py</code> — <code>stat_limiter()</code></li>
+    <li><strong>Step 10</strong> <code>main.py</code> — build <code>self.player_monsters</code></li>
+    <li><strong>Step 11</strong> <code>battle.py</code> — setup: <code>__init__</code>/<code>setup</code>/<code>create_monster</code></li>
+    <li><strong>Step 12</strong> <code>battle.py</code> — turn order: <code>check_active</code>/<code>update_all_monsters</code></li>
+    <li><strong>Step 13</strong> <code>battle.py</code> — <code>input()</code> (the battle menu)</li>
+    <li><strong>Step 14</strong> <code>battle.py</code> — <code>opponent_attack()</code> (the AI)</li>
+    <li><strong>Step 15</strong> <code>battle.py</code> — <code>apply_attack()</code> (the damage formula)</li>
+    <li><strong>Step 16</strong> <code>main.py</code> — trigger battles from NPCs and wild grass</li>
+  </ul>
+  <div class="box gold">
+    <p class="small">Every step below follows the same order: <strong>what it means</strong> → <strong>the blank code you start from</strong> → <strong>reveal the answer key when you want to check your work</strong>.</p>
+  </div>
+</div>
+
+<!-- SLIDE 5: Concept — data-driven design -->
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals</div>
+  <h2>Why store monsters as data, not code?</h2>
+  <p style="max-width:860px;">Imagine adding a new monster meant editing the attack code, the UI code, <em>and</em> the battle code. Every new monster would mean hunting through the whole project. <code>MONSTER_DATA</code> avoids that: add one dictionary entry, and every part of the game that reads from it — battle math, stat bars, evolutions — picks it up automatically.</p>
+  <div class="two-col" style="max-width:900px;">
+    <div class="box water">
+      <h3 style="color:var(--water);">📖 Data-driven design</h3>
+      <p class="small">Game content — monster stats, attack numbers, NPC dialog — lives in dictionaries, not scattered across methods. This is how Minecraft, Pokémon, and Stardew Valley actually store their content.</p>
+    </div>
+    <div class="box gold">
+      <h3 style="color:var(--gold);">🧩 Classes as data + behavior</h3>
+      <p class="small"><code>Monster</code> holds data (health, stats, xp) <em>and</em> behavior (level up, take damage). The data comes from <code>MONSTER_DATA</code>; the behavior is the methods you write today.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 6: Concept — stat scaling -->
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals</div>
+  <h2>One multiplication makes every stat scale with level</h2>
+  <p style="max-width:860px;"><code>MONSTER_DATA</code> only stores a <strong>base</strong> stat — the value at level 1. Every method that needs the real, current stat multiplies that base by <code>self.level</code>.</p>
+  <div class="box water" style="max-width:860px; width:100%;">
+    <p class="small"><strong>Worked example:</strong> Sparchu's base attack is <code>3</code>. At level 5, <code>get_stat('attack')</code> returns <code>3 * 5 = 15</code>. At level 20 the same monster hits for <code>60</code> — no separate "level 20 stats" are ever stored, they're always computed from the base.</p>
+  </div>
+  <div class="box gold" style="max-width:860px; width:100%;">
+    <p class="small">This is also why the stat guide keeps base numbers small (attack 1–6, defense 5–15) — those numbers get multiplied by level, sometimes by 30 or more, so a big base number becomes an enormous stat very fast.</p>
+  </div>
+</div>
+
+<!-- ══════════════════ STEP 1 ══════════════════ -->
+
+<!-- SLIDE 7: Concept 1 -->
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — Step 1</div>
+  <h2>Designing two monsters</h2>
+  <p style="max-width:860px;"><code>MONSTER_DATA</code> already has four working examples — Sparchu, Ivieron, Finsta, Gulfin — study their shape before writing your own. Every monster needs an <code>element</code>, six base stats, an <code>abilities</code> dict, and an <code>evolve</code> value.</p>
+  <table class="range-table" style="max-width:860px;">
+    <tr><th>Stat</th><th>Low</th><th>Medium</th><th>High</th></tr>
+    <tr><td class="step">max_health</td><td>10</td><td>18</td><td>30</td></tr>
+    <tr><td class="step">max_energy</td><td>5</td><td>15</td><td>25</td></tr>
+    <tr><td class="step">attack</td><td>1</td><td>3</td><td>6</td></tr>
+    <tr><td class="step">defense</td><td>5</td><td>10</td><td>15</td></tr>
+    <tr><td class="step">recovery</td><td>1.0</td><td>1.5</td><td>2.5</td></tr>
+    <tr><td class="step">speed</td><td>1.0</td><td>1.5</td><td>3.0</td></tr>
+  </table>
+  <div class="box fire" style="max-width:860px; width:100%; margin-top:0.6rem;">
+    <p class="small">Fast + fragile: high speed, low defense. Slow + tanky: low speed, high health and defense. Magic-user: high energy, lower attack. There's no wrong answer here — pick a personality and let the numbers match it.</p>
+  </div>
+</div>
+
+<!-- SLIDE 8: Practice 1 -->
+<div class="slide bg-practice left-align" data-section="build">
+  <div class="step-badge">
+    <div class="step-num sn-fire">1</div>
+    <div>
+      <div class="step-file">📂 game_data.py</div>
+      <span class="step-title">Design your monsters — your turn</span>
+    </div>
+  </div>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank xs"><span class="st">'MyFireMonster'</span><span class="op">:</span> <span class="op">{</span>           <span class="cm"># TODO: replace 'MyFireMonster' with a cool name!</span>
+    <span class="st">'stats'</span><span class="op">:</span> <span class="op">{</span>
+        <span class="st">'element'</span><span class="op">:</span> <span class="st">'fire'</span><span class="op">,</span>
+        <span class="st">'max_health'</span><span class="op">:</span> <span class="nm">10</span><span class="op">,</span>     <span class="todo"># TODO: pick a number, 10-30 (placeholder)</span>
+        <span class="st">'max_energy'</span><span class="op">:</span> <span class="nm">5</span><span class="op">,</span>      <span class="todo"># TODO: pick a number, 5-25</span>
+        <span class="st">'attack'</span><span class="op">:</span> <span class="nm">1</span><span class="op">,</span>          <span class="todo"># TODO: pick a number, 1-6</span>
+        <span class="st">'defense'</span><span class="op">:</span> <span class="nm">5</span><span class="op">,</span>         <span class="todo"># TODO: pick a number, 5-15</span>
+        <span class="st">'recovery'</span><span class="op">:</span> <span class="nm">1.0</span><span class="op">,</span>      <span class="todo"># TODO: pick a float like 1.0 or 1.5</span>
+        <span class="st">'speed'</span><span class="op">:</span> <span class="nm">1.0</span><span class="op">},</span>        <span class="todo"># TODO: pick a float like 1.0 or 2.0</span>
+    <span class="st">'abilities'</span><span class="op">:</span> <span class="op">{</span><span class="nm">0</span><span class="op">:</span> <span class="st">'scratch'</span><span class="op">,</span> <span class="nm">5</span><span class="op">:</span> <span class="st">'fire'</span><span class="op">},</span>
+    <span class="st">'evolve'</span><span class="op">:</span> <span class="kw">None</span><span class="op">},</span>          <span class="todo"># TODO: or ('EvolvedName', level)</span>
+
+<span class="cm"># ...and a second monster, 'MyPlantMonster', shaped the same way.</span></pre>
+    <ul class="hint-list">
+      <li>Rename <code>'MyFireMonster'</code> and <code>'MyPlantMonster'</code> to whatever you want to call them — the dictionary key <em>is</em> the name used everywhere else, including <code>Monster('YourName', level)</code>.</li>
+      <li>Replace every placeholder number using the stat guide on the previous slide.</li>
+      <li><code>'evolve': None</code> is fine to leave as-is — evolutions are an extension challenge, not required.</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">One example of a complete answer — yours will look different!</div>
+      <pre class="green xs"><span class="st">'Vulpyre'</span><span class="op">:</span> <span class="op">{</span>
+    <span class="st">'stats'</span><span class="op">:</span> <span class="op">{</span><span class="st">'element'</span><span class="op">:</span> <span class="st">'fire'</span><span class="op">,</span> <span class="st">'max_health'</span><span class="op">:</span> <span class="nm">14</span><span class="op">,</span> <span class="st">'max_energy'</span><span class="op">:</span> <span class="nm">10</span><span class="op">,</span>
+              <span class="st">'attack'</span><span class="op">:</span> <span class="nm">5</span><span class="op">,</span> <span class="st">'defense'</span><span class="op">:</span> <span class="nm">6</span><span class="op">,</span> <span class="st">'recovery'</span><span class="op">:</span> <span class="nm">1.0</span><span class="op">,</span> <span class="st">'speed'</span><span class="op">:</span> <span class="nm">2.2</span><span class="op">},</span>
+    <span class="st">'abilities'</span><span class="op">:</span> <span class="op">{</span><span class="nm">0</span><span class="op">:</span> <span class="st">'scratch'</span><span class="op">,</span> <span class="nm">5</span><span class="op">:</span> <span class="st">'fire'</span><span class="op">},</span>
+    <span class="st">'evolve'</span><span class="op">:</span> <span class="kw">None</span><span class="op">},</span>  <span class="cm"># fast and fierce: high speed, low defense</span>
+
+<span class="st">'Verdil'</span><span class="op">:</span> <span class="op">{</span>
+    <span class="st">'stats'</span><span class="op">:</span> <span class="op">{</span><span class="st">'element'</span><span class="op">:</span> <span class="st">'plant'</span><span class="op">,</span> <span class="st">'max_health'</span><span class="op">:</span> <span class="nm">16</span><span class="op">,</span> <span class="st">'max_energy'</span><span class="op">:</span> <span class="nm">22</span><span class="op">,</span>
+              <span class="st">'attack'</span><span class="op">:</span> <span class="nm">2</span><span class="op">,</span> <span class="st">'defense'</span><span class="op">:</span> <span class="nm">9</span><span class="op">,</span> <span class="st">'recovery'</span><span class="op">:</span> <span class="nm">1.6</span><span class="op">,</span> <span class="st">'speed'</span><span class="op">:</span> <span class="nm">1.1</span><span class="op">},</span>
+    <span class="st">'abilities'</span><span class="op">:</span> <span class="op">{</span><span class="nm">0</span><span class="op">:</span> <span class="st">'scratch'</span><span class="op">,</span> <span class="nm">5</span><span class="op">:</span> <span class="st">'spark'</span><span class="op">,</span> <span class="nm">10</span><span class="op">:</span> <span class="st">'heal'</span><span class="op">},</span>
+    <span class="st">'evolve'</span><span class="op">:</span> <span class="kw">None</span><span class="op">},</span>  <span class="cm"># magic-user: high energy, built around healing</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ STEP 2 ══════════════════ -->
+
+<!-- SLIDE 9: Concept 2 -->
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — Step 2</div>
+  <h2>What an attack dictionary actually controls</h2>
+  <p style="max-width:860px;">Every entry in <code>ATTACK_DATA</code> is read by the battle math in <code>get_base_damage()</code> and by <code>reduce_energy()</code> — four fields decide everything about how an attack behaves.</p>
+  <div class="two-col" style="max-width:900px;">
+    <div class="box fire">
+      <h3 style="color:var(--fire);">🎯 target</h3>
+      <p class="small"><code>'opponent'</code> to hurt them, <code>'player'</code> to affect your own monster instead — that's how healing works, by targeting yourself.</p>
+    </div>
+    <div class="box gold">
+      <h3 style="color:var(--gold);">💥 amount</h3>
+      <p class="small">Multiplies the attacker's attack stat. Above 1 deals damage; <strong>negative</strong> heals — <code>-1.2</code> restores health instead of removing it.</p>
+    </div>
+    <div class="box water">
+      <h3 style="color:var(--water);">⚡ cost</h3>
+      <p class="small">Energy spent from <code>self.energy</code> every time the move is used — <code>reduce_energy()</code> subtracts this directly.</p>
+    </div>
+    <div class="box purple">
+      <h3 style="color:var(--purple);">🔥 element</h3>
+      <p class="small">Which animation and (later) type-matchup logic the move uses — <code>'fire'</code>, <code>'water'</code>, <code>'plant'</code>, or <code>'normal'</code>.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 10: Practice 2 -->
+<div class="slide bg-practice left-align" data-section="build">
+  <div class="step-badge">
+    <div class="step-num sn-fire">2</div>
+    <div>
+      <div class="step-file">📂 game_data.py</div>
+      <span class="step-title">Design your attacks — your turn</span>
+    </div>
+  </div>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank sm"><span class="cm"># 'spark' is a fire attack that does moderate damage.</span>
+<span class="st">'spark'</span><span class="op">:</span> <span class="op">{</span>
+    <span class="st">'target'</span><span class="op">:</span> <span class="st">'opponent'</span><span class="op">,</span> <span class="todo"># TODO: 'opponent' or 'player'? (placeholder)</span>
+    <span class="st">'amount'</span><span class="op">:</span> <span class="nm">1.0</span><span class="op">,</span>        <span class="todo"># TODO: how much damage? (1.0 to 3.0)</span>
+    <span class="st">'cost'</span><span class="op">:</span> <span class="nm">10</span><span class="op">,</span>           <span class="todo"># TODO: energy cost (10 to 100)</span>
+    <span class="st">'element'</span><span class="op">:</span> <span class="st">'normal'</span><span class="op">,</span>  <span class="todo"># TODO: 'fire', 'water', 'plant', or 'normal'</span>
+    <span class="st">'animation'</span><span class="op">:</span> <span class="st">'fire'</span>  <span class="cm"># this stays as 'fire' — uses fire animation</span>
+<span class="op">},</span>
+
+<span class="cm"># 'heal' restores health. Tip: negative amount = healing!</span>
+<span class="st">'heal'</span><span class="op">:</span> <span class="op">{</span>
+    <span class="st">'target'</span><span class="op">:</span> <span class="st">'opponent'</span><span class="op">,</span> <span class="todo"># TODO: healing goes to 'player', not 'opponent'!</span>
+    <span class="st">'amount'</span><span class="op">:</span> <span class="nm">1.0</span><span class="op">,</span>        <span class="todo"># TODO: negative float like -1.2 to restore health</span>
+    <span class="st">'cost'</span><span class="op">:</span> <span class="nm">10</span><span class="op">,</span>           <span class="todo"># TODO: healing costs a lot of energy — try 600</span>
+    <span class="st">'element'</span><span class="op">:</span> <span class="st">'plant'</span><span class="op">,</span>  <span class="cm"># healing is plant-type</span>
+    <span class="st">'animation'</span><span class="op">:</span> <span class="st">'green'</span>
+<span class="op">},</span></pre>
+    <ul class="hint-list">
+      <li><code>spark</code>: fire attack, targets the opponent, amount around 1.1, cost around 20.</li>
+      <li><code>heal</code>: targets <code>'player'</code> (yourself!), amount <code>-1.2</code> — negative because it restores instead of removing — cost 600 so it's a rare, powerful move.</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">Answer key</div>
+      <pre class="green sm"><span class="st">'spark'</span><span class="op">:</span> <span class="op">{</span><span class="st">'target'</span><span class="op">:</span> <span class="st">'opponent'</span><span class="op">,</span> <span class="st">'amount'</span><span class="op">:</span> <span class="nm">1.1</span><span class="op">,</span> <span class="st">'cost'</span><span class="op">:</span> <span class="nm">20</span><span class="op">,</span>
+          <span class="st">'element'</span><span class="op">:</span> <span class="st">'fire'</span><span class="op">,</span> <span class="st">'animation'</span><span class="op">:</span> <span class="st">'fire'</span><span class="op">},</span>
+
+<span class="st">'heal'</span><span class="op">:</span> <span class="op">{</span><span class="st">'target'</span><span class="op">:</span> <span class="st">'player'</span><span class="op">,</span> <span class="st">'amount'</span><span class="op">:</span> <span class="op">-</span><span class="nm">1.2</span><span class="op">,</span> <span class="st">'cost'</span><span class="op">:</span> <span class="nm">600</span><span class="op">,</span>
+         <span class="st">'element'</span><span class="op">:</span> <span class="st">'plant'</span><span class="op">,</span> <span class="st">'animation'</span><span class="op">:</span> <span class="st">'green'</span><span class="op">},</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ STEP 3 ══════════════════ -->
+
+<!-- SLIDE 11: Concept 3 -->
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — Step 3</div>
+  <h2>__init__: turning a name and a level into a monster</h2>
+  <p style="max-width:860px;"><code>Monster('Sparchu', 5)</code> looks up <code>MONSTER_DATA['Sparchu']</code> and copies the pieces it needs into fresh instance attributes. From that point on, the object doesn't need <code>MONSTER_DATA</code> again for its base stats — <code>self.base_stats</code> already has them.</p>
+  <div class="box water" style="max-width:860px; width:100%;">
+    <p class="small"><code>self.health</code> and <code>self.energy</code> start at their <strong>maximum</strong> — <code>base_stats['max_health'] * level</code> — not zero. A brand-new monster starts full.</p>
+  </div>
+  <div class="box gold" style="max-width:860px; width:100%;">
+    <p class="small"><code>self.level_up = level * 150</code> is the XP threshold for the <em>next</em> level — a level 5 monster needs 750 XP banked before it levels up. <code>update_xp()</code> in Step 8 uses this number.</p>
+  </div>
+</div>
+
+<!-- SLIDE 12: Practice 3 -->
+<div class="slide bg-practice left-align" data-section="build">
+  <div class="step-badge">
+    <div class="step-num sn-fire">3</div>
+    <div>
+      <div class="step-file">📂 monster.py</div>
+      <span class="step-title">__init__ — your turn</span>
+    </div>
+  </div>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank xs"><span class="kw">def</span> <span class="fn">__init__</span>(<span class="at">self</span>, name, level)<span class="op">:</span>
+    <span class="cm"># Store name and level</span>
+    <span class="todo"># TODO: your code here</span>
+    <span class="kw">pass</span>  <span class="cm"># remove this when you're done</span>
+
+    <span class="cm"># TODO: self.paused = False</span>
+    <span class="cm"># TODO: self.element = MONSTER_DATA[name]['stats']['element']</span>
+    <span class="cm"># TODO: self.base_stats = MONSTER_DATA[name]['stats']</span>
+    <span class="cm"># TODO: self.health = ...   (max_health * level)</span>
+    <span class="cm"># TODO: self.energy = ...   (max_energy * level)</span>
+    <span class="cm"># TODO: self.initiative = 0</span>
+    <span class="cm"># TODO: self.abilities = MONSTER_DATA[name]['abilities']</span>
+    <span class="cm"># TODO: self.defending = False</span>
+    <span class="cm"># TODO: self.xp = 0</span>
+    <span class="cm"># TODO: self.level_up = level * 150</span>
+    <span class="cm"># TODO: self.evolution = MONSTER_DATA[self.name]['evolve']</span></pre>
+    <ul class="hint-list">
+      <li>Start with <code>self.name = name</code> and <code>self.level = level</code> — every other line reads one of these two.</li>
+      <li>Everything below that is a straight copy from the hint comments already in your file, in order.</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">Answer key</div>
+      <pre class="green xs"><span class="kw">def</span> <span class="fn">__init__</span>(<span class="at">self</span>, name, level)<span class="op">:</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">name</span> <span class="op">=</span> name
+    <span class="at">self</span><span class="op">.</span><span class="at">level</span> <span class="op">=</span> level
+    <span class="at">self</span><span class="op">.</span><span class="at">paused</span> <span class="op">=</span> <span class="kw">False</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">element</span> <span class="op">=</span> MONSTER_DATA<span class="op">[</span>name<span class="op">][</span><span class="st">'stats'</span><span class="op">][</span><span class="st">'element'</span><span class="op">]</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">base_stats</span> <span class="op">=</span> MONSTER_DATA<span class="op">[</span>name<span class="op">][</span><span class="st">'stats'</span><span class="op">]</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">health</span> <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">base_stats</span><span class="op">[</span><span class="st">'max_health'</span><span class="op">]</span> <span class="op">*</span> <span class="at">self</span><span class="op">.</span><span class="at">level</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">energy</span> <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">base_stats</span><span class="op">[</span><span class="st">'max_energy'</span><span class="op">]</span> <span class="op">*</span> <span class="at">self</span><span class="op">.</span><span class="at">level</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">initiative</span> <span class="op">=</span> <span class="nm">0</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">abilities</span> <span class="op">=</span> MONSTER_DATA<span class="op">[</span>name<span class="op">][</span><span class="st">'abilities'</span><span class="op">]</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">defending</span> <span class="op">=</span> <span class="kw">False</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">xp</span> <span class="op">=</span> <span class="nm">0</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">level_up</span> <span class="op">=</span> level <span class="op">*</span> <span class="nm">150</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">evolution</span> <span class="op">=</span> MONSTER_DATA<span class="op">[</span><span class="at">self</span><span class="op">.</span><span class="at">name</span><span class="op">][</span><span class="st">'evolve'</span><span class="op">]</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ STEP 4 ══════════════════ -->
+
+<!-- SLIDE 13: Concept 4 -->
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — Step 4</div>
+  <h2>get_stat: the one-line formula everything else calls</h2>
+  <p style="max-width:860px;">Every other method that needs a current, scaled stat — <code>get_stats()</code>, <code>get_base_damage()</code>, <code>get_info()</code>, even <code>update()</code> — calls <code>get_stat()</code> instead of doing the multiplication itself. Write this once, correctly, and the rest of the class is simple.</p>
+  <div class="box gold" style="max-width:860px; width:100%;">
+    <p class="small"><code>self.base_stats</code> is the dictionary you stored in <code>__init__</code> — <code>self.base_stats['attack']</code> gets the base number, multiplying by <code>self.level</code> scales it to the monster's current level.</p>
+  </div>
+</div>
+
+<!-- SLIDE 14: Practice 4 -->
+<div class="slide bg-practice left-align" data-section="build">
+  <div class="step-badge">
+    <div class="step-num sn-fire">4</div>
+    <div>
+      <div class="step-file">📂 monster.py</div>
+      <span class="step-title">get_stat(stat) — your turn</span>
+    </div>
+  </div>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank sm"><span class="kw">def</span> <span class="fn">get_stat</span>(<span class="at">self</span>, stat)<span class="op">:</span>
+    <span class="cm"># Return the stat value scaled by level.</span>
+    <span class="cm"># Example: base attack of 3 at level 10 = 30</span>
+    <span class="todo"># TODO: your code here</span>
+    <span class="kw">pass</span>  <span class="cm"># remove this when you're done</span></pre>
+    <ul class="hint-list">
+      <li>One line: multiply <code>self.base_stats[stat]</code> by <code>self.level</code> and return it.</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">Answer key</div>
+      <pre class="green sm"><span class="kw">def</span> <span class="fn">get_stat</span>(<span class="at">self</span>, stat)<span class="op">:</span>
+    <span class="kw">return</span> <span class="at">self</span><span class="op">.</span><span class="at">base_stats</span><span class="op">[</span>stat<span class="op">]</span> <span class="op">*</span> <span class="at">self</span><span class="op">.</span><span class="at">level</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ STEP 5 ══════════════════ -->
+
+<!-- SLIDE 15: Concept 5 -->
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — Step 5</div>
+  <h2>get_stats: all six numbers, bundled for the UI</h2>
+  <p style="max-width:860px;">The monster index screen (built in a later session) needs every stat at once to draw six stat bars. Rather than call <code>get_stat()</code> six separate times itself, the UI calls <code>get_stats()</code> once and gets a dictionary back.</p>
+  <div class="box water" style="max-width:860px; width:100%;">
+    <p class="small">Notice the key names don't exactly match <code>base_stats</code>' keys — <code>base_stats</code> has <code>'max_health'</code>, but <code>get_stats()</code> returns it under the key <code>'health'</code>. The dictionary you build is a translation layer for the UI, not a copy of <code>base_stats</code>.</p>
+  </div>
+</div>
+
+<!-- SLIDE 16: Practice 5 -->
+<div class="slide bg-practice left-align" data-section="build">
+  <div class="step-badge">
+    <div class="step-num sn-fire">5</div>
+    <div>
+      <div class="step-file">📂 monster.py</div>
+      <span class="step-title">get_stats() — your turn</span>
+    </div>
+  </div>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank sm"><span class="kw">def</span> <span class="fn">get_stats</span>(<span class="at">self</span>)<span class="op">:</span>
+    <span class="cm"># Return a dict with all 6 scaled stats.</span>
+    <span class="cm"># Used by the monster index screen to draw stat bars.</span>
+    <span class="todo"># TODO: your code here</span>
+    <span class="kw">pass</span>  <span class="cm"># remove this when you're done</span></pre>
+    <ul class="hint-list">
+      <li>Return a dict with keys <code>'health'</code>, <code>'energy'</code>, <code>'attack'</code>, <code>'defense'</code>, <code>'speed'</code>, <code>'recovery'</code>.</li>
+      <li>Call <code>self.get_stat(...)</code> for each one — note <code>'health'</code> reads from <code>get_stat('max_health')</code>, and <code>'energy'</code> from <code>get_stat('max_energy')</code>.</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">Answer key</div>
+      <pre class="green xs"><span class="kw">def</span> <span class="fn">get_stats</span>(<span class="at">self</span>)<span class="op">:</span>
+    <span class="kw">return</span> <span class="op">{</span>
+        <span class="st">'health'</span><span class="op">:</span> <span class="at">self</span><span class="op">.</span><span class="fn">get_stat</span><span class="op">(</span><span class="st">'max_health'</span><span class="op">),</span>
+        <span class="st">'energy'</span><span class="op">:</span> <span class="at">self</span><span class="op">.</span><span class="fn">get_stat</span><span class="op">(</span><span class="st">'max_energy'</span><span class="op">),</span>
+        <span class="st">'attack'</span><span class="op">:</span> <span class="at">self</span><span class="op">.</span><span class="fn">get_stat</span><span class="op">(</span><span class="st">'attack'</span><span class="op">),</span>
+        <span class="st">'defense'</span><span class="op">:</span> <span class="at">self</span><span class="op">.</span><span class="fn">get_stat</span><span class="op">(</span><span class="st">'defense'</span><span class="op">),</span>
+        <span class="st">'speed'</span><span class="op">:</span> <span class="at">self</span><span class="op">.</span><span class="fn">get_stat</span><span class="op">(</span><span class="st">'speed'</span><span class="op">),</span>
+        <span class="st">'recovery'</span><span class="op">:</span> <span class="at">self</span><span class="op">.</span><span class="fn">get_stat</span><span class="op">(</span><span class="st">'recovery'</span><span class="op">),</span>
+    <span class="op">}</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ STEP 6 ══════════════════ -->
+
+<!-- SLIDE 17: Concept 6 -->
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — Step 6</div>
+  <h2>get_abilities: which moves are actually usable right now</h2>
+  <p style="max-width:860px;"><code>self.abilities</code> is a dict like <code>{0: 'scratch', 5: 'fire', 15: 'battlecry'}</code> — each key is the <strong>minimum level</strong> that move unlocks at. <code>get_abilities()</code> filters that down to what's usable this instant.</p>
+  <div class="two-col" style="max-width:900px;">
+    <div class="box gold">
+      <h3 style="color:var(--gold);">include_all=True</h3>
+      <p class="small">Every move unlocked by level, for showing the full move list — e.g. on a monster's info screen.</p>
+    </div>
+    <div class="box fire">
+      <h3 style="color:var(--fire);">include_all=False</h3>
+      <p class="small">Only moves the monster can currently <em>afford</em> — level requirement met <strong>and</strong> <code>ATTACK_DATA[ability]['cost'] < self.energy</code>. This is what a battle menu shows.</p>
+    </div>
+  </div>
+  <div class="box water" style="max-width:900px; width:100%;">
+    <p class="small">A list comprehension does this filtering in one line: <code>[ability for lvl, ability in self.abilities.items() if ...]</code> loops over <code>(level, ability_name)</code> pairs and keeps the ones matching the condition.</p>
+  </div>
+</div>
+
+<!-- SLIDE 18: Practice 6 -->
+<div class="slide bg-practice left-align" data-section="build">
+  <div class="step-badge">
+    <div class="step-num sn-fire">6</div>
+    <div>
+      <div class="step-file">📂 monster.py</div>
+      <span class="step-title">get_abilities(include_all=True) — your turn</span>
+    </div>
+  </div>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank sm"><span class="kw">def</span> <span class="fn">get_abilities</span>(<span class="at">self</span>, include_all<span class="op">=</span><span class="kw">True</span>)<span class="op">:</span>
+    <span class="cm"># include_all=True  -> all abilities unlocked by level</span>
+    <span class="cm"># include_all=False -> only abilities with enough energy</span>
+    <span class="todo"># TODO: your code here</span>
+    <span class="kw">pass</span>  <span class="cm"># remove this when you're done</span></pre>
+    <ul class="hint-list">
+      <li>Loop through <code>self.abilities.items()</code> — each item is <code>(required_level, ability_name)</code>.</li>
+      <li>Keep it if <code>self.level >= required_level</code>. If <code>include_all=False</code>, also require <code>ATTACK_DATA[ability]['cost'] < self.energy</code>.</li>
+      <li>Fits in one list comprehension per branch.</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">Answer key</div>
+      <pre class="green xs"><span class="kw">def</span> <span class="fn">get_abilities</span>(<span class="at">self</span>, include_all<span class="op">=</span><span class="kw">True</span>)<span class="op">:</span>
+    <span class="kw">if</span> include_all<span class="op">:</span>
+        <span class="kw">return</span> <span class="op">[</span>ability <span class="kw">for</span> lvl, ability <span class="kw">in</span> <span class="at">self</span><span class="op">.</span><span class="at">abilities</span><span class="op">.</span><span class="fn">items</span><span class="op">()</span> <span class="kw">if</span> <span class="at">self</span><span class="op">.</span><span class="at">level</span> <span class="op">>=</span> lvl<span class="op">]</span>
+    <span class="kw">return</span> <span class="op">[</span>ability <span class="kw">for</span> lvl, ability <span class="kw">in</span> <span class="at">self</span><span class="op">.</span><span class="at">abilities</span><span class="op">.</span><span class="fn">items</span><span class="op">()</span>
+            <span class="kw">if</span> <span class="at">self</span><span class="op">.</span><span class="at">level</span> <span class="op">>=</span> lvl <span class="kw">and</span> ATTACK_DATA<span class="op">[</span>ability<span class="op">][</span><span class="st">'cost'</span><span class="op">]</span> <span class="op">&lt;</span> <span class="at">self</span><span class="op">.</span><span class="at">energy</span><span class="op">]</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ STEP 7 ══════════════════ -->
+
+<!-- SLIDE 19: Concept 7 -->
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — Step 7</div>
+  <h2>get_base_damage: attack stat meets attack data</h2>
+  <p style="max-width:860px;">This is where the two dictionaries you built in Steps 1 and 2 finally meet. The monster's own attack stat multiplies by that specific move's <code>amount</code> — a high-attack monster hits harder with the exact same move than a low-attack one.</p>
+  <div class="box gold" style="max-width:860px; width:100%;">
+    <p class="small"><strong>Worked example:</strong> a monster with <code>attack</code> stat 30 using <code>spark</code> (<code>amount: 1.1</code>) deals <code>30 * 1.1 = 33</code> damage. The same monster using <code>heal</code> (<code>amount: -1.2</code>) "deals" <code>-36</code> — negative damage is healing.</p>
+  </div>
+</div>
+
+<!-- SLIDE 20: Practice 7 -->
+<div class="slide bg-practice left-align" data-section="build">
+  <div class="step-badge">
+    <div class="step-num sn-fire">7</div>
+    <div>
+      <div class="step-file">📂 monster.py</div>
+      <span class="step-title">get_base_damage(attack) — your turn</span>
+    </div>
+  </div>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank sm"><span class="kw">def</span> <span class="fn">get_base_damage</span>(<span class="at">self</span>, attack)<span class="op">:</span>
+    <span class="cm"># base damage = attack stat * attack's amount multiplier</span>
+    <span class="todo"># TODO: your code here</span>
+    <span class="kw">pass</span>  <span class="cm"># remove this when you're done</span></pre>
+    <ul class="hint-list">
+      <li><code>return self.get_stat('attack') * ATTACK_DATA[attack]['amount']</code> — one line, reusing Step 4's method.</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">Answer key</div>
+      <pre class="green sm"><span class="kw">def</span> <span class="fn">get_base_damage</span>(<span class="at">self</span>, attack)<span class="op">:</span>
+    <span class="kw">return</span> <span class="at">self</span><span class="op">.</span><span class="fn">get_stat</span><span class="op">(</span><span class="st">'attack'</span><span class="op">)</span> <span class="op">*</span> ATTACK_DATA<span class="op">[</span>attack<span class="op">][</span><span class="st">'amount'</span><span class="op">]</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ STEP 8 ══════════════════ -->
+
+<!-- SLIDE 21: Concept 8 -->
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — Step 8</div>
+  <h2>update_xp: banking XP, and carrying the leftover</h2>
+  <p style="max-width:860px;">There are exactly two cases. Either the new XP fits below the level-up threshold, or it doesn't — and when it doesn't, the <em>leftover</em> XP (the part past the threshold) carries into the new level instead of being thrown away.</p>
+  <div class="box water" style="max-width:860px; width:100%;">
+    <p class="small"><strong>Worked example:</strong> a level 5 monster has <code>level_up = 750</code> and <code>xp = 0</code>. Gaining <code>500</code> XP: <code>750 - 0 = 750</code>, and <code>500</code> is not greater than that gap, so it just adds — <code>xp</code> becomes <code>500</code>, level stays 5.</p>
+  </div>
+  <div class="box gold" style="max-width:860px; width:100%;">
+    <p class="small">Now gaining <code>800</code> XP instead: the gap (750) is smaller than 800, so it levels up. Leftover XP is <code>800 - 750 = 50</code>, becoming the new <code>xp</code> at level 6. <code>level_up</code> is then recalculated as <code>6 * 150 = 900</code> for the <em>next</em> level-up.</p>
+  </div>
+</div>
+
+<!-- SLIDE 22: Practice 8 -->
+<div class="slide bg-practice left-align" data-section="build">
+  <div class="step-badge">
+    <div class="step-num sn-fire">8</div>
+    <div>
+      <div class="step-file">📂 monster.py</div>
+      <span class="step-title">update_xp(amount) — your turn</span>
+    </div>
+  </div>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank sm"><span class="kw">def</span> <span class="fn">update_xp</span>(<span class="at">self</span>, amount)<span class="op">:</span>
+    <span class="cm"># Add XP. Level up if we hit the threshold.</span>
+    <span class="cm"># Carry over any leftover XP past the level-up point.</span>
+    <span class="cm"># After levelling up, recalculate self.level_up.</span>
+    <span class="todo"># TODO: your code here</span>
+    <span class="kw">pass</span>  <span class="cm"># remove this when you're done</span></pre>
+    <ul class="hint-list">
+      <li><code>if self.level_up - self.xp > amount:</code> just add — <code>self.xp += amount</code>.</li>
+      <li>Otherwise: <code>self.level += 1</code>, then <code>self.xp = amount - (self.level_up - self.xp)</code>, then recalculate <code>self.level_up = self.level * 150</code>.</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">Answer key</div>
+      <pre class="green xs"><span class="kw">def</span> <span class="fn">update_xp</span>(<span class="at">self</span>, amount)<span class="op">:</span>
+    <span class="kw">if</span> <span class="at">self</span><span class="op">.</span><span class="at">level_up</span> <span class="op">-</span> <span class="at">self</span><span class="op">.</span><span class="at">xp</span> <span class="op">></span> amount<span class="op">:</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">xp</span> <span class="op">+=</span> amount
+    <span class="kw">else</span><span class="op">:</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">level</span> <span class="op">+=</span> <span class="nm">1</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">xp</span> <span class="op">=</span> amount <span class="op">-</span> (<span class="at">self</span><span class="op">.</span><span class="at">level_up</span> <span class="op">-</span> <span class="at">self</span><span class="op">.</span><span class="at">xp</span>)
+        <span class="at">self</span><span class="op">.</span><span class="at">level_up</span> <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">level</span> <span class="op">*</span> <span class="nm">150</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ STEP 9 ══════════════════ -->
+
+<!-- SLIDE 23: Concept 9 -->
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — Step 9</div>
+  <h2>stat_limiter: keeping health and energy in bounds</h2>
+  <p style="max-width:860px;">Nothing stops <code>self.health</code> from going negative after taking damage, or above max after healing, unless something clamps it. <code>stat_limiter()</code> runs every frame (from <code>update()</code>) and pins both values back into their valid range.</p>
+  <div class="box gold" style="max-width:860px; width:100%;">
+    <p class="small"><code>max(0, min(value, max_value))</code> reads inside-out: <code>min(value, max_value)</code> caps the top, then <code>max(0, ...)</code> floors it at zero. Two clamps, one expression.</p>
+  </div>
+</div>
+
+<!-- SLIDE 24: Practice 9 -->
+<div class="slide bg-practice left-align" data-section="build">
+  <div class="step-badge">
+    <div class="step-num sn-fire">9</div>
+    <div>
+      <div class="step-file">📂 monster.py</div>
+      <span class="step-title">stat_limiter() — your turn</span>
+    </div>
+  </div>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank sm"><span class="kw">def</span> <span class="fn">stat_limiter</span>(<span class="at">self</span>)<span class="op">:</span>
+    <span class="cm"># health should stay between 0 and get_stat('max_health')</span>
+    <span class="cm"># energy should stay between 0 and get_stat('max_energy')</span>
+    <span class="todo"># TODO: your code here</span>
+    <span class="kw">pass</span>  <span class="cm"># remove this when you're done</span></pre>
+    <ul class="hint-list">
+      <li>Use <code>max(0, min(value, max_value))</code> for both <code>self.health</code> and <code>self.energy</code>.</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">Answer key</div>
+      <pre class="green sm"><span class="kw">def</span> <span class="fn">stat_limiter</span>(<span class="at">self</span>)<span class="op">:</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">health</span> <span class="op">=</span> <span class="fn">max</span><span class="op">(</span><span class="nm">0</span><span class="op">,</span> <span class="fn">min</span><span class="op">(</span><span class="at">self</span><span class="op">.</span><span class="at">health</span><span class="op">,</span> <span class="at">self</span><span class="op">.</span><span class="fn">get_stat</span><span class="op">(</span><span class="st">'max_health'</span><span class="op">)))</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">energy</span> <span class="op">=</span> <span class="fn">max</span><span class="op">(</span><span class="nm">0</span><span class="op">,</span> <span class="fn">min</span><span class="op">(</span><span class="at">self</span><span class="op">.</span><span class="at">energy</span><span class="op">,</span> <span class="at">self</span><span class="op">.</span><span class="fn">get_stat</span><span class="op">(</span><span class="st">'max_energy'</span><span class="op">)))</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ STEP 10 ══════════════════ -->
+
+<!-- SLIDE 25: Concept 10 -->
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — Step 10</div>
+  <h2>self.player_monsters: a team that exists at startup</h2>
+  <p style="max-width:860px;">Everything before this step built the <code>Monster</code> class. This step actually <em>uses</em> it — creating a dictionary of 6 or 7 monster objects the moment the game starts, exactly the way <code>TRAINER_DATA</code> already builds NPC teams in <code>entities.py</code>.</p>
+  <div class="box water" style="max-width:860px; width:100%;">
+    <p class="small">Giving each monster a small burst of random starting XP with <code>randint(0, monster.level * 100)</code> means the team doesn't all start at exactly 0 XP — a level 30 monster might already be partway to its next level.</p>
+  </div>
+</div>
+
+<!-- SLIDE 26: Practice 10 -->
+<div class="slide bg-practice left-align" data-section="build">
+  <div class="step-badge">
+    <div class="step-num sn-water">10</div>
+    <div>
+      <div class="step-file">📂 main.py</div>
+      <span class="step-title">self.player_monsters — your turn</span>
+    </div>
+  </div>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank sm"><span class="cm"># self.player_monsters = {</span>
+<span class="cm">#     0: Monster('Ivieron', 32),</span>
+<span class="cm">#     1: Monster('Atrox', 15),</span>
+<span class="cm">#     ... (add 5-7 monsters)</span>
+<span class="cm"># }</span>
+<span class="cm"># for monster in self.player_monsters.values():</span>
+<span class="cm">#     monster.xp += randint(0, monster.level * 100)</span>
+
+<span class="todo"># TODO: your code here</span>
+<span class="kw">pass</span>  <span class="cm"># remove this when you're done</span></pre>
+    <ul class="hint-list">
+      <li>Build a dict keyed <code>0, 1, 2, ...</code>, each value a <code>Monster('Name', level)</code> — mix monster names from <code>MONSTER_DATA</code>, including your own from Step 1.</li>
+      <li>Then loop through <code>self.player_monsters.values()</code> and bump each one's <code>xp</code> by a random amount.</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">One example of a complete answer</div>
+      <pre class="green xs"><span class="at">self</span><span class="op">.</span><span class="at">player_monsters</span> <span class="op">=</span> <span class="op">{</span>
+    <span class="nm">0</span><span class="op">:</span> <span class="fn">Monster</span><span class="op">(</span><span class="st">'Ivieron'</span><span class="op">,</span> <span class="nm">32</span><span class="op">),</span>
+    <span class="nm">1</span><span class="op">:</span> <span class="fn">Monster</span><span class="op">(</span><span class="st">'Atrox'</span><span class="op">,</span> <span class="nm">15</span><span class="op">),</span>
+    <span class="nm">2</span><span class="op">:</span> <span class="fn">Monster</span><span class="op">(</span><span class="st">'Cindrill'</span><span class="op">,</span> <span class="nm">16</span><span class="op">),</span>
+    <span class="nm">3</span><span class="op">:</span> <span class="fn">Monster</span><span class="op">(</span><span class="st">'Atrox'</span><span class="op">,</span> <span class="nm">10</span><span class="op">),</span>
+    <span class="nm">4</span><span class="op">:</span> <span class="fn">Monster</span><span class="op">(</span><span class="st">'Sparchu'</span><span class="op">,</span> <span class="nm">11</span><span class="op">),</span>
+    <span class="nm">5</span><span class="op">:</span> <span class="fn">Monster</span><span class="op">(</span><span class="st">'Gulfin'</span><span class="op">,</span> <span class="nm">9</span><span class="op">),</span>
+    <span class="nm">6</span><span class="op">:</span> <span class="fn">Monster</span><span class="op">(</span><span class="st">'Jacana'</span><span class="op">,</span> <span class="nm">10</span><span class="op">),</span>
+<span class="op">}</span>
+<span class="kw">for</span> monster <span class="kw">in</span> <span class="at">self</span><span class="op">.</span><span class="at">player_monsters</span><span class="op">.</span><span class="fn">values</span><span class="op">():</span>
+    monster<span class="op">.</span><span class="at">xp</span> <span class="op">+=</span> <span class="fn">randint</span><span class="op">(</span><span class="nm">0</span><span class="op">,</span> monster<span class="op">.</span><span class="at">level</span> <span class="op">*</span> <span class="nm">100</span><span class="op">)</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ BATTLES ══════════════════ -->
+
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — Battles</div>
+  <h2>One monster per side, a bench for the rest</h2>
+  <p style="max-width:860px;">A full Pokémon-style battle lets you switch monsters mid-fight and catch wild ones — that's a lot of extra menu logic. This battle system keeps it simple: only <strong>one monster per side is ever on screen</strong>. Your other monsters wait on the bench (<code>monster_data</code>), and the moment your active monster faints, the next one is sent in automatically.</p>
+  <div class="box gold" style="max-width:860px; width:100%;">
+    <p class="small">It's still a real, properly turn-based fight — speed decides turn order, damage uses real type-effectiveness and defense math, and you can genuinely win or lose. Switching and catching are extension challenges if you want to add them yourself.</p>
+  </div>
+</div>
+
+<!-- ══════════════════ STEP 11 ══════════════════ -->
+
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — Step 11</div>
+  <h2>Getting a battle on screen</h2>
+  <p style="max-width:860px;">Three small methods work together to put the first monster on screen for each side:</p>
+  <div class="two-col" style="max-width:900px;">
+    <div class="box water">
+      <h3 style="color:var(--water);">🏗️ __init__</h3>
+      <p class="small">Sets up the sprite groups and control variables, then calls <code>self.setup()</code> to actually populate the screen.</p>
+    </div>
+    <div class="box gold">
+      <h3 style="color:var(--gold);">🎬 setup()</h3>
+      <p class="small">Pops the first (index, monster) pair off each side's bench and hands it to <code>create_monster()</code>.</p>
+    </div>
+  </div>
+  <div class="box fire" style="max-width:900px; width:100%;">
+    <p class="small"><strong>create_monster()</strong> builds every visual piece for one monster: the animated sprite, its glowing outline, name tag, level badge, and stat bars. The player's monster gets every frame flipped horizontally with <code>pygame.transform.flip()</code> so it faces right, toward the opponent — same source art, mirrored.</p>
+  </div>
+</div>
+
+<div class="slide bg-practice left-align" data-section="build">
+  <div class="step-badge">
+    <div class="step-num sn-fire">11</div>
+    <div>
+      <div class="step-file">📂 battle.py</div>
+      <span class="step-title">__init__, setup(), create_monster() — your turn</span>
+    </div>
+  </div>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank xs"><span class="kw">def</span> <span class="fn">__init__</span>(<span class="at">self</span>, player_monsters, opponent_monsters, monster_frames, bg_surf, fonts, end_battle, character, sounds)<span class="op">:</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">display_surface</span> <span class="op">=</span> pygame<span class="op">.</span><span class="fn">display</span><span class="op">.</span><span class="fn">get_surface</span><span class="op">()</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">monster_data</span> <span class="op">=</span> <span class="op">{</span><span class="st">'player'</span><span class="op">:</span> <span class="fn">dict</span><span class="op">(</span>player_monsters<span class="op">),</span> <span class="st">'opponent'</span><span class="op">:</span> <span class="fn">dict</span><span class="op">(</span>opponent_monsters<span class="op">)}</span>
+    <span class="cm"># ...end_battle, character, sounds, fonts, monster_frames, bg_surf all stored...</span>
+    <span class="todo"># TODO: your code here (groups, control vars, indexes, timers, self.setup())</span>
+    <span class="kw">pass</span>  <span class="cm"># remove this when you're done</span>
+
+<span class="kw">def</span> <span class="fn">setup</span>(<span class="at">self</span>)<span class="op">:</span>
+    <span class="todo"># TODO: your code here</span>
+    <span class="kw">pass</span>
+
+<span class="kw">def</span> <span class="fn">create_monster</span>(<span class="at">self</span>, monster, index, entity)<span class="op">:</span>
+    <span class="todo"># TODO: your code here</span>
+    <span class="kw">pass</span></pre>
+    <ul class="hint-list">
+      <li><strong>__init__</strong>: <code>self.battle_sprites = BattleSprites()</code>, plus two <code>pygame.sprite.Group()</code> for player/opponent. Control vars: <code>battle_over=False</code>, <code>current_monster=None</code>, <code>selection_mode=None</code>. <code>indexes = {'general': 0, 'attacks': 0}</code>. <code>timers = {'opponent delay': Timer(600, func=self.opponent_attack)}</code>. Finish with <code>self.setup()</code>.</li>
+      <li><strong>setup</strong>: loop <code>('player', 'opponent')</code>, pop the first bench entry from <code>self.monster_data[entity]</code>, pass to <code>create_monster()</code>.</li>
+      <li><strong>create_monster</strong>: see the full answer key for the exact positioning math — study <code>finished/session-4/battle.py</code> alongside this slide.</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">Answer key</div>
+      <pre class="green xs"><span class="kw">def</span> <span class="fn">__init__</span>(<span class="at">self</span>, ...)<span class="op">:</span>
+    <span class="cm"># ...(fields as shown above)...</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">battle_sprites</span> <span class="op">=</span> <span class="fn">BattleSprites</span><span class="op">()</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">player_sprites</span> <span class="op">=</span> pygame<span class="op">.</span><span class="at">sprite</span><span class="op">.</span><span class="fn">Group</span><span class="op">()</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">opponent_sprites</span> <span class="op">=</span> pygame<span class="op">.</span><span class="at">sprite</span><span class="op">.</span><span class="fn">Group</span><span class="op">()</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">battle_over</span> <span class="op">=</span> <span class="kw">False</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">current_monster</span> <span class="op">=</span> <span class="kw">None</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">selection_mode</span> <span class="op">=</span> <span class="kw">None</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">indexes</span> <span class="op">=</span> <span class="op">{</span><span class="st">'general'</span><span class="op">:</span> <span class="nm">0</span><span class="op">,</span> <span class="st">'attacks'</span><span class="op">:</span> <span class="nm">0</span><span class="op">}</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">timers</span> <span class="op">=</span> <span class="op">{</span><span class="st">'opponent delay'</span><span class="op">:</span> <span class="fn">Timer</span><span class="op">(</span><span class="nm">600</span>, func<span class="op">=</span><span class="at">self</span><span class="op">.</span><span class="at">opponent_attack</span><span class="op">)}</span>
+    <span class="at">self</span><span class="op">.</span><span class="fn">setup</span><span class="op">()</span>
+
+<span class="kw">def</span> <span class="fn">setup</span>(<span class="at">self</span>)<span class="op">:</span>
+    <span class="kw">for</span> entity <span class="kw">in</span> (<span class="st">'player'</span>, <span class="st">'opponent'</span>)<span class="op">:</span>
+        index <span class="op">=</span> <span class="fn">list</span><span class="op">(</span><span class="at">self</span><span class="op">.</span><span class="at">monster_data</span><span class="op">[</span>entity<span class="op">].</span><span class="fn">keys</span><span class="op">())[</span><span class="nm">0</span><span class="op">]</span>
+        monster <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">monster_data</span><span class="op">[</span>entity<span class="op">].</span><span class="fn">pop</span><span class="op">(</span>index<span class="op">)</span>
+        <span class="at">self</span><span class="op">.</span><span class="fn">create_monster</span><span class="op">(</span>monster, index, entity<span class="op">)</span>
+
+<span class="kw">def</span> <span class="fn">create_monster</span>(<span class="at">self</span>, monster, index, entity)<span class="op">:</span>
+    monster<span class="op">.</span><span class="at">paused</span> <span class="op">=</span> <span class="kw">False</span>
+    frames <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">monster_frames</span><span class="op">[</span><span class="st">'monsters'</span><span class="op">][</span>monster<span class="op">.</span><span class="at">name</span><span class="op">]</span>
+    outline_frames <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">monster_frames</span><span class="op">[</span><span class="st">'outlines'</span><span class="op">][</span>monster<span class="op">.</span><span class="at">name</span><span class="op">]</span>
+    <span class="kw">if</span> entity <span class="op">==</span> <span class="st">'player'</span><span class="op">:</span>
+        frames <span class="op">=</span> <span class="op">{</span>state<span class="op">:</span> <span class="op">[</span>pygame<span class="op">.</span><span class="at">transform</span><span class="op">.</span><span class="fn">flip</span><span class="op">(</span>f, <span class="kw">True</span>, <span class="kw">False</span><span class="op">)</span> <span class="kw">for</span> f <span class="kw">in</span> frms<span class="op">]</span> <span class="kw">for</span> state, frms <span class="kw">in</span> frames<span class="op">.</span><span class="fn">items</span><span class="op">()}</span>
+        <span class="cm"># (same flip for outline_frames)</span>
+        pos <span class="op">=</span> BATTLE_POSITIONS<span class="op">[</span><span class="st">'player'</span><span class="op">]</span>
+        groups <span class="op">=</span> (<span class="at">self</span><span class="op">.</span><span class="at">battle_sprites</span>, <span class="at">self</span><span class="op">.</span><span class="at">player_sprites</span><span class="op">)</span>
+    <span class="kw">else</span><span class="op">:</span>
+        pos <span class="op">=</span> BATTLE_POSITIONS<span class="op">[</span><span class="st">'opponent'</span><span class="op">]</span>
+        groups <span class="op">=</span> (<span class="at">self</span><span class="op">.</span><span class="at">battle_sprites</span>, <span class="at">self</span><span class="op">.</span><span class="at">opponent_sprites</span><span class="op">)</span>
+    monster_sprite <span class="op">=</span> <span class="fn">MonsterSprite</span><span class="op">(</span>pos, frames, groups, monster, index, <span class="nm">0</span>, entity, <span class="at">self</span><span class="op">.</span><span class="at">apply_attack</span>, <span class="at">self</span><span class="op">.</span><span class="at">create_monster</span><span class="op">)</span>
+    <span class="fn">MonsterOutlineSprite</span><span class="op">(</span>monster_sprite, <span class="at">self</span><span class="op">.</span><span class="at">battle_sprites</span>, outline_frames<span class="op">)</span>
+    <span class="cm"># ...then MonsterNameSprite, MonsterLevelSprite, MonsterStatsSprite positioned relative to it</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ STEP 12 ══════════════════ -->
+
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — Step 12</div>
+  <h2>Whose turn is it? Speed decides.</h2>
+  <p style="max-width:860px;">Back in Step 9's session, <code>Monster.update(dt)</code> already climbs <code>self.initiative</code> by <code>get_stat('speed') * dt</code> every frame — a faster monster's bar fills quicker. <code>check_active()</code> just watches for any monster hitting 100.</p>
+  <div class="box gold" style="max-width:860px; width:100%;">
+    <p class="small">The moment one does: pause every monster (<code>update_all_monsters('pause')</code>) so time freezes for everyone else, reset that monster's initiative to 0, highlight it, and store it as <code>current_monster</code>. Then branch: a player monster hands control to <code>input()</code>; an opponent monster starts a short delay timer before <code>opponent_attack()</code> fires.</p>
+  </div>
+</div>
+
+<div class="slide bg-practice left-align" data-section="build">
+  <div class="step-badge">
+    <div class="step-num sn-fire">12</div>
+    <div>
+      <div class="step-file">📂 battle.py</div>
+      <span class="step-title">check_active(), update_all_monsters() — your turn</span>
+    </div>
+  </div>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank sm"><span class="kw">def</span> <span class="fn">check_active</span>(<span class="at">self</span>)<span class="op">:</span>
+    <span class="todo"># TODO: your code here</span>
+    <span class="kw">pass</span>  <span class="cm"># remove this when you're done</span>
+
+<span class="kw">def</span> <span class="fn">update_all_monsters</span>(<span class="at">self</span>, option)<span class="op">:</span>
+    <span class="todo"># TODO: your code here</span>
+    <span class="kw">pass</span></pre>
+    <ul class="hint-list">
+      <li><strong>check_active</strong>: loop <code>player_sprites</code> + <code>opponent_sprites</code>. If <code>initiative >= 100</code>: pause everyone, reset initiative + <code>defending</code> to their off state, <code>set_highlight(True)</code>, store as <code>current_monster</code>. Then <code>selection_mode = 'general'</code> for a player monster, or activate <code>timers['opponent delay']</code> for an opponent.</li>
+      <li><strong>update_all_monsters</strong>: loop both groups, set <code>monster.paused = option == 'pause'</code> on each.</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">Answer key</div>
+      <pre class="green xs"><span class="kw">def</span> <span class="fn">check_active</span>(<span class="at">self</span>)<span class="op">:</span>
+    <span class="kw">for</span> monster_sprite <span class="kw">in</span> <span class="fn">list</span><span class="op">(</span><span class="at">self</span><span class="op">.</span><span class="at">player_sprites</span><span class="op">)</span> <span class="op">+</span> <span class="fn">list</span><span class="op">(</span><span class="at">self</span><span class="op">.</span><span class="at">opponent_sprites</span><span class="op">):</span>
+        <span class="kw">if</span> monster_sprite<span class="op">.</span><span class="at">monster</span><span class="op">.</span><span class="at">initiative</span> <span class="op">>=</span> <span class="nm">100</span><span class="op">:</span>
+            <span class="at">self</span><span class="op">.</span><span class="fn">update_all_monsters</span><span class="op">(</span><span class="st">'pause'</span><span class="op">)</span>
+            monster_sprite<span class="op">.</span><span class="at">monster</span><span class="op">.</span><span class="at">initiative</span> <span class="op">=</span> <span class="nm">0</span>
+            monster_sprite<span class="op">.</span><span class="at">monster</span><span class="op">.</span><span class="at">defending</span> <span class="op">=</span> <span class="kw">False</span>
+            monster_sprite<span class="op">.</span><span class="fn">set_highlight</span><span class="op">(</span><span class="kw">True</span><span class="op">)</span>
+            <span class="at">self</span><span class="op">.</span><span class="at">current_monster</span> <span class="op">=</span> monster_sprite
+            <span class="kw">if</span> monster_sprite<span class="op">.</span><span class="at">entity</span> <span class="op">==</span> <span class="st">'player'</span><span class="op">:</span>
+                <span class="at">self</span><span class="op">.</span><span class="at">selection_mode</span> <span class="op">=</span> <span class="st">'general'</span>
+            <span class="kw">else</span><span class="op">:</span>
+                <span class="at">self</span><span class="op">.</span><span class="at">timers</span><span class="op">[</span><span class="st">'opponent delay'</span><span class="op">].</span><span class="fn">activate</span><span class="op">()</span>
+
+<span class="kw">def</span> <span class="fn">update_all_monsters</span>(<span class="at">self</span>, option)<span class="op">:</span>
+    <span class="kw">for</span> monster_sprite <span class="kw">in</span> <span class="fn">list</span><span class="op">(</span><span class="at">self</span><span class="op">.</span><span class="at">player_sprites</span><span class="op">)</span> <span class="op">+</span> <span class="fn">list</span><span class="op">(</span><span class="at">self</span><span class="op">.</span><span class="at">opponent_sprites</span><span class="op">):</span>
+        monster_sprite<span class="op">.</span><span class="at">monster</span><span class="op">.</span><span class="at">paused</span> <span class="op">=</span> option <span class="op">==</span> <span class="st">'pause'</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ STEP 13 ══════════════════ -->
+
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — Step 13</div>
+  <h2>input(): reading the battle menu</h2>
+  <p style="max-width:860px;">Two nested menus. First <code>selection_mode == 'general'</code>: Fight or Defend. Choosing Fight moves to <code>selection_mode == 'attacks'</code>, listing whatever <code>get_abilities(include_all=False)</code> returns — only moves the monster can currently afford, straight from Step 6's work.</p>
+  <div class="box water" style="max-width:860px; width:100%;">
+    <p class="small">Confirming an attack doesn't deal damage directly — it calls <code>current_monster.activate_attack(target, attack)</code>, which starts the attack <em>animation</em>. The actual damage happens later, in Step 15, once that animation finishes.</p>
+  </div>
+  <div class="box gold" style="max-width:860px; width:100%;">
+    <p class="small">Since there's only ever one possible opponent on screen, there's no target-picking menu — <code>get_target_group()</code> (already written for you) figures out the target automatically from whether the move is self-targeting (heal) or not.</p>
+  </div>
+</div>
+
+<div class="slide bg-practice left-align" data-section="build">
+  <div class="step-badge">
+    <div class="step-num sn-fire">13</div>
+    <div>
+      <div class="step-file">📂 battle.py</div>
+      <span class="step-title">input() — your turn</span>
+    </div>
+  </div>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank sm"><span class="kw">def</span> <span class="fn">input</span>(<span class="at">self</span>)<span class="op">:</span>
+    <span class="todo"># TODO: your code here</span>
+    <span class="kw">pass</span>  <span class="cm"># remove this when you're done</span></pre>
+    <ul class="hint-list">
+      <li>Only run if <code>self.selection_mode</code> and <code>self.current_monster</code> are set.</li>
+      <li><code>limiter</code>: <code>len(BATTLE_CHOICES)</code> in 'general' mode, or the number of usable abilities in 'attacks' mode (at least 1).</li>
+      <li>K_DOWN/K_UP move <code>indexes[selection_mode]</code> by ±1, wrapped with <code>% limiter</code>.</li>
+      <li>K_SPACE in 'general': index 0 → <code>selection_mode = 'attacks'</code>. Index 1 (defend) → set <code>defending = True</code>, resume everyone, clear <code>current_monster</code>/<code>selection_mode</code>.</li>
+      <li>K_SPACE in 'attacks': find the attack, call <code>self.get_target_group(attack)</code>, then <code>current_monster.activate_attack(target, attack)</code>, then clear.</li>
+      <li>K_ESCAPE from 'attacks' goes back to 'general'. After SPACE or ESCAPE, reset every index to 0.</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">Answer key</div>
+      <pre class="green xs"><span class="kw">def</span> <span class="fn">input</span>(<span class="at">self</span>)<span class="op">:</span>
+    <span class="kw">if</span> <span class="at">self</span><span class="op">.</span><span class="at">selection_mode</span> <span class="kw">and</span> <span class="at">self</span><span class="op">.</span><span class="at">current_monster</span><span class="op">:</span>
+        keys <span class="op">=</span> pygame<span class="op">.</span><span class="at">key</span><span class="op">.</span><span class="fn">get_just_pressed</span><span class="op">()</span>
+        limiter <span class="op">=</span> <span class="fn">len</span><span class="op">(</span>BATTLE_CHOICES<span class="op">)</span> <span class="kw">if</span> <span class="at">self</span><span class="op">.</span><span class="at">selection_mode</span> <span class="op">==</span> <span class="st">'general'</span> <span class="kw">else</span> \
+                  <span class="fn">len</span><span class="op">(</span><span class="at">self</span><span class="op">.</span><span class="at">current_monster</span><span class="op">.</span><span class="at">monster</span><span class="op">.</span><span class="fn">get_abilities</span><span class="op">(</span>include_all<span class="op">=</span><span class="kw">False</span><span class="op">))</span> <span class="kw">or</span> <span class="nm">1</span>
+
+        <span class="kw">if</span> keys<span class="op">[</span>pygame<span class="op">.</span>K_DOWN<span class="op">]:</span> <span class="at">self</span><span class="op">.</span><span class="at">indexes</span><span class="op">[</span><span class="at">self</span><span class="op">.</span><span class="at">selection_mode</span><span class="op">]</span> <span class="op">=</span> (<span class="at">self</span><span class="op">.</span><span class="at">indexes</span><span class="op">[</span><span class="at">self</span><span class="op">.</span><span class="at">selection_mode</span><span class="op">]</span> <span class="op">+</span> <span class="nm">1</span>) <span class="op">%</span> limiter
+        <span class="kw">if</span> keys<span class="op">[</span>pygame<span class="op">.</span>K_UP<span class="op">]:</span>   <span class="at">self</span><span class="op">.</span><span class="at">indexes</span><span class="op">[</span><span class="at">self</span><span class="op">.</span><span class="at">selection_mode</span><span class="op">]</span> <span class="op">=</span> (<span class="at">self</span><span class="op">.</span><span class="at">indexes</span><span class="op">[</span><span class="at">self</span><span class="op">.</span><span class="at">selection_mode</span><span class="op">]</span> <span class="op">-</span> <span class="nm">1</span>) <span class="op">%</span> limiter
+
+        <span class="kw">if</span> keys<span class="op">[</span>pygame<span class="op">.</span>K_SPACE<span class="op">]:</span>
+            <span class="kw">if</span> <span class="at">self</span><span class="op">.</span><span class="at">selection_mode</span> <span class="op">==</span> <span class="st">'general'</span><span class="op">:</span>
+                <span class="kw">if</span> <span class="at">self</span><span class="op">.</span><span class="at">indexes</span><span class="op">[</span><span class="st">'general'</span><span class="op">]</span> <span class="op">==</span> <span class="nm">0</span><span class="op">:</span>
+                    <span class="at">self</span><span class="op">.</span><span class="at">selection_mode</span> <span class="op">=</span> <span class="st">'attacks'</span>
+                <span class="kw">else</span><span class="op">:</span>
+                    <span class="at">self</span><span class="op">.</span><span class="at">current_monster</span><span class="op">.</span><span class="at">monster</span><span class="op">.</span><span class="at">defending</span> <span class="op">=</span> <span class="kw">True</span>
+                    <span class="at">self</span><span class="op">.</span><span class="fn">update_all_monsters</span><span class="op">(</span><span class="st">'resume'</span><span class="op">)</span>
+                    <span class="at">self</span><span class="op">.</span><span class="at">current_monster</span> <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">selection_mode</span> <span class="op">=</span> <span class="kw">None</span>
+            <span class="kw">elif</span> <span class="at">self</span><span class="op">.</span><span class="at">selection_mode</span> <span class="op">==</span> <span class="st">'attacks'</span><span class="op">:</span>
+                abilities <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">current_monster</span><span class="op">.</span><span class="at">monster</span><span class="op">.</span><span class="fn">get_abilities</span><span class="op">(</span>include_all<span class="op">=</span><span class="kw">False</span><span class="op">)</span>
+                <span class="kw">if</span> abilities<span class="op">:</span>
+                    attack <span class="op">=</span> abilities<span class="op">[</span><span class="at">self</span><span class="op">.</span><span class="at">indexes</span><span class="op">[</span><span class="st">'attacks'</span><span class="op">]]</span>
+                    target_group <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="fn">get_target_group</span><span class="op">(</span>attack<span class="op">)</span>
+                    target <span class="op">=</span> target_group<span class="op">.</span><span class="fn">sprites</span><span class="op">()[</span><span class="nm">0</span><span class="op">]</span> <span class="kw">if</span> target_group<span class="op">.</span><span class="fn">sprites</span><span class="op">()</span> <span class="kw">else</span> <span class="at">self</span><span class="op">.</span><span class="at">current_monster</span>
+                    <span class="at">self</span><span class="op">.</span><span class="at">current_monster</span><span class="op">.</span><span class="fn">activate_attack</span><span class="op">(</span>target, attack<span class="op">)</span>
+                <span class="at">self</span><span class="op">.</span><span class="at">current_monster</span> <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">selection_mode</span> <span class="op">=</span> <span class="kw">None</span>
+
+        <span class="kw">if</span> keys<span class="op">[</span>pygame<span class="op">.</span>K_ESCAPE<span class="op">]</span> <span class="kw">and</span> <span class="at">self</span><span class="op">.</span><span class="at">selection_mode</span> <span class="op">==</span> <span class="st">'attacks'</span><span class="op">:</span>
+            <span class="at">self</span><span class="op">.</span><span class="at">selection_mode</span> <span class="op">=</span> <span class="st">'general'</span>
+
+        <span class="kw">if</span> keys<span class="op">[</span>pygame<span class="op">.</span>K_SPACE<span class="op">]</span> <span class="kw">or</span> keys<span class="op">[</span>pygame<span class="op">.</span>K_ESCAPE<span class="op">]:</span>
+            <span class="at">self</span><span class="op">.</span><span class="at">indexes</span> <span class="op">=</span> <span class="op">{</span>key<span class="op">:</span> <span class="nm">0</span> <span class="kw">for</span> key <span class="kw">in</span> <span class="at">self</span><span class="op">.</span><span class="at">indexes</span><span class="op">}</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ STEP 14 ══════════════════ -->
+
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — Step 14</div>
+  <h2>opponent_attack(): the AI's turn</h2>
+  <p style="max-width:860px;">No menu for the opponent — it just picks randomly. The same rules apply: it can only choose a move it can afford (<code>include_all=False</code>), and the same <code>get_target_group()</code> helper works for it too, since 'player'/'opponent' in <code>ATTACK_DATA</code> always mean "self" and "the other side" regardless of who's attacking.</p>
+</div>
+
+<div class="slide bg-practice left-align" data-section="build">
+  <div class="step-badge">
+    <div class="step-num sn-fire">14</div>
+    <div>
+      <div class="step-file">📂 battle.py</div>
+      <span class="step-title">opponent_attack() — your turn</span>
+    </div>
+  </div>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank sm"><span class="kw">def</span> <span class="fn">opponent_attack</span>(<span class="at">self</span>)<span class="op">:</span>
+    <span class="todo"># TODO: your code here</span>
+    <span class="kw">pass</span>  <span class="cm"># remove this when you're done</span></pre>
+    <ul class="hint-list">
+      <li>Only act if <code>self.current_monster</code> exists and its <code>entity == 'opponent'</code>.</li>
+      <li><code>abilities = current_monster.monster.get_abilities(include_all=False)</code> — guard against it being empty.</li>
+      <li>If non-empty: <code>attack = choice(abilities)</code>, find the target with <code>self.get_target_group(attack)</code>, call <code>activate_attack(target, attack)</code>.</li>
+      <li>Clear <code>self.current_monster = None</code> either way.</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">Answer key</div>
+      <pre class="green xs"><span class="kw">def</span> <span class="fn">opponent_attack</span>(<span class="at">self</span>)<span class="op">:</span>
+    <span class="kw">if</span> <span class="at">self</span><span class="op">.</span><span class="at">current_monster</span> <span class="kw">and</span> <span class="at">self</span><span class="op">.</span><span class="at">current_monster</span><span class="op">.</span><span class="at">entity</span> <span class="op">==</span> <span class="st">'opponent'</span><span class="op">:</span>
+        abilities <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="at">current_monster</span><span class="op">.</span><span class="at">monster</span><span class="op">.</span><span class="fn">get_abilities</span><span class="op">(</span>include_all<span class="op">=</span><span class="kw">False</span><span class="op">)</span>
+        <span class="kw">if</span> abilities<span class="op">:</span>
+            attack <span class="op">=</span> <span class="fn">choice</span><span class="op">(</span>abilities<span class="op">)</span>
+            target_group <span class="op">=</span> <span class="at">self</span><span class="op">.</span><span class="fn">get_target_group</span><span class="op">(</span>attack<span class="op">)</span>
+            target <span class="op">=</span> target_group<span class="op">.</span><span class="fn">sprites</span><span class="op">()[</span><span class="nm">0</span><span class="op">]</span> <span class="kw">if</span> target_group<span class="op">.</span><span class="fn">sprites</span><span class="op">()</span> <span class="kw">else</span> <span class="at">self</span><span class="op">.</span><span class="at">current_monster</span>
+            <span class="at">self</span><span class="op">.</span><span class="at">current_monster</span><span class="op">.</span><span class="fn">activate_attack</span><span class="op">(</span>target, attack<span class="op">)</span>
+        <span class="kw">else</span><span class="op">:</span>
+            <span class="at">self</span><span class="op">.</span><span class="fn">update_all_monsters</span><span class="op">(</span><span class="st">'resume'</span><span class="op">)</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">current_monster</span> <span class="op">=</span> <span class="kw">None</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ STEP 15 ══════════════════ -->
+
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — Step 15</div>
+  <h2>apply_attack(): the real damage formula</h2>
+  <p style="max-width:860px;">This runs when the attack animation finishes (see <code>MonsterSprite.animate()</code> in <code>sprites.py</code> — already written, calling back into this method). Three ingredients combine into one final number:</p>
+  <div class="two-col" style="max-width:900px;">
+    <div class="box fire">
+      <h3 style="color:var(--fire);">🔥 Type effectiveness</h3>
+      <p class="small">Fire beats plant, water beats fire, plant beats water → <code>amount *= 2</code>. The reverse three matchups → <code>amount *= 0.5</code>. No rule matches → unchanged.</p>
+    </div>
+    <div class="box water">
+      <h3 style="color:var(--water);">🛡️ Defense reduction</h3>
+      <p class="small"><code>target_defense = 1 - defense_stat / 2000</code> — higher defense means a smaller multiplier, so less damage gets through. Choosing Defend subtracts another 0.2, clamped between 0 and 1.</p>
+    </div>
+  </div>
+  <div class="box gold" style="max-width:900px; width:100%;">
+    <p class="small"><strong>Worked example:</strong> a monster with attack stat 30 uses <code>spark</code> (amount 1.1) against a plant-type target with defense stat 200. Base: <code>30 * 1.1 = 33</code>. Type: fire vs plant → <code>33 * 2 = 66</code>. Defense: <code>1 - 200/2000 = 0.9</code>, so final damage is <code>66 * 0.9 = 59.4</code>.</p>
+  </div>
+</div>
+
+<div class="slide bg-practice left-align" data-section="build">
+  <div class="step-badge">
+    <div class="step-num sn-fire">15</div>
+    <div>
+      <div class="step-file">📂 battle.py</div>
+      <span class="step-title">apply_attack() — your turn</span>
+    </div>
+  </div>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank xs"><span class="kw">def</span> <span class="fn">apply_attack</span>(<span class="at">self</span>, target_sprite, attack, amount)<span class="op">:</span>
+    <span class="fn">AttackSprite</span><span class="op">(</span>target_sprite<span class="op">.</span><span class="at">rect</span><span class="op">.</span><span class="at">center</span>, <span class="at">self</span><span class="op">.</span><span class="at">monster_frames</span><span class="op">[</span><span class="st">'attacks'</span><span class="op">][</span>ATTACK_DATA<span class="op">[</span>attack<span class="op">][</span><span class="st">'animation'</span><span class="op">]],</span> <span class="at">self</span><span class="op">.</span><span class="at">battle_sprites</span><span class="op">)</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">sounds</span><span class="op">[</span>ATTACK_DATA<span class="op">[</span>attack<span class="op">][</span><span class="st">'animation'</span><span class="op">]].</span><span class="fn">play</span><span class="op">()</span>
+
+    <span class="todo"># TODO: your code here (steps 2-6 from the hint)</span>
+    <span class="kw">pass</span>  <span class="cm"># remove this when you're done</span></pre>
+    <ul class="hint-list">
+      <li><code>attack_element = ATTACK_DATA[attack]['element']</code>, <code>target_element = target_sprite.monster.element</code>.</li>
+      <li>Type effectiveness: the three "beats" matchups double <code>amount</code>; the three reverse matchups halve it.</li>
+      <li><code>target_defense = 1 - target_sprite.monster.get_stat('defense') / 2000</code>; subtract 0.2 more if <code>target_sprite.monster.defending</code>; clamp between 0 and 1.</li>
+      <li><code>target_sprite.monster.health -= amount * target_defense</code>.</li>
+      <li>Finish with <code>self.check_death()</code> then <code>self.update_all_monsters('resume')</code>.</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">Answer key</div>
+      <pre class="green xs">attack_element <span class="op">=</span> ATTACK_DATA<span class="op">[</span>attack<span class="op">][</span><span class="st">'element'</span><span class="op">]</span>
+target_element <span class="op">=</span> target_sprite<span class="op">.</span><span class="at">monster</span><span class="op">.</span><span class="at">element</span>
+<span class="kw">if</span> (attack_element <span class="op">==</span> <span class="st">'fire'</span>  <span class="kw">and</span> target_element <span class="op">==</span> <span class="st">'plant'</span>) <span class="kw">or</span> \
+   (attack_element <span class="op">==</span> <span class="st">'water'</span> <span class="kw">and</span> target_element <span class="op">==</span> <span class="st">'fire'</span>)  <span class="kw">or</span> \
+   (attack_element <span class="op">==</span> <span class="st">'plant'</span> <span class="kw">and</span> target_element <span class="op">==</span> <span class="st">'water'</span>)<span class="op">:</span>
+    amount <span class="op">*=</span> <span class="nm">2</span>
+<span class="kw">if</span> (attack_element <span class="op">==</span> <span class="st">'fire'</span>  <span class="kw">and</span> target_element <span class="op">==</span> <span class="st">'water'</span>) <span class="kw">or</span> \
+   (attack_element <span class="op">==</span> <span class="st">'water'</span> <span class="kw">and</span> target_element <span class="op">==</span> <span class="st">'plant'</span>) <span class="kw">or</span> \
+   (attack_element <span class="op">==</span> <span class="st">'plant'</span> <span class="kw">and</span> target_element <span class="op">==</span> <span class="st">'fire'</span>)<span class="op">:</span>
+    amount <span class="op">*=</span> <span class="nm">0.5</span>
+
+target_defense <span class="op">=</span> <span class="nm">1</span> <span class="op">-</span> target_sprite<span class="op">.</span><span class="at">monster</span><span class="op">.</span><span class="fn">get_stat</span><span class="op">(</span><span class="st">'defense'</span><span class="op">)</span> <span class="op">/</span> <span class="nm">2000</span>
+<span class="kw">if</span> target_sprite<span class="op">.</span><span class="at">monster</span><span class="op">.</span><span class="at">defending</span><span class="op">:</span>
+    target_defense <span class="op">-=</span> <span class="nm">0.2</span>
+target_defense <span class="op">=</span> <span class="fn">max</span><span class="op">(</span><span class="nm">0</span>, <span class="fn">min</span><span class="op">(</span><span class="nm">1</span>, target_defense<span class="op">))</span>
+
+target_sprite<span class="op">.</span><span class="at">monster</span><span class="op">.</span><span class="at">health</span> <span class="op">-=</span> amount <span class="op">*</span> target_defense
+<span class="at">self</span><span class="op">.</span><span class="fn">check_death</span><span class="op">()</span>
+<span class="at">self</span><span class="op">.</span><span class="fn">update_all_monsters</span><span class="op">(</span><span class="st">'resume'</span><span class="op">)</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ STEP 16 ══════════════════ -->
+
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — Step 16</div>
+  <h2>Starting battles from the overworld</h2>
+  <p style="max-width:860px;">Three <code>main.py</code> methods connect the overworld to <code>Battle</code>:</p>
+  <div class="two-col" style="max-width:900px;">
+    <div class="box gold">
+      <h3 style="color:var(--gold);">💬 end_dialog(character)</h3>
+      <p class="small">Runs when a conversation ends. The nurse heals your team. An undefeated trainer starts a <code>Battle</code>. Anyone else just ends the conversation.</p>
+    </div>
+    <div class="box fire">
+      <h3 style="color:var(--fire);">🏁 end_battle(character)</h3>
+      <p class="small">Runs when <code>check_end_battle()</code> detects a win. A trainer gets marked defeated with a follow-up line; a wild encounter (no character) just returns you to walking.</p>
+    </div>
+  </div>
+  <div class="box water" style="max-width:900px; width:100%;">
+    <p class="small"><strong>monster_encounter()</strong> fires every couple of seconds while you're standing in tall grass and moving (the timer is set up for you). A random chance decides whether a wild team — built from every name in that patch's monster list — jumps out and starts a <code>Battle</code>.</p>
+  </div>
+</div>
+
+<div class="slide bg-practice left-align" data-section="build">
+  <div class="step-badge">
+    <div class="step-num sn-water">16</div>
+    <div>
+      <div class="step-file">📂 main.py</div>
+      <span class="step-title">end_dialog(), end_battle(), monster_encounter() — your turn</span>
+    </div>
+  </div>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank xs"><span class="kw">def</span> <span class="fn">end_dialog</span>(<span class="at">self</span>, character)<span class="op">:</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">dialog_tree</span> <span class="op">=</span> <span class="kw">None</span>
+    <span class="todo"># TODO: your code here</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">player</span><span class="op">.</span><span class="fn">unblock</span><span class="op">()</span>  <span class="cm"># remove this basic version when you add yours above!</span>
+
+<span class="kw">def</span> <span class="fn">end_battle</span>(<span class="at">self</span>, character)<span class="op">:</span>
+    <span class="todo"># TODO: your code here</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">battle</span> <span class="op">=</span> <span class="kw">None</span>  <span class="cm"># remove this basic version when you add yours above!</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">player</span><span class="op">.</span><span class="fn">unblock</span><span class="op">()</span>
+
+<span class="kw">def</span> <span class="fn">monster_encounter</span>(<span class="at">self</span>)<span class="op">:</span>
+    <span class="todo"># TODO: your code here</span>
+    <span class="kw">pass</span>  <span class="cm"># remove this when you're done</span></pre>
+    <ul class="hint-list">
+      <li><strong>end_dialog</strong>: if <code>character.nurse</code>, heal every monster in <code>self.player_monsters</code> then unblock. <code>elif not character.character_data['defeated']</code>: swap music and build a <code>Battle(player_monsters=self.player_monsters, opponent_monsters=character.monsters, ...)</code>, set <code>tint_mode='tint'</code>. <code>else</code>: just unblock.</li>
+      <li><strong>end_battle</strong>: stop battle music, <code>transition_target='level'</code>, <code>tint_mode='tint'</code>. If <code>character</code>: mark defeated + show their dialog. Else: unblock + restart overworld music.</li>
+      <li><strong>monster_encounter</strong>: <code>pygame.sprite.spritecollide(self.player, self.monster_sprites, False)</code> — standing on a patch? Combine with <code>self.player.direction</code>, <code>not self.battle</code>, and <code>randint(0, 4) == 0</code>. Build the wild team with a dict comprehension over <code>sprites[0].monsters</code>.</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">Answer key</div>
+      <pre class="green xs"><span class="kw">def</span> <span class="fn">end_dialog</span>(<span class="at">self</span>, character)<span class="op">:</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">dialog_tree</span> <span class="op">=</span> <span class="kw">None</span>
+    <span class="kw">if</span> character<span class="op">.</span><span class="at">nurse</span><span class="op">:</span>
+        <span class="kw">for</span> monster <span class="kw">in</span> <span class="at">self</span><span class="op">.</span><span class="at">player_monsters</span><span class="op">.</span><span class="fn">values</span><span class="op">():</span>
+            monster<span class="op">.</span><span class="at">health</span> <span class="op">=</span> monster<span class="op">.</span><span class="fn">get_stat</span><span class="op">(</span><span class="st">'max_health'</span><span class="op">)</span>
+            monster<span class="op">.</span><span class="at">energy</span> <span class="op">=</span> monster<span class="op">.</span><span class="fn">get_stat</span><span class="op">(</span><span class="st">'max_energy'</span><span class="op">)</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">player</span><span class="op">.</span><span class="fn">unblock</span><span class="op">()</span>
+    <span class="kw">elif</span> <span class="kw">not</span> character<span class="op">.</span><span class="at">character_data</span><span class="op">[</span><span class="st">'defeated'</span><span class="op">]:</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">audio</span><span class="op">[</span><span class="st">'overworld'</span><span class="op">].</span><span class="fn">stop</span><span class="op">()</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">audio</span><span class="op">[</span><span class="st">'battle'</span><span class="op">].</span><span class="fn">play</span><span class="op">(-</span><span class="nm">1</span><span class="op">)</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">transition_target</span> <span class="op">=</span> <span class="fn">Battle</span><span class="op">(</span>
+            player_monsters<span class="op">=</span><span class="at">self</span><span class="op">.</span><span class="at">player_monsters</span>, opponent_monsters<span class="op">=</span>character<span class="op">.</span><span class="at">monsters</span><span class="op">,</span>
+            monster_frames<span class="op">=</span><span class="at">self</span><span class="op">.</span><span class="at">monster_frames</span>, bg_surf<span class="op">=</span><span class="at">self</span><span class="op">.</span><span class="at">bg_frames</span><span class="op">[</span>character<span class="op">.</span><span class="at">character_data</span><span class="op">[</span><span class="st">'biome'</span><span class="op">]],</span>
+            fonts<span class="op">=</span><span class="at">self</span><span class="op">.</span><span class="at">fonts</span>, end_battle<span class="op">=</span><span class="at">self</span><span class="op">.</span><span class="at">end_battle</span>, character<span class="op">=</span>character, sounds<span class="op">=</span><span class="at">self</span><span class="op">.</span><span class="at">audio</span><span class="op">)</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">tint_mode</span> <span class="op">=</span> <span class="st">'tint'</span>
+    <span class="kw">else</span><span class="op">:</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">player</span><span class="op">.</span><span class="fn">unblock</span><span class="op">()</span>
+
+<span class="kw">def</span> <span class="fn">end_battle</span>(<span class="at">self</span>, character)<span class="op">:</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">audio</span><span class="op">[</span><span class="st">'battle'</span><span class="op">].</span><span class="fn">stop</span><span class="op">()</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">transition_target</span> <span class="op">=</span> <span class="st">'level'</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">tint_mode</span> <span class="op">=</span> <span class="st">'tint'</span>
+    <span class="kw">if</span> character<span class="op">:</span>
+        character<span class="op">.</span><span class="at">character_data</span><span class="op">[</span><span class="st">'defeated'</span><span class="op">]</span> <span class="op">=</span> <span class="kw">True</span>
+        <span class="at">self</span><span class="op">.</span><span class="fn">create_dialog</span><span class="op">(</span>character<span class="op">)</span>
+    <span class="kw">else</span><span class="op">:</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">player</span><span class="op">.</span><span class="fn">unblock</span><span class="op">()</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">audio</span><span class="op">[</span><span class="st">'overworld'</span><span class="op">].</span><span class="fn">play</span><span class="op">(-</span><span class="nm">1</span><span class="op">)</span>
+
+<span class="kw">def</span> <span class="fn">monster_encounter</span>(<span class="at">self</span>)<span class="op">:</span>
+    sprites <span class="op">=</span> pygame<span class="op">.</span><span class="at">sprite</span><span class="op">.</span><span class="fn">spritecollide</span><span class="op">(</span><span class="at">self</span><span class="op">.</span><span class="at">player</span>, <span class="at">self</span><span class="op">.</span><span class="at">monster_sprites</span>, <span class="kw">False</span><span class="op">)</span>
+    <span class="kw">if</span> sprites <span class="kw">and</span> <span class="at">self</span><span class="op">.</span><span class="at">player</span><span class="op">.</span><span class="at">direction</span> <span class="kw">and</span> <span class="kw">not</span> <span class="at">self</span><span class="op">.</span><span class="at">battle</span> <span class="kw">and</span> <span class="fn">randint</span><span class="op">(</span><span class="nm">0</span>, <span class="nm">4</span><span class="op">)</span> <span class="op">==</span> <span class="nm">0</span><span class="op">:</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">player</span><span class="op">.</span><span class="fn">block</span><span class="op">()</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">audio</span><span class="op">[</span><span class="st">'overworld'</span><span class="op">].</span><span class="fn">stop</span><span class="op">()</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">audio</span><span class="op">[</span><span class="st">'battle'</span><span class="op">].</span><span class="fn">play</span><span class="op">(-</span><span class="nm">1</span><span class="op">)</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">transition_target</span> <span class="op">=</span> <span class="fn">Battle</span><span class="op">(</span>
+            player_monsters<span class="op">=</span><span class="at">self</span><span class="op">.</span><span class="at">player_monsters</span><span class="op">,</span>
+            opponent_monsters<span class="op">={</span>i<span class="op">:</span> <span class="fn">Monster</span><span class="op">(</span>name, sprites<span class="op">[</span><span class="nm">0</span><span class="op">].</span><span class="at">level</span> <span class="op">+</span> <span class="fn">randint</span><span class="op">(-</span><span class="nm">3</span>, <span class="nm">3</span><span class="op">))</span> <span class="kw">for</span> i, name <span class="kw">in</span> <span class="fn">enumerate</span><span class="op">(</span>sprites<span class="op">[</span><span class="nm">0</span><span class="op">].</span><span class="at">monsters</span><span class="op">)},</span>
+            monster_frames<span class="op">=</span><span class="at">self</span><span class="op">.</span><span class="at">monster_frames</span>, bg_surf<span class="op">=</span><span class="at">self</span><span class="op">.</span><span class="at">bg_frames</span><span class="op">[</span>sprites<span class="op">[</span><span class="nm">0</span><span class="op">].</span><span class="at">biome</span><span class="op">],</span>
+            fonts<span class="op">=</span><span class="at">self</span><span class="op">.</span><span class="at">fonts</span>, end_battle<span class="op">=</span><span class="at">self</span><span class="op">.</span><span class="at">end_battle</span>, character<span class="op">=</span><span class="kw">None</span>, sounds<span class="op">=</span><span class="at">self</span><span class="op">.</span><span class="at">audio</span><span class="op">)</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">tint_mode</span> <span class="op">=</span> <span class="st">'tint'</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 27: Testing your Monster class -->
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Try it in a terminal</div>
+  <h2>Testing your Monster class</h2>
+  <p style="max-width:860px;">After finishing <code>monster.py</code>, open a terminal in your session folder and check it directly — no need to run the whole game to test one class.</p>
+  <pre class="water sm">python
+<span class="op">>>></span> <span class="kw">from</span> monster <span class="kw">import</span> Monster
+<span class="op">>>></span> m <span class="op">=</span> <span class="fn">Monster</span>(<span class="st">'Sparchu'</span>, <span class="nm">5</span>)
+<span class="op">>>></span> <span class="fn">print</span>(m)
+monster<span class="op">:</span> Sparchu, lvl<span class="op">:</span> <span class="nm">5</span>
+<span class="op">>>></span> <span class="fn">print</span>(m<span class="op">.</span><span class="fn">get_stat</span>(<span class="st">'attack'</span>))
+<span class="nm">15</span>
+<span class="op">>>></span> <span class="fn">print</span>(m<span class="op">.</span><span class="fn">get_abilities</span>())
+[<span class="st">'scratch'</span>, <span class="st">'fire'</span>]
+<span class="op">>>></span> m<span class="op">.</span><span class="fn">update_xp</span>(<span class="nm">800</span>)
+<span class="op">>>></span> <span class="fn">print</span>(m<span class="op">.</span><span class="at">level</span>)
+<span class="nm">6</span>  <span class="cm"># level_up was 5*150=750, so 800 XP crosses it</span></pre>
+</div>
+
+<!-- ══════════════════ EXTENSION ══════════════════ -->
+
+<div class="slide bg-extend left-align" data-section="extend">
+  <div class="tag tag-extend">Try it yourself</div>
+  <h2>Challenge 1 &amp; 2</h2>
+  <div class="creativity-grid" style="margin-top:0.7rem;">
+    <div class="c-card cv-purple">
+      <div class="c-letter">Challenge 1</div>
+      <h4>💀 is_fainted()</h4>
+      <p>Add a method that returns <code>True</code> if <code>self.health &lt;= 0</code> — a cleaner way to ask the same question <code>check_death()</code> already checks directly.</p>
+      <span class="activate">📂 monster.py → Monster</span>
+    </div>
+    <div class="c-card cv-fire">
+      <div class="c-letter">Challenge 2</div>
+      <h4>🔋 is_low_energy()</h4>
+      <p>Add a method that returns <code>True</code> if <code>self.energy</code> is below 20% of <code>self.get_stat('max_energy')</code>.</p>
+      <span class="activate">📂 monster.py → Monster</span>
+    </div>
+  </div>
+</div>
+
+<div class="slide bg-extend left-align" data-section="extend">
+  <div class="tag tag-extend">Try it yourself</div>
+  <h2>Challenge 3 &amp; 4</h2>
+  <div class="creativity-grid" style="margin-top:0.7rem;">
+    <div class="c-card cv-lime">
+      <div class="c-letter">Challenge 3</div>
+      <h4>🐲 Design an evolution</h4>
+      <p>Add a brand new monster entry to <code>MONSTER_DATA</code>, then set <code>'evolve': ('EvolvedName', level)</code> on one of your Step 1 monsters — an evolved form, ready for a future session to use.</p>
+      <span class="activate">📂 game_data.py → MONSTER_DATA</span>
+    </div>
+    <div class="c-card cv-water">
+      <div class="c-letter">Challenge 4</div>
+      <h4>💧 Add a third custom monster</h4>
+      <p>How about a water type? Follow the same shape as your fire and plant monsters, and add it to <code>self.player_monsters</code> too.</p>
+      <span class="activate">📂 game_data.py + main.py</span>
+    </div>
+  </div>
+</div>
+
+<div class="slide bg-extend left-align" data-section="extend">
+  <div class="tag tag-extend">Try it yourself</div>
+  <h2>Challenge 5 &amp; 6 — battle polish</h2>
+  <div class="creativity-grid" style="margin-top:0.7rem;">
+    <div class="c-card cv-pink">
+      <div class="c-letter">Challenge 5</div>
+      <h4>🔄 Add a SWITCH action</h4>
+      <p>Add a third <code>BATTLE_CHOICES</code> entry and a <code>'switch'</code> selection mode that lets you swap your active monster for a bench monster before it faints, not just after.</p>
+      <span class="activate">📂 battle.py → input(), settings.py</span>
+    </div>
+    <div class="c-card cv-cyan">
+      <div class="c-letter">Challenge 6</div>
+      <h4>🎣 Add a CATCH action</h4>
+      <p>Add a fourth choice that, against a wild encounter (<code>character is None</code>) with low opponent health, adds that monster to your team instead of defeating it.</p>
+      <span class="activate">📂 battle.py → input()</span>
+    </div>
+  </div>
+</div>
+
+<div class="slide bg-extend" data-section="extend">
+  <div class="icon-big">🔑</div>
+  <div class="tag tag-gold">Stuck, or short on time?</div>
+  <h2>A complete version already runs</h2>
+  <p style="max-width:640px;">Outside the <code>Python-Monsters</code> folder:</p>
+  <pre class="gold" style="max-width:500px;">finished/session-4/</pre>
+  <p class="small" style="max-width:640px;"><code>cd finished/session-4</code> then <code>python main.py</code> — compare it against your own files line by line.</p>
+</div>
+
+<!-- SLIDE: Final summary -->
+<div class="slide bg-recap" data-section="build" style="padding:28px 80px; justify-content:flex-start;">
+  <div class="tag tag-build" style="margin-bottom:0.3rem;">Session 4 — done</div>
+  <h2 style="margin-bottom:0.3rem;">What's actually in your files now</h2>
+
+  <div class="stat-grid" style="margin:0.4rem 0;">
+    <div class="stat-card" style="padding:0.5rem;"><div class="s-num">2</div><div class="s-lbl">custom monsters designed</div></div>
+    <div class="stat-card" style="padding:0.5rem;"><div class="s-num">7</div><div class="s-lbl">Monster methods finished</div></div>
+    <div class="stat-card" style="padding:0.5rem;"><div class="s-num">8</div><div class="s-lbl">Battle methods finished</div></div>
+  </div>
+
+  <table class="range-table" style="font-size:0.78rem;">
+    <tr><th>Step</th><th>What it does</th><th>File</th></tr>
+    <tr><td class="step">1</td><td>design two monsters</td><td>game_data.py</td></tr>
+    <tr><td class="step">2</td><td>design spark + heal attacks</td><td>game_data.py</td></tr>
+    <tr><td class="step">3</td><td>__init__</td><td>monster.py</td></tr>
+    <tr><td class="step">4</td><td>get_stat(stat)</td><td>monster.py</td></tr>
+    <tr><td class="step">5</td><td>get_stats()</td><td>monster.py</td></tr>
+    <tr><td class="step">6</td><td>get_abilities(include_all)</td><td>monster.py</td></tr>
+    <tr><td class="step">7</td><td>get_base_damage(attack)</td><td>monster.py</td></tr>
+    <tr><td class="step">8</td><td>update_xp(amount)</td><td>monster.py</td></tr>
+    <tr><td class="step">9</td><td>stat_limiter()</td><td>monster.py</td></tr>
+    <tr><td class="step">10</td><td>self.player_monsters</td><td>main.py</td></tr>
+    <tr><td class="step">11</td><td>__init__, setup(), create_monster()</td><td>battle.py</td></tr>
+    <tr><td class="step">12</td><td>check_active(), update_all_monsters()</td><td>battle.py</td></tr>
+    <tr><td class="step">13</td><td>input() — the battle menu</td><td>battle.py</td></tr>
+    <tr><td class="step">14</td><td>opponent_attack()</td><td>battle.py</td></tr>
+    <tr><td class="step">15</td><td>apply_attack() — real damage</td><td>battle.py</td></tr>
+    <tr><td class="step">16</td><td>end_dialog, end_battle, monster_encounter</td><td>main.py</td></tr>
+  </table>
+
+  <div class="box fire" style="text-align:center; margin-top:0.5rem; padding:0.6rem 1.3rem; max-width:900px;">
+    <p style="font-size:1rem;"><strong>Session 5 →</strong> real music and sound effects, the evolution animation, and one final custom monster of your own — polishing this into a complete game.</p>
+  </div>
+</div>
+
+</div><!-- end #deck -->
+
+<button id="prev">&#8592;</button>
+<button id="next">&#8594;</button>
+<div id="nav"></div>
+<div id="slide-counter"></div>
+
+<script>
+  function toggleAnswer(btn) {
+    const block = btn.nextElementSibling;
+    block.classList.toggle('shown');
+    btn.textContent = block.classList.contains('shown') ? '🙈 Hide Answer' : '✅ Reveal Answer Key';
+  }
+
+  const slides   = document.querySelectorAll('.slide');
+  const nav      = document.getElementById('nav');
+  const counter  = document.getElementById('slide-counter');
+  const fill     = document.getElementById('progress-fill');
+  const secLabel = document.getElementById('section-label');
+  let current = 0;
+
+  slides.forEach((s, i) => {
+    const dot = document.createElement('div');
+    const sec = s.dataset.section;
+    dot.className = 'dot' + (sec === 'extend' ? ' extend' : '') + (i === 0 ? ' active' : '');
+    dot.addEventListener('click', () => goTo(i));
+    nav.appendChild(dot);
+  });
+
+  function goTo(n) {
+    slides[current].classList.remove('active');
+    nav.children[current].classList.remove('active');
+    current = Math.max(0, Math.min(n, slides.length - 1));
+    slides[current].classList.add('active');
+    nav.children[current].classList.add('active');
+    counter.textContent = `${current + 1} / ${slides.length}`;
+    fill.style.width = `${((current + 1) / slides.length) * 100}%`;
+
+    const sec = slides[current].dataset.section;
+    if (sec === 'extend') {
+      secLabel.textContent = '🧩 Extension';
+      secLabel.style.background = 'var(--purple)';
+      secLabel.style.color = '#1a0a2e';
+    } else {
+      secLabel.textContent = '🐲 Build';
+      secLabel.style.background = 'var(--green)';
+      secLabel.style.color = '#0a1a10';
+    }
+  }
+
+  document.getElementById('prev').addEventListener('click', () => goTo(current - 1));
+  document.getElementById('next').addEventListener('click', () => goTo(current + 1));
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') goTo(current + 1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')                    goTo(current - 1);
+  });
+
+  goTo(0);
+</script>
+</body>
+</html>

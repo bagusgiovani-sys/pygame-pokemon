@@ -4,7 +4,6 @@ from os.path import join
 from os import walk
 from pytmx.util_pygame import load_pygame
 
-# import functions
 def import_image(*path, alpha = True, format = 'png'):
 	full_path = join(*path) + f'.{format}'
 	surf = pygame.image.load(full_path).convert_alpha() if alpha else pygame.image.load(full_path).convert()
@@ -129,7 +128,6 @@ def audio_importer(*path):
 			files[file_name.split('.')[0]] = pygame.mixer.Sound(full_path)
 	return files
 
-# game functions
 def draw_bar(surface, rect, value, max_value, color, bg_color, radius = 1):
 	ratio = rect.width / max_value
 	bg_rect = rect.copy()

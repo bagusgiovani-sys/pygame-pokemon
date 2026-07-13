@@ -91,6 +91,38 @@ MONSTER_DATA = {
 		          'attack': 4, 'defense': 6, 'recovery': 1.3, 'speed': 2},
 		'abilities': {0: 'scratch', 5: 'spark', 15: 'splash', 20: 'ice', 25: 'heal'},
 		'evolve': None},
+
+	# ┌─────────────────────────────────────────────────────────┐
+	# │ YOUR CODE — Step 1: Add your own custom monster!        │
+	# │ Hint: pick a theme — volcano creature? leaf sprite?     │
+	# │       tide pool creature? Name it something memorable.  │
+	# │       Stats: attack 1-6, defense 5-15, health 10-30,    │
+	# │       energy 5-25, speed 1.0-3.0, recovery 1.0-2.5     │
+	# └─────────────────────────────────────────────────────────┘
+	# Replace 'YourMonsterName' with your monster's name.
+	# Replace all ??? with real numbers.
+	'YourMonsterName': {       # TODO: replace with your monster's real name!
+		'stats': {
+			'element': 'fire',     # TODO: 'fire', 'water', or 'plant' (this is just a placeholder)
+			'max_health': 10,      # TODO: 10-30
+			'max_energy': 5,       # TODO: 5-25
+			'attack': 1,           # TODO: 1-6
+			'defense': 5,          # TODO: 5-15
+			'recovery': 1.0,       # TODO: 1.0-2.5 (how fast energy refills)
+			'speed': 1.0},         # TODO: 1.0-3.0 (how fast initiative fills)
+		'abilities': {0: 'scratch', 5: 'spark'},  # TODO: pick a second ability
+		'evolve': None},           # TODO: or ('EvolvedName', level) for an evolution!
+
+	# ┌─────────────────────────────────────────────────────────┐
+	# │ EXTENSION — bonus challenge!                            │
+	# │ Ideas: Add an evolved form for your monster             │
+	# │        Add a second evolution stage (3-stage chain)     │
+	# │        Create a water-type AND fire-type custom monster │
+	# └─────────────────────────────────────────────────────────┘
+	# 'YourEvolvedMonster': {
+	#     'stats': {'element': '???', 'max_health': ???, ...},
+	#     'abilities': {0: 'scratch', 5: '???', 15: '???'},
+	#     'evolve': None},
 }
 
 ATTACK_DATA = {
