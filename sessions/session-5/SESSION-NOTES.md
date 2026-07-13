@@ -1,148 +1,74 @@
-# Session 5 — Polish and Make It Yours
+# Session 5 — Evolution: The Finale
 
 ## Goal
-Add music and sound effects, trigger the evolution animation, and design your own custom monster. By the end of today, you have a complete, polished game — and it has a piece of you in it.
+Wire up the evolution system so a monster that reaches the right level transforms into its stronger form, mid-game, with a real animated overlay. By the end of today your game is complete: designed monsters, real battles, and now evolution too.
+
+## What's already done
+Real audio (music, sound effects) and your custom monsters from session 4 are already wired up — there's nothing left to add there. This session is entirely about one new mechanic: evolution.
 
 ## What you are building today
-- `game_data.py` — add your own custom monster
-- `main.py` — wire up real audio and the evolution system
+- `main.py` — import and wire up the `Evolution` overlay, and two new methods: `check_evolution()` and `end_evolution()`
 
 ## Key concepts
-- **Audio in Pygame**: loading sound files, playing music loops, stopping sounds
-- **Game feel**: how sound and animation make a game feel alive
-- **Extending a codebase**: adding new features to a working system without breaking it
-- **Evolution as reward**: triggering a special moment that celebrates the player's progress
+- **Evolution as a reward moment**: a special animated overlay that plays when a monster's level matches its `evolve` threshold — celebrating progress the player earned over many battles
+- **Overlays that block gameplay**: like `dialog_tree` and `battle`, `evolution` is a third overlay checked in `run()` — while it's active, the player stays blocked and the overworld pauses underneath it
+- **Timers driving a sequence**: the `Evolution` class (already fully built for you in `evolution.py`) uses two `Timer`s back to back — one delay before the reveal starts, one before it ends — to pace the animation without you writing any of that logic
 
 ---
 
-## Why does sound matter so much?
+## Where evolution data already lives
 
-Try this: watch any video game footage with sound, then watch the same clip on mute. The game feels completely dead without audio. Sound tells the player "your attack landed", "danger is coming", "you did it!". It communicates information AND emotion simultaneously.
+Every monster in `MONSTER_DATA` already has an `'evolve'` field — either `None`, or a tuple like `('Cindrill', 15)` meaning "becomes Cindrill at level 15." You already saw this in session 4; today you make it actually *do* something.
 
-Even simple games feel professional with good sound design. Adding music loops and hit sounds today will make your game feel like a real game — not just a coding exercise.
+**Important:** evolution only works between monsters that already have real artwork in `graphics/monsters/` — the custom monsters you designed in session 4 don't have art, so they can't evolve into (or be battled as) anything visual. `Sparchu → Cindrill` is a good one to test with, since both already exist in the game.
 
 ---
 
 ## Step-by-step
 
-### Step 1 — Add your custom monster in `game_data.py`
+### Step 2a — Import `Evolution` in `main.py`
+One line at the top of the file: `from evolution import Evolution`. Take a look at `evolution.py` first — it's a complete, pre-built class. You're wiring it in, not writing it.
 
-Find the YOUR CODE placeholder at the end of `MONSTER_DATA`. Replace `'YourMonsterName'` with something creative!
+### Step 2b — Add `self.evolution = None`
+Right alongside `self.dialog_tree` and `self.battle` in `__init__` — this is the third overlay slot, storing the `Evolution` object while one is playing.
 
-**Design tips:**
-- Give it a theme: lava creature? crystal insect? storm cloud?
-- Match stats to its theme: a fast, fragile creature has high speed + low health; a rock creature has high defense + low speed
-- Pick a type that fits: fire is aggressive, water is balanced, plant is defensive/supportive
+### Step 2c — Load the star animation frames
+`import_assets()` needs one more line to load the sparkle particles the evolution screen plays: `self.start_animation_frames = import_folder('..', '..', 'graphics', 'other', 'star animation')`.
 
-**Stat guide:**
-| Role | health | attack | defense | speed |
-|------|--------|--------|---------|-------|
-| Glass cannon | 10-14 | 5-6 | 5-7 | 2.5-3.0 |
-| Tank | 25-30 | 2-3 | 13-15 | 1.0-1.2 |
-| Balanced | 16-20 | 3-4 | 9-11 | 1.5-1.8 |
+### Step 3 — Build `check_evolution()`
+Called right after a wild battle ends (already wired up in `end_battle()` for you). Loop `self.player_monsters.items()`. For each monster: if it has an `evolve` value AND its current `level` matches that evolution's required level, that's the one — play the evolution sound, block the player, build the `Evolution` overlay, and swap that team slot for a brand-new `Monster` of the evolved species at the same level. Stop looking once you've found one (`break`) — only one evolution at a time. If nothing evolved, just restart the overworld music.
 
-**Abilities**: stick to existing ones — `scratch`, `fire`, `spark`, `splash`, `ice`, `heal`, `explosion`, `battlecry`
+### Step 4 — Build `end_evolution()`
+Called automatically by the `Evolution` overlay once its animation finishes. Four lines: clear `self.evolution`, unblock the player, stop the evolution sound, restart the overworld music.
 
-After you are done: add your monster to `self.player_monsters` in `main.py` so it appears in your team!
+---
 
-### Step 2 — Add audio in `import_assets()`
+## Testing quickly
 
-Find the TODO comments in `import_assets()`. The temporary silent audio dict is there so the game doesn't crash before you replace it. Once you add real audio:
+The starting team includes `Sparchu` at exactly level 15 — its own evolution threshold (`('Cindrill', 15)`) — specifically so you can test this without grinding. Win your very first wild battle and evolution should trigger immediately.
 
-1. Delete or comment out the `SilentSound` block (lines starting with `self.audio = {}`)
-2. Add these two lines:
 ```python
-self.audio = audio_importer('..', '..', 'audio')
-self.start_animation_frames = import_folder('..', '..', 'graphics', 'other', 'star animation')
-```
-
-The game will now have real music and sound effects!
-
-### Step 3 — Add `from evolution import Evolution` import
-
-At the top of `main.py`, find the YOUR CODE Step 3 comment. Uncomment the import line.
-
-Then in `__init__`, find the other Step 3 comment and add `self.evolution = None`.
-
-### Step 4 — Build `check_evolution()` in `main.py`
-
-This is called after every battle ends. It checks if any monster in your team earned enough levels to evolve.
-
-The logic (from the commented-out hints):
-1. Loop through `self.player_monsters.items()`
-2. If a monster has an evolution (`monster.evolution` is not None) AND its current level matches the required evolution level (`monster.level == monster.evolution[1]`):
-   - Play the evolution sound: `self.audio['evolution'].play()`
-   - Block the player: `self.player.block()`
-   - Create the Evolution overlay and store it: `self.evolution = Evolution(...)`
-   - Replace the monster in the dict with the evolved form: `self.player_monsters[index] = Monster(monster.evolution[0], monster.level)`
-3. If NO evolution happened: restart overworld music
-
-**Evolution constructor arguments:**
-```python
-Evolution(
-    self.monster_frames['monsters'],  # all monster animation frames
-    monster.name,                      # which monster is evolving FROM
-    monster.evolution[0],              # which monster it becomes
-    self.fonts['bold'],                # font for the text
-    self.end_evolution,                # callback when animation finishes
-    self.start_animation_frames)       # the star particles
-```
-
-### Step 5 — Build `end_evolution()` in `main.py`
-
-Called when the evolution animation finishes. Four lines:
-```python
-self.evolution = None
-self.player.unblock()
-self.audio['evolution'].stop()
-self.audio['overworld'].play(-1)
+python
+>>> from monster import Monster
+>>> m = Monster('Sparchu', 15)
+>>> print(m.evolution)
+('Cindrill', 15)
+>>> print(m.level == m.evolution[1])
+True
 ```
 
 ---
 
-## Testing
+## What you should see when done
 
-1. Run the game — you should hear the overworld music!
-2. Walk into tall grass — the music should switch to battle music
-3. Win a battle — music should switch back to overworld
-4. Level up Sparchu to level 15 (fight a few battles) — the evolution animation should trigger!
-5. Open the monster index (Enter key) — check that your custom monster appears in the team
+Win a wild encounter (not a trainer battle — trainer wins show their defeat dialog instead) with a monster at its evolution level, and the screen darkens, your monster's silhouette flashes white, then reveals its new evolved form with stars and a name-change message, before returning control to you with the team permanently updated.
 
-**Testing evolution quickly**: In `__init__`, temporarily set `Monster('Sparchu', 14)` with `monster.xp += 2000` — it will level up on the first battle and trigger evolution.
+If anything doesn't behave the way you expect, compare your files against the answer key in `finished/session-5/` (outside the `Python-Monsters` folder).
 
 ---
 
-## What you see when done
-
-You have built a complete game:
-- Overworld with animated maps and characters
-- Dialog system with trainers that challenge you
-- Battle system with initiative turns, type matchups, and faint/replace logic
-- XP and leveling system
-- Evolution animation
-- Full audio with music and sound effects
-- Your own custom monster in the game world
-
----
-
-## You built this! What's next?
-
-Here are some ideas for where you could take this further:
-
-### Battle polish
-- Implement a SWITCH action so you can swap your active monster mid-battle instead of waiting for it to faint
-- Implement a CATCH action to capture wild monsters instead of always defeating them
-- Add a level-up notification in battle ("Sparchu grew to level 16!")
-- Smarter AI: use type advantages when picking attacks
-
-### Game world
-- Add a second custom monster (maybe an evolution of your first?)
-- Add dialog after winning a battle
-- Add a "you lose" screen instead of just quitting
-
-### Sound and feel
-- Add a battle win fanfare sound
-- Add a footstep sound when walking
-- Make the screen flash white when a monster faints
-
-You understand every function in this codebase. You could add any of these features yourself — and now you know how.
+## Extension ideas
+- Give one of your own custom monsters from session 4 a "spirit evolution" — reuse an *existing* monster's name and art as its evolved form (thematically a stretch, but a great way to explore the data without needing new art)
+- Add a second evolution stage — evolve `Cindrill` into `Charmadillo` too (the data's already there!) and watch a monster evolve twice across a long play session
+- Show a small on-screen message the moment a monster is *one level away* from evolving
+- Add a unique sound or extra star burst for evolutions specifically triggered by defeating a trainer, if you extend `check_evolution()` to run after trainer battles too

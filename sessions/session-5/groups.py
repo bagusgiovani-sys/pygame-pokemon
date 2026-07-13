@@ -35,6 +35,7 @@ class BattleSprites(pygame.sprite.Group):
 		self.display_surface = pygame.display.get_surface()
 
 	def draw(self, current_monster_sprite, side, mode, target_index, player_sprites, opponent_sprites):
+		# get available positions
 		sprite_group = opponent_sprites if side == 'opponent' else player_sprites
 		sprites = {sprite.pos_index: sprite for sprite in sprite_group}
 		monster_sprite = sprites[list(sprites.keys())[target_index]] if sprites else None

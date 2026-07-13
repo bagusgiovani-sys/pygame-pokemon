@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 5 — Evolution: The Finale</title>
+<style>
+  :root {
+    --dark:    #1e1c22;
+    --gray:    #2e2b35;
+    --lgray:   #4a4555;
+    --white:   #f4fefa;
+    --light:   #c8c8d8;
+    --green:   #56d49a;
+    --fire:    #ff7c40;
+    --water:   #44c4f0;
+    --gold:    #ffd24d;
+    --red:     #ff4d6a;
+    --purple:  #c084fc;
+    --lime:    #a3e635;
+    --cyan:    #67e8f9;
+    --pink:    #f472b6;
+    --code-bg: #151319;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--dark);
+    color: var(--white);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  #progress-bar { position: fixed; top: 0; left: 0; right: 0; height: 4px; background: var(--lgray); z-index: 200; }
+  #progress-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--gold)); transition: width 0.3s ease; }
+
+  #deck { width: 100vw; height: 100vh; position: relative; }
+
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    padding: 48px 80px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s ease;
+    text-align: center;
+  }
+  .slide.active { opacity: 1; pointer-events: all; }
+  .slide.left-align { align-items: flex-start; text-align: left; }
+  .slide.bg-practice {
+    justify-content: flex-start;
+    overflow-y: auto;
+    padding-bottom: 90px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--lgray) transparent;
+  }
+
+  .bg-title    { background: radial-gradient(ellipse at 55% 40%, #1a3a2a 0%, #12101a 70%); }
+  .bg-recap    { background: radial-gradient(ellipse at 30% 40%, #223a1a 0%, #1e1c22 70%); }
+  .bg-concept  { background: radial-gradient(ellipse at 70% 30%, #1a2a3a 0%, #12101a 70%); }
+  .bg-practice { background: radial-gradient(ellipse at 20% 60%, #2a2410 0%, #1e1c22 70%); }
+  .bg-extend   { background: radial-gradient(ellipse at 70% 30%, #2a1a3a 0%, #12101a 70%); }
+  .bg-showcase { background: radial-gradient(ellipse at 50% 50%, #2a2018 0%, #12101a 70%); }
+
+  h1 { font-size: 3.2rem; font-weight: 800; line-height: 1.1; }
+  h2 { font-size: 1.9rem; font-weight: 700; margin-bottom: 0.5rem; }
+  h3 { font-size: 1.2rem;  font-weight: 600; margin-bottom: 0.3rem; }
+  p  { font-size: 1.05rem; line-height: 1.6; color: var(--light); max-width: 820px; }
+  .subtitle  { font-size: 1.25rem; color: var(--green); margin-top: 0.6rem; font-weight: 600; max-width: 760px; }
+  .small     { font-size: 0.9rem; color: var(--light); }
+  .tiny      { font-size: 0.78rem;  color: var(--lgray); }
+
+  .tag {
+    display: inline-block; font-size: 0.7rem; font-weight: 800;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 3px 12px; border-radius: 20px; margin-bottom: 0.8rem;
+  }
+  .tag-build    { background: var(--green);  color: #0a1f14; }
+  .tag-recap    { background: var(--lime);   color: #10200a; }
+  .tag-concept  { background: var(--water);  color: #0a1a28; }
+  .tag-practice { background: var(--fire);   color: #1a0800; }
+  .tag-answer   { background: var(--green);  color: #0a1f14; }
+  .tag-extend   { background: var(--purple); color: #1a0a2e; }
+  .tag-gold     { background: var(--gold);   color: #1a1000; }
+
+  .step-badge { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.7rem; }
+  .step-num {
+    width: 44px; height: 44px; border-radius: 50%;
+    font-size: 1.25rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; color: #0a1a10;
+  }
+  .sn-water  { background: var(--water); color: #0a1a28; }
+  .sn-fire   { background: var(--fire);  color: #1a0800; }
+  .sn-green  { background: var(--green); }
+  .step-title { font-size: 1.25rem; font-weight: 700; }
+  .step-file  { font-size: 0.82rem; color: var(--light); }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--lgray);
+    border-left: 4px solid var(--green);
+    border-radius: 10px;
+    padding: 0.9rem 1.2rem;
+    text-align: left;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    overflow-x: auto;
+    max-width: 900px; width: 100%;
+    margin: 0.5rem 0;
+    font-family: 'Consolas', 'Fira Code', monospace;
+  }
+  pre.sm { font-size: 0.82rem; padding: 0.7rem 1rem; }
+  pre.xs { font-size: 0.74rem; padding: 0.6rem 0.85rem; }
+  pre.water  { border-left-color: var(--water); }
+  pre.fire   { border-left-color: var(--fire); }
+  pre.gold   { border-left-color: var(--gold); }
+  pre.green  { border-left-color: var(--green); }
+  pre.purple { border-left-color: var(--purple); }
+  pre.blank  { border-left-color: var(--fire); border-style: dashed; }
+
+  .kw { color: #c084fc; } .fn { color: #7dd3fc; } .st { color: #86efac; }
+  .cm { color: #6b6785; font-style: italic; } .nm { color: var(--fire); }
+  .at { color: var(--gold); } .op { color: var(--light); }
+  .todo { color: var(--fire); font-weight: 700; }
+
+  .box {
+    background: var(--gray); border: 1px solid var(--lgray); border-radius: 10px;
+    padding: 0.8rem 1.2rem; margin: 0.4rem 0; text-align: left;
+    max-width: 900px; width: 100%;
+  }
+  .box.green  { border-left: 4px solid var(--green); }
+  .box.fire   { border-left: 4px solid var(--fire); }
+  .box.water  { border-left: 4px solid var(--water); }
+  .box.gold   { border-left: 4px solid var(--gold); }
+  .box.purple { border-left: 4px solid var(--purple); }
+
+  ul, ol { padding-left: 1.3rem; text-align: left; max-width: 820px; }
+  li { font-size: 1rem; line-height: 1.7; color: var(--light); }
+  li strong { color: var(--white); }
+  li code { font-size: 0.92em; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 900px; width: 100%; text-align: left; }
+
+  .creativity-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; max-width: 920px; width: 100%; }
+  .creativity-grid.wide { grid-template-columns: 1fr 1fr 1fr; }
+  .c-card {
+    background: var(--gray); border: 1px solid var(--lgray); border-radius: 14px;
+    padding: 1rem 1.2rem; text-align: left; position: relative; overflow: hidden;
+  }
+  .c-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .c-card.cv-purple::before { background: var(--purple); } .c-card.cv-fire::before   { background: var(--fire); }
+  .c-card.cv-lime::before   { background: var(--lime); }   .c-card.cv-cyan::before   { background: var(--cyan); }
+  .c-card.cv-gold::before   { background: var(--gold); }   .c-card.cv-pink::before   { background: var(--pink); }
+  .c-card.cv-water::before  { background: var(--water); }  .c-card.cv-green::before  { background: var(--green); }
+  .c-card .c-letter { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.3rem; opacity: 0.8; }
+  .c-card.cv-purple .c-letter { color: var(--purple); } .c-card.cv-fire   .c-letter { color: var(--fire); }
+  .c-card.cv-lime   .c-letter { color: var(--lime); }   .c-card.cv-cyan   .c-letter { color: var(--cyan); }
+  .c-card.cv-gold   .c-letter { color: var(--gold); }   .c-card.cv-pink   .c-letter { color: var(--pink); }
+  .c-card.cv-water  .c-letter { color: var(--water); }  .c-card.cv-green  .c-letter { color: var(--green); }
+  .c-card h4 { font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 0.3rem; }
+  .c-card p  { font-size: 0.85rem; max-width: none; margin-bottom: 0.4rem; }
+  .c-card .activate {
+    display: inline-block; font-size: 0.72rem; font-weight: 700; font-family: 'Consolas', monospace;
+    background: #12101a; color: var(--green); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--lgray);
+  }
+
+  .icon-big { font-size: 3.6rem; line-height: 1; margin-bottom: 0.4rem; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem; max-width: 900px; width: 100%; margin: 0.6rem 0; }
+  .stat-card { background: var(--gray); border: 2px solid var(--lgray); border-radius: 12px; padding: 0.6rem; text-align: center; }
+  .stat-card .s-num { font-size: 1.5rem; font-weight: 800; color: var(--gold); }
+  .stat-card .s-lbl { font-size: 0.75rem; color: var(--light); }
+
+  .range-table { width: 100%; max-width: 900px; border-collapse: collapse; text-align: left; font-size: 0.8rem; }
+  .range-table th { color: var(--gold); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.22rem 0.7rem; border-bottom: 2px solid var(--lgray); }
+  .range-table td { padding: 0.2rem 0.7rem; border-bottom: 1px solid var(--lgray); color: var(--light); }
+  .range-table td.step  { color: var(--white); font-weight: 700; white-space: nowrap; }
+  .range-table td.lines { font-family: 'Consolas', monospace; color: var(--lime); white-space: nowrap; }
+
+  code { background: var(--code-bg); padding: 1px 5px; border-radius: 3px; font-family: 'Consolas', 'Fira Code', monospace; font-size: 0.87em; color: var(--green); }
+
+  /* ── Practice / Answer reveal ── */
+  .practice-wrap { max-width: 900px; width: 100%; }
+  .hint-list { max-width: 900px; width: 100%; margin: 0.4rem 0; }
+  .hint-list li { font-size: 0.9rem; }
+  .reveal-btn {
+    background: var(--green); color: #0a1f14; border: none; border-radius: 8px;
+    padding: 0.45rem 1rem; font-weight: 700; font-size: 0.82rem; cursor: pointer;
+    font-family: inherit; margin-top: 0.3rem;
+  }
+  .reveal-btn:hover { filter: brightness(1.08); }
+  .answer-block { display: none; margin-top: 0.5rem; max-width: 900px; width: 100%; }
+  .answer-block.shown { display: block; }
+
+  #nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 7px; z-index: 100; max-width: 90vw; flex-wrap: wrap; justify-content: center; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--lgray); cursor: pointer; transition: background 0.2s, transform 0.2s; }
+  .dot.active { background: var(--green); transform: scale(1.5); }
+  .dot.extend.active { background: var(--purple); }
+
+  #prev, #next {
+    position: fixed; top: 50%; transform: translateY(-50%);
+    background: rgba(46,43,53,0.8); border: 1px solid var(--lgray); color: var(--light);
+    font-size: 1.2rem; width: 40px; height: 40px; border-radius: 50%;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 100; transition: background 0.2s;
+  }
+  #prev:hover, #next:hover { background: var(--lgray); }
+  #prev { left: 16px; } #next { right: 16px; }
+
+  #slide-counter { position: fixed; top: 12px; right: 18px; font-size: 0.75rem; color: var(--lgray); font-family: 'Consolas', monospace; z-index: 100; }
+  #section-label { position: fixed; top: 12px; left: 18px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; z-index: 100; padding: 3px 10px; border-radius: 20px; transition: background 0.3s, color 0.3s; }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"><div id="progress-fill"></div></div>
+<div id="section-label"></div>
+
+<div id="deck">
+
+<!-- SLIDE 1: Title -->
+<div class="slide bg-title active" data-section="build">
+  <div class="icon-big">✨</div>
+  <div class="tag tag-build">Session 5 of 5 — the finale</div>
+  <h1>Evolution<br><span style="color:var(--green);">Brings It All Together</span></h1>
+  <p class="subtitle">Your monsters are designed, your battles work for real. Today, one more mechanic: a monster that reaches the right level transforms — a reward for everything you've built so far.</p>
+  <p style="margin-top:1.6rem; color:var(--lgray);" class="small">← → arrow keys to navigate &nbsp;·&nbsp; click dots below</p>
+</div>
+
+<!-- SLIDE 2: Recap -->
+<div class="slide bg-recap" data-section="build">
+  <div class="tag tag-recap">Already done — Session 4</div>
+  <h2>What's already finished</h2>
+  <div class="creativity-grid wide" style="margin-top:0.8rem;">
+    <div class="c-card cv-water">
+      <div class="c-letter">battle.py</div>
+      <h4>⚔️ Real turn-based battles</h4>
+      <p>Menu, turn order, real type-effectiveness + defense damage, fainting, XP, win/lose. Nothing about this changes today.</p>
+    </div>
+    <div class="c-card cv-gold">
+      <div class="c-letter">main.py</div>
+      <h4>🔊 Real audio, already wired</h4>
+      <p>Overworld music, battle music, sound effects — all working since session 4. No audio work left to do.</p>
+    </div>
+    <div class="c-card cv-lime">
+      <div class="c-letter">game_data.py</div>
+      <h4>📖 Your custom monsters</h4>
+      <p>Designed in session 4. They're great for battling with, but they don't have their own art, so they can't be evolution targets today.</p>
+    </div>
+    <div class="c-card cv-purple">
+      <div class="c-letter">every monster</div>
+      <h4>🧬 An 'evolve' field, unused</h4>
+      <p><code>MONSTER_DATA['Sparchu']['evolve']</code> is already <code>('Cindrill', 15)</code> — that data has been sitting there since session 4, waiting for code that reads it.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3: Today's goal -->
+<div class="slide bg-recap" data-section="build">
+  <div class="tag tag-build">Today's goal</div>
+  <h2>One mechanic, three small pieces</h2>
+  <div class="creativity-grid" style="margin-top:0.8rem; max-width: 720px;">
+    <div class="c-card cv-fire">
+      <div class="c-letter">the payoff</div>
+      <h4>🎬 A real evolution animation</h4>
+      <p>Screen darkens, silhouette flashes, new form revealed with stars — <code>evolution.py</code> is already fully built for you.</p>
+    </div>
+    <div class="c-card cv-water">
+      <div class="c-letter">your job</div>
+      <h4>🔌 Wire it into main.py</h4>
+      <p>Detect when a monster hits its evolution level, build the overlay, swap the monster, and clean up when it's done. Three small methods.</p>
+    </div>
+  </div>
+  <div class="box gold" style="max-width:720px; width:100%; margin-top:0.8rem;">
+    <p class="small">This is a genuinely small session — the hard work (battles, the Monster class, audio) is already behind you. Today is about connecting one more piece to a system you already understand.</p>
+  </div>
+</div>
+
+<!-- SLIDE 4: Agenda -->
+<div class="slide bg-recap left-align" data-section="build">
+  <div class="tag tag-build">Build order</div>
+  <h2>4 things to write today</h2>
+  <ul style="margin: 0.7rem 0 0.9rem;">
+    <li><strong>Step 2a</strong> <code>main.py</code> — import <code>Evolution</code></li>
+    <li><strong>Step 2b</strong> <code>main.py</code> — <code>self.evolution = None</code></li>
+    <li><strong>Step 2c</strong> <code>main.py</code> — load the star animation frames</li>
+    <li><strong>Step 3</strong> &nbsp;<code>main.py</code> — build <code>check_evolution()</code></li>
+    <li><strong>Step 4</strong> &nbsp;<code>main.py</code> — build <code>end_evolution()</code></li>
+  </ul>
+  <div class="box gold">
+    <p class="small">Steps are numbered starting at 2 because Step 1 — everything in <code>game_data.py</code> — is already done. Every practice slide below follows the same order: <strong>what it means</strong> → <strong>the blank code you start from</strong> → <strong>reveal the answer key when you want to check your work</strong>.</p>
+  </div>
+</div>
+
+<!-- SLIDE 5: Concept — overlays -->
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals</div>
+  <h2>A third overlay, same pattern as the other two</h2>
+  <p style="max-width:860px;">You've already built two things that pause the overworld and take over the screen: <code>self.dialog_tree</code> (a conversation) and <code>self.battle</code> (a fight). <code>self.evolution</code> is a third overlay, checked in <code>run()</code> exactly the same way: <code>if self.evolution: self.evolution.update(dt)</code>.</p>
+  <div class="box water" style="max-width:860px; width:100%;">
+    <p class="small">The <code>Evolution</code> class itself (<code>evolution.py</code>) is completely pre-built — it manages its own two-stage animation using <code>Timer</code>s, the same class you used back in session 2. Your job today is entirely about <em>when</em> to create one and what to do when it's done, not how the animation itself works.</p>
+  </div>
+</div>
+
+<!-- ══════════════════ STEP 2 ══════════════════ -->
+
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — Step 2</div>
+  <h2>Getting Evolution ready to use</h2>
+  <p style="max-width:860px;">Three small additions before you write any new logic: import the class, reserve a slot for it on the <code>Game</code> object, and load the one new asset it needs — a short list of star-sparkle frames for the reveal moment.</p>
+</div>
+
+<div class="slide bg-practice left-align" data-section="build">
+  <div class="step-badge">
+    <div class="step-num sn-fire">2</div>
+    <div>
+      <div class="step-file">📂 main.py</div>
+      <span class="step-title">Import, reserve, load — your turn</span>
+    </div>
+  </div>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank sm"><span class="cm"># top of file:</span>
+<span class="todo"># TODO: add your import here</span>
+
+<span class="cm"># in __init__, alongside self.dialog_tree and self.battle:</span>
+<span class="todo"># TODO: self.evolution = None</span>
+
+<span class="cm"># in import_assets(), after self.audio is loaded:</span>
+<span class="todo"># TODO: your code here (load the star animation frames)</span></pre>
+    <ul class="hint-list">
+      <li><strong>2a</strong>: <code>from evolution import Evolution</code></li>
+      <li><strong>2b</strong>: <code>self.evolution = None</code></li>
+      <li><strong>2c</strong>: <code>self.start_animation_frames = import_folder('..', '..', 'graphics', 'other', 'star animation')</code></li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">Answer key</div>
+      <pre class="green sm"><span class="kw">from</span> evolution <span class="kw">import</span> Evolution
+
+<span class="cm"># in __init__:</span>
+<span class="at">self</span><span class="op">.</span><span class="at">evolution</span> <span class="op">=</span> <span class="kw">None</span>
+
+<span class="cm"># in import_assets():</span>
+<span class="at">self</span><span class="op">.</span><span class="at">start_animation_frames</span> <span class="op">=</span> <span class="fn">import_folder</span><span class="op">(</span><span class="st">'..'</span>, <span class="st">'..'</span>, <span class="st">'graphics'</span>, <span class="st">'other'</span>, <span class="st">'star animation'</span><span class="op">)</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ STEP 3 ══════════════════ -->
+
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — Step 3</div>
+  <h2>check_evolution(): spotting the moment</h2>
+  <p style="max-width:860px;">Already wired up for you: <code>end_battle()</code> calls <code>check_evolution()</code> right after a <em>wild</em> encounter ends (not a trainer battle — that shows the trainer's defeat line instead). Your job is what happens inside that method.</p>
+  <div class="box gold" style="max-width:860px; width:100%;">
+    <p class="small">Loop every monster on your team. The condition is exactly what you'd expect: does it have an <code>evolve</code> value, and does its <em>current</em> level match the level that evolution requires? <code>monster.evolution == monster.evolution</code> — wait, it's simpler: <code>monster.level == monster.evolution[1]</code>.</p>
+  </div>
+  <div class="box water" style="max-width:860px; width:100%;">
+    <p class="small">Once you find one: build the <code>Evolution</code> overlay (it needs the monster's current name, its evolved name, and a callback for when it's done), then immediately replace that team slot with a fresh <code>Monster</code> of the evolved species — same level, new species. Then stop looking; one evolution at a time is plenty.</p>
+  </div>
+</div>
+
+<div class="slide bg-practice left-align" data-section="build">
+  <div class="step-badge">
+    <div class="step-num sn-fire">3</div>
+    <div>
+      <div class="step-file">📂 main.py</div>
+      <span class="step-title">check_evolution() — your turn</span>
+    </div>
+  </div>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank xs"><span class="kw">def</span> <span class="fn">check_evolution</span>(<span class="at">self</span>)<span class="op">:</span>
+    <span class="todo"># TODO: your code here</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">audio</span><span class="op">[</span><span class="st">'overworld'</span><span class="op">].</span><span class="fn">play</span><span class="op">(-</span><span class="nm">1</span><span class="op">)</span>  <span class="cm"># remove this basic line when you add yours above!</span></pre>
+    <ul class="hint-list">
+      <li>Loop <code>for index, monster in self.player_monsters.items():</code></li>
+      <li><code>if monster.evolution and monster.level == monster.evolution[1]:</code></li>
+      <li>Inside: <code>self.audio['evolution'].play()</code>, <code>self.player.block()</code>, then build the overlay and store it in <code>self.evolution</code>.</li>
+      <li><code>self.player_monsters[index] = Monster(monster.evolution[0], monster.level)</code>, then <code>break</code>.</li>
+      <li>After the loop: <code>if not self.evolution: self.audio['overworld'].play(-1)</code> — nothing evolved, so resume normal music.</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">Answer key</div>
+      <pre class="green xs"><span class="kw">def</span> <span class="fn">check_evolution</span>(<span class="at">self</span>)<span class="op">:</span>
+    <span class="kw">for</span> index, monster <span class="kw">in</span> <span class="at">self</span><span class="op">.</span><span class="at">player_monsters</span><span class="op">.</span><span class="fn">items</span><span class="op">():</span>
+        <span class="kw">if</span> monster<span class="op">.</span><span class="at">evolution</span> <span class="kw">and</span> monster<span class="op">.</span><span class="at">level</span> <span class="op">==</span> monster<span class="op">.</span><span class="at">evolution</span><span class="op">[</span><span class="nm">1</span><span class="op">]:</span>
+            <span class="at">self</span><span class="op">.</span><span class="at">audio</span><span class="op">[</span><span class="st">'evolution'</span><span class="op">].</span><span class="fn">play</span><span class="op">()</span>
+            <span class="at">self</span><span class="op">.</span><span class="at">player</span><span class="op">.</span><span class="fn">block</span><span class="op">()</span>
+            <span class="at">self</span><span class="op">.</span><span class="at">evolution</span> <span class="op">=</span> <span class="fn">Evolution</span><span class="op">(</span>
+                <span class="at">self</span><span class="op">.</span><span class="at">monster_frames</span><span class="op">[</span><span class="st">'monsters'</span><span class="op">],</span>
+                monster<span class="op">.</span><span class="at">name</span><span class="op">,</span>
+                monster<span class="op">.</span><span class="at">evolution</span><span class="op">[</span><span class="nm">0</span><span class="op">],</span>
+                <span class="at">self</span><span class="op">.</span><span class="at">fonts</span><span class="op">[</span><span class="st">'bold'</span><span class="op">],</span>
+                <span class="at">self</span><span class="op">.</span><span class="at">end_evolution</span><span class="op">,</span>
+                <span class="at">self</span><span class="op">.</span><span class="at">start_animation_frames</span><span class="op">)</span>
+            <span class="at">self</span><span class="op">.</span><span class="at">player_monsters</span><span class="op">[</span>index<span class="op">]</span> <span class="op">=</span> <span class="fn">Monster</span><span class="op">(</span>monster<span class="op">.</span><span class="at">evolution</span><span class="op">[</span><span class="nm">0</span><span class="op">],</span> monster<span class="op">.</span><span class="at">level</span><span class="op">)</span>
+            <span class="kw">break</span>
+    <span class="kw">if</span> <span class="kw">not</span> <span class="at">self</span><span class="op">.</span><span class="at">evolution</span><span class="op">:</span>
+        <span class="at">self</span><span class="op">.</span><span class="at">audio</span><span class="op">[</span><span class="st">'overworld'</span><span class="op">].</span><span class="fn">play</span><span class="op">(-</span><span class="nm">1</span><span class="op">)</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ STEP 4 ══════════════════ -->
+
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — Step 4</div>
+  <h2>end_evolution(): cleaning up</h2>
+  <p style="max-width:860px;">The <code>Evolution</code> class calls this automatically once its animation finishes — you already passed it in as the <code>end_evolution</code> callback in Step 3. Same shape as <code>end_dialog()</code> and <code>end_battle()</code>: clear the overlay, give control back to the player, and reset the audio.</p>
+</div>
+
+<div class="slide bg-practice left-align" data-section="build">
+  <div class="step-badge">
+    <div class="step-num sn-fire">4</div>
+    <div>
+      <div class="step-file">📂 main.py</div>
+      <span class="step-title">end_evolution() — your turn</span>
+    </div>
+  </div>
+  <div class="practice-wrap">
+    <div class="tag tag-practice" style="margin-bottom:0.3rem;">This is what's in your file right now</div>
+    <pre class="blank sm"><span class="kw">def</span> <span class="fn">end_evolution</span>(<span class="at">self</span>)<span class="op">:</span>
+    <span class="todo"># TODO: your code here</span>
+    <span class="kw">pass</span>  <span class="cm"># remove this when you're done</span></pre>
+    <ul class="hint-list">
+      <li>Four lines: clear <code>self.evolution = None</code>, <code>self.player.unblock()</code>, stop the evolution sound, restart the overworld music.</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">✅ Reveal Answer Key</button>
+    <div class="answer-block">
+      <div class="tag tag-answer" style="margin:0.4rem 0 0.3rem;">Answer key</div>
+      <pre class="green sm"><span class="kw">def</span> <span class="fn">end_evolution</span>(<span class="at">self</span>)<span class="op">:</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">evolution</span> <span class="op">=</span> <span class="kw">None</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">player</span><span class="op">.</span><span class="fn">unblock</span><span class="op">()</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">audio</span><span class="op">[</span><span class="st">'evolution'</span><span class="op">].</span><span class="fn">stop</span><span class="op">()</span>
+    <span class="at">self</span><span class="op">.</span><span class="at">audio</span><span class="op">[</span><span class="st">'overworld'</span><span class="op">].</span><span class="fn">play</span><span class="op">(-</span><span class="nm">1</span><span class="op">)</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE: Testing -->
+<div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Try it in a terminal</div>
+  <h2>Testing quickly, without grinding</h2>
+  <p style="max-width:860px;">Your starting team includes <code>Sparchu</code> at exactly level 15 — its own evolution threshold — specifically so you don't have to grind XP to see this work. Win your very first wild battle and evolution should trigger immediately.</p>
+  <pre class="water sm">python
+<span class="op">>>></span> <span class="kw">from</span> monster <span class="kw">import</span> Monster
+<span class="op">>>></span> m <span class="op">=</span> <span class="fn">Monster</span>(<span class="st">'Sparchu'</span>, <span class="nm">15</span>)
+<span class="op">>>></span> <span class="fn">print</span>(m<span class="op">.</span><span class="at">evolution</span>)
+(<span class="st">'Cindrill'</span>, <span class="nm">15</span>)
+<span class="op">>>></span> <span class="fn">print</span>(m<span class="op">.</span><span class="at">level</span> <span class="op">==</span> m<span class="op">.</span><span class="at">evolution</span><span class="op">[</span><span class="nm">1</span><span class="op">])</span>
+<span class="kw">True</span></pre>
+</div>
+
+<!-- ══════════════════ EXTENSION ══════════════════ -->
+
+<div class="slide bg-extend left-align" data-section="extend">
+  <div class="tag tag-extend">Try it yourself</div>
+  <h2>Extension ideas</h2>
+  <div class="creativity-grid" style="margin-top:0.7rem;">
+    <div class="c-card cv-lime">
+      <div class="c-letter">Idea 1</div>
+      <h4>🔗 A second evolution stage</h4>
+      <p>The data's already there: <code>Cindrill</code> evolves into <code>Charmadillo</code> at level 33. Play a long session and watch a monster evolve twice.</p>
+      <span class="activate">📂 already in game_data.py</span>
+    </div>
+    <div class="c-card cv-water">
+      <div class="c-letter">Idea 2</div>
+      <h4>⏳ "Almost there" notification</h4>
+      <p>Show a small message when a monster is exactly one level away from evolving, to build anticipation.</p>
+      <span class="activate">📂 main.py</span>
+    </div>
+    <div class="c-card cv-gold">
+      <div class="c-letter">Idea 3</div>
+      <h4>🏆 Evolve after trainer battles too</h4>
+      <p>Right now <code>check_evolution()</code> only runs after wild encounters. Try calling it after a trainer defeat as well — what has to change in <code>end_battle()</code>?</p>
+      <span class="activate">📂 main.py → end_battle()</span>
+    </div>
+  </div>
+</div>
+
+<div class="slide bg-extend" data-section="extend">
+  <div class="icon-big">🔑</div>
+  <div class="tag tag-gold">Stuck, or short on time?</div>
+  <h2>A complete version already runs</h2>
+  <p style="max-width:640px;">Outside the <code>Python-Monsters</code> folder:</p>
+  <pre class="gold" style="max-width:500px;">finished/session-5/</pre>
+  <p class="small" style="max-width:640px;"><code>cd finished/session-5</code> then <code>python main.py</code> — compare it against your own files line by line.</p>
+</div>
+
+<!-- SLIDE: Final summary -->
+<div class="slide bg-recap" data-section="build" style="padding:28px 80px; justify-content:flex-start;">
+  <div class="tag tag-build" style="margin-bottom:0.3rem;">Session 5 — done. The game is complete.</div>
+  <h2 style="margin-bottom:0.3rem;">What you built across all 5 sessions</h2>
+
+  <div class="stat-grid" style="margin:0.4rem 0;">
+    <div class="stat-card" style="padding:0.5rem;"><div class="s-num">5</div><div class="s-lbl">sessions completed</div></div>
+    <div class="stat-card" style="padding:0.5rem;"><div class="s-num">7</div><div class="s-lbl">maps to explore</div></div>
+    <div class="stat-card" style="padding:0.5rem;"><div class="s-num">∞</div><div class="s-lbl">battles, now with evolution</div></div>
+  </div>
+
+  <table class="range-table" style="font-size:0.8rem;">
+    <tr><th>Step</th><th>What it does</th><th>File</th></tr>
+    <tr><td class="step">2a-c</td><td>import Evolution, reserve slot, load star frames</td><td>main.py</td></tr>
+    <tr><td class="step">3</td><td>check_evolution() — detect and trigger</td><td>main.py</td></tr>
+    <tr><td class="step">4</td><td>end_evolution() — clean up when done</td><td>main.py</td></tr>
+  </table>
+
+  <div class="box fire" style="text-align:center; margin-top:0.5rem; padding:0.6rem 1.3rem; max-width:900px;">
+    <p style="font-size:1rem;"><strong>That's the whole curriculum.</strong> A real map, dialog, your own designed monsters, working turn-based battles, and now evolution — all built by you, file by file. Go play it.</p>
+  </div>
+</div>
+
+</div><!-- end #deck -->
+
+<button id="prev">&#8592;</button>
+<button id="next">&#8594;</button>
+<div id="nav"></div>
+<div id="slide-counter"></div>
+
+<script>
+  function toggleAnswer(btn) {
+    const block = btn.nextElementSibling;
+    block.classList.toggle('shown');
+    btn.textContent = block.classList.contains('shown') ? '🙈 Hide Answer' : '✅ Reveal Answer Key';
+  }
+
+  const slides   = document.querySelectorAll('.slide');
+  const nav      = document.getElementById('nav');
+  const counter  = document.getElementById('slide-counter');
+  const fill     = document.getElementById('progress-fill');
+  const secLabel = document.getElementById('section-label');
+  let current = 0;
+
+  slides.forEach((s, i) => {
+    const dot = document.createElement('div');
+    const sec = s.dataset.section;
+    dot.className = 'dot' + (sec === 'extend' ? ' extend' : '') + (i === 0 ? ' active' : '');
+    dot.addEventListener('click', () => goTo(i));
+    nav.appendChild(dot);
+  });
+
+  function goTo(n) {
+    slides[current].classList.remove('active');
+    nav.children[current].classList.remove('active');
+    current = Math.max(0, Math.min(n, slides.length - 1));
+    slides[current].classList.add('active');
+    nav.children[current].classList.add('active');
+    counter.textContent = `${current + 1} / ${slides.length}`;
+    fill.style.width = `${((current + 1) / slides.length) * 100}%`;
+
+    const sec = slides[current].dataset.section;
+    if (sec === 'extend') {
+      secLabel.textContent = '🧩 Extension';
+      secLabel.style.background = 'var(--purple)';
+      secLabel.style.color = '#1a0a2e';
+    } else {
+      secLabel.textContent = '✨ Build';
+      secLabel.style.background = 'var(--green)';
+      secLabel.style.color = '#0a1a10';
+    }
+  }
+
+  document.getElementById('prev').addEventListener('click', () => goTo(current - 1));
+  document.getElementById('next').addEventListener('click', () => goTo(current + 1));
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') goTo(current + 1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')                    goTo(current - 1);
+  });
+
+  goTo(0);
+</script>
+</body>
+</html>

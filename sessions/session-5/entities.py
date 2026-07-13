@@ -11,13 +11,16 @@ class Entity(pygame.sprite.Sprite):
 		super().__init__(groups)
 		self.z = WORLD_LAYERS['main']
 
+		# graphics
 		self.frame_index, self.frames = 0, frames
 		self.facing_direction = facing_direction
 
+		# movement
 		self.direction = vector()
 		self.speed = 250
 		self.blocked = False
 
+		# sprite setup
 		self.image = self.frames[self.get_state()][self.frame_index]
 		self.rect = self.image.get_frect(center = pos)
 		self.hitbox = self.rect.inflate(-self.rect.width / 2, -60)
@@ -61,6 +64,7 @@ class Character(Entity):
 		self.nurse = nurse
 		self.monsters = {i: Monster(name, lvl) for i, (name, lvl) in character_data['monsters'].items()} if 'monsters' in character_data else None
 
+		# movement
 		self.has_moved = False
 		self.can_rotate = True
 		self.has_noticed = False

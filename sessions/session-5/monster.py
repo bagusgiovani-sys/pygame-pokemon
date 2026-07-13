@@ -1,3 +1,7 @@
+# Monster stores all the data about one creature:
+# its name, level, stats, health, energy, XP, and abilities.
+# One Monster object = one creature in your team or the opponent's team.
+
 from game_data import MONSTER_DATA, ATTACK_DATA
 from random import randint
 
@@ -14,9 +18,10 @@ class Monster:
 		self.abilities = MONSTER_DATA[name]['abilities']
 		self.defending = False
 		self.xp = 0
-		self.level_up = self.level * 150
+		self.level_up = level * 150
 		self.evolution = MONSTER_DATA[self.name]['evolve']
 
+	# __repr__ is what Python prints when you do print(my_monster)
 	def __repr__(self):
 		return f'monster: {self.name}, lvl: {self.level}'
 
@@ -36,9 +41,11 @@ class Monster:
 	def get_abilities(self, include_all=True):
 		if include_all:
 			return [ability for lvl, ability in self.abilities.items() if self.level >= lvl]
-		else:
-			return [ability for lvl, ability in self.abilities.items() if self.level >= lvl and ATTACK_DATA[ability]['cost'] < self.energy]
+		return [ability for lvl, ability in self.abilities.items()
+		        if self.level >= lvl and ATTACK_DATA[ability]['cost'] < self.energy]
 
+	# get_info returns (current, max) tuples for health, energy, initiative.
+	# The battle UI uses this to draw the health bars.
 	def get_info(self):
 		return (
 			(self.health, self.get_stat('max_health')),
@@ -46,6 +53,7 @@ class Monster:
 			(self.initiative, 100)
 		)
 
+	# reduce_energy subtracts the cost of an attack from energy.
 	def reduce_energy(self, attack):
 		self.energy -= ATTACK_DATA[attack]['cost']
 
@@ -64,6 +72,8 @@ class Monster:
 		self.health = max(0, min(self.health, self.get_stat('max_health')))
 		self.energy = max(0, min(self.energy, self.get_stat('max_energy')))
 
+	# update is called every frame. It keeps stats in bounds and
+	# advances the initiative bar (so faster monsters get turns sooner).
 	def update(self, dt):
 		self.stat_limiter()
 		if not self.paused:

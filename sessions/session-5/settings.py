@@ -30,9 +30,11 @@ WORLD_LAYERS = {
 	'top': 4
 }
 
+# Only one monster is ever active per side, so each side needs just
+# one fixed position instead of a top/center/bottom slot list.
 BATTLE_POSITIONS = {
-	'left': {'top': (360, 260), 'center': (190, 400), 'bottom': (410, 520)},
-	'right': {'top': (900, 260), 'center': (1110, 390), 'bottom': (900, 550)}
+	'player':   (190, 400),
+	'opponent': (1110, 390)
 }
 
 BATTLE_LAYERS =  {
@@ -43,15 +45,8 @@ BATTLE_LAYERS =  {
 	'overlay': 4
 }
 
+# Two choices only — no switching teams and no catching wild monsters.
 BATTLE_CHOICES = {
-	'full': {
-		'fight':  {'pos' : vector(30, -60), 'icon': 'sword'},
-		'defend': {'pos' : vector(40, -20), 'icon': 'shield'},
-		'switch': {'pos' : vector(40, 20), 'icon': 'arrows'},
-		'catch':  {'pos' : vector(30, 60), 'icon': 'hand'}},
-
-	'limited': {
-		'fight':  {'pos' : vector(30, -40), 'icon': 'sword'},
-		'defend': {'pos' : vector(40, 0), 'icon': 'shield'},
-		'switch': {'pos' : vector(30, 40), 'icon': 'arrows'}}
+	'fight':  {'pos' : vector(30, -30), 'icon': 'sword'},
+	'defend': {'pos' : vector(30, 30),  'icon': 'shield'}
 }

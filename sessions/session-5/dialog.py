@@ -38,11 +38,13 @@ class DialogSprite(pygame.sprite.Sprite):
 		super().__init__(groups)
 		self.z = WORLD_LAYERS['top']
 
+		# text
 		text_surf = font.render(message, False, COLORS['black'])
 		padding = 5
 		width = max(30, text_surf.get_width() + padding * 2)
 		height = text_surf.get_height() + padding * 2
 
+		# background
 		surf = pygame.Surface((width, height), pygame.SRCALPHA)
 		surf.fill((0,0,0,0))
 		pygame.draw.rect(surf, COLORS['pure white'], surf.get_frect(topleft = (0,0)), 0, 4)

@@ -54,6 +54,7 @@ class AnimatedSprite(Sprite):
 # battle sprites
 class MonsterSprite(pygame.sprite.Sprite):
 	def __init__(self, pos, frames, groups, monster, index, pos_index, entity, apply_attack, create_monster):
+		# data
 		self.index = index
 		self.pos_index = pos_index
 		self.entity = entity
@@ -67,10 +68,12 @@ class MonsterSprite(pygame.sprite.Sprite):
 		self.apply_attack = apply_attack
 		self.create_monster = create_monster
 
+		# sprite setup
 		super().__init__(groups)
 		self.image = self.frames[self.state][self.frame_index]
 		self.rect = self.image.get_frect(center = pos)
 
+		# timers
 		self.timers = {
 			'remove highlight': Timer(300, func = lambda: self.set_highlight(False)),
 			'kill': Timer(600, func = self.destroy)
@@ -188,14 +191,14 @@ class MonsterStatsSprite(pygame.sprite.Sprite):
 
 		for index, (value, max_value) in enumerate(self.monster_sprite.monster.get_info()):
 			color = (COLORS['red'], COLORS['blue'], COLORS['gray'])[index]
-			if index < 2:
+			if index < 2:  # health and energy
 				text_surf = self.font.render(f'{int(value)}/{max_value}', False, COLORS['black'])
 				text_rect = text_surf.get_frect(topleft = (self.rect.width * 0.05, index * self.rect.height / 2))
 				bar_rect = pygame.FRect(text_rect.bottomleft + vector(0,-2), (self.rect.width * 0.9, 4))
 
 				self.image.blit(text_surf, text_rect)
 				draw_bar(self.image, bar_rect, value, max_value, color, COLORS['black'], 2)
-			else:
+			else:  # initiative
 				init_rect = pygame.FRect((0, self.rect.height - 2), (self.rect.width, 2))
 				draw_bar(self.image, init_rect, value, max_value, color, COLORS['white'], 0)
 
