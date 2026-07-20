@@ -16,6 +16,7 @@ Build the `Monster` class, design your own monsters in `game_data.py`, and wire 
 - **Turn order from a stat**: each monster's own speed decides how often it gets a turn — no dice rolls
 - **Type effectiveness**: fire beats plant, water beats fire, plant beats water — a balanced triangle with no "best" type
 - **Bench and auto-swap**: your team waits on the bench; when your active monster faints, the next one steps in automatically
+- **Sound as a signal**: music tells the player what mode the game is in — swapping tracks when a battle starts is a one-line change that makes the fight feel like an event
 
 ---
 
@@ -28,6 +29,54 @@ Imagine you wanted to add a new monster. With hard-coded logic you would have to
 ## What's different from a "full" Pokémon-style battle
 
 To keep this session focused, the battle system here only ever shows **one monster per side** at a time — no switching mid-battle, no catching wild monsters. When your active monster faints, your next living monster is sent in automatically. It's still a real, properly turn-based fight — attacks queue up based on speed, damage uses real type-effectiveness and defense math, and you can genuinely win or lose — just without the extra menu complexity. Switching and catching are listed as extension challenges if you want to add them yourself.
+
+---
+
+## The sound system — already running, and you'll use it today
+
+Your game already has music. It started the moment you ran session 3, and you
+never wrote a line of it — so before Step 16 asks you to *change* the music,
+here's what you're actually reaching for.
+
+One line in `import_assets()` loads every sound in the project:
+
+```python
+self.audio = audio_importer('..', '..', 'audio')
+```
+
+`audio_importer()` walks the `audio/` folder and builds a dictionary, using each
+**filename without its extension** as the key. So `overworld.ogg` becomes
+`self.audio['overworld']`, `battle.ogg` becomes `self.audio['battle']`, and so on.
+Nothing is hard-coded — drop a new `.wav` into `audio/` and it's available
+immediately under its own name.
+
+**The sounds you have:**
+
+| Key | What it's for |
+|-----|---------------|
+| `overworld` | walking-around music (starts on launch, loops) |
+| `battle` | fight music |
+| `notice` | the "!" when a trainer spots you |
+| `fire`, `scratch`, `splash`, `ice`, `green`, `explosion` | attack effects |
+| `evolution` | saved for session 5 |
+
+**Three methods is all you need:**
+
+```python
+self.audio['battle'].play(-1)   # play, looping forever
+self.audio['notice'].play()     # play once
+self.audio['overworld'].stop()  # stop
+```
+
+The `-1` means "repeat endlessly" — right for music, wrong for a sound effect.
+
+**What's already wired for you:** the overworld track starts when the game
+launches, and the notice sound plays when an NPC spots you.
+
+**What you add in Step 16:** the swap. When a battle begins, stop `overworld` and
+start `battle` looping. When it ends, stop `battle` and bring `overworld` back.
+That's the whole job — two lines in each place — but it's the difference between
+a fight that feels like an event and one that just happens.
 
 ---
 
@@ -107,6 +156,11 @@ Three methods work together:
 - `end_dialog()` — if the NPC is the nurse, heal your team; if they're a trainer who hasn't been defeated, start a `Battle`; otherwise just end the conversation.
 - `end_battle()` — called when a battle finishes. Marks a trainer defeated and shows their post-battle line, or (for a wild encounter) just returns you to walking around.
 - `monster_encounter()` — checks if you're standing in tall grass and moving, and randomly starts a wild `Battle` against a team built from that patch's monster list.
+
+All three touch the music, using `self.audio` from the sound-system section above:
+`end_dialog()` and `monster_encounter()` stop `overworld` and start `battle` when a
+fight begins; `end_battle()` reverses it. You also hand the whole dictionary to the
+battle itself with `sounds=self.audio`, so it can play each attack's own effect.
 
 ---
 

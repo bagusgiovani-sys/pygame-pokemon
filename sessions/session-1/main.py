@@ -1,3 +1,5 @@
+import utils.transport
+import utils.session
 import pygame
 from sys import exit
 from settings import WINDOW_WIDTH, WINDOW_HEIGHT, COLORS

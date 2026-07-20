@@ -1283,6 +1283,35 @@ target_sprite<span class="op">.</span><span class="at">monster</span><span class
 <!-- ══════════════════ STEP 16 ══════════════════ -->
 
 <div class="slide bg-concept left-align" data-section="build">
+  <div class="tag tag-concept">Fundamentals — before Step 16</div>
+  <h2>Your game already has music</h2>
+  <p style="max-width:880px;">It has since session 3 — you never wrote a line of it. Step 16 asks you to <em>change</em> it, so here's what you're reaching for.</p>
+  <div class="box gold" style="max-width:900px; width:100%;">
+    <p class="small">One line in <code>import_assets()</code> loads every sound in the project:</p>
+    <pre class="xs"><span class="at">self</span><span class="op">.</span><span class="at">audio</span> <span class="op">=</span> <span class="fn">audio_importer</span><span class="op">(</span><span class="st">'..'</span>, <span class="st">'..'</span>, <span class="st">'audio'</span><span class="op">)</span></pre>
+    <p class="small"><code>audio_importer()</code> walks the <code>audio/</code> folder and builds a dictionary keyed by <strong>filename without the extension</strong>. So <code>overworld.ogg</code> → <code>self.audio['overworld']</code>. Drop a new file in and it's available under its own name — nothing hard-coded.</p>
+  </div>
+  <div class="two-col" style="max-width:900px;">
+    <div class="box water">
+      <h3 style="color:var(--cyan);">🔊 Three methods, that's all</h3>
+      <pre class="xs"><span class="at">self</span><span class="op">.</span><span class="at">audio</span><span class="op">[</span><span class="st">'battle'</span><span class="op">].</span><span class="fn">play</span><span class="op">(-</span><span class="nm">1</span><span class="op">)</span>
+<span class="at">self</span><span class="op">.</span><span class="at">audio</span><span class="op">[</span><span class="st">'notice'</span><span class="op">].</span><span class="fn">play</span><span class="op">()</span>
+<span class="at">self</span><span class="op">.</span><span class="at">audio</span><span class="op">[</span><span class="st">'overworld'</span><span class="op">].</span><span class="fn">stop</span><span class="op">()</span></pre>
+      <p class="small"><code>-1</code> means loop forever — right for music, wrong for a sound effect.</p>
+    </div>
+    <div class="box fire">
+      <h3 style="color:var(--fire);">🎵 What you've got</h3>
+      <p class="small"><code>overworld</code> · <code>battle</code> · <code>notice</code><br>
+      <code>fire</code> · <code>scratch</code> · <code>splash</code> · <code>ice</code> · <code>green</code> · <code>explosion</code><br>
+      <code>evolution</code> <span style="opacity:0.7;">— saved for session 5</span></p>
+    </div>
+  </div>
+  <div class="box purple" style="max-width:900px; width:100%;">
+    <p class="small"><strong>Already wired for you:</strong> overworld music on launch, notice sound when a trainer spots you. <strong>What you add in Step 16:</strong> the swap — stop <code>overworld</code>, start <code>battle</code> looping, then reverse it when the fight ends. Two lines in each place, and the fight stops feeling like it just happened.</p>
+  </div>
+</div>
+
+<div class="slide bg-concept left-align" data-section="build">
   <div class="tag tag-concept">Fundamentals — Step 16</div>
   <h2>Starting battles from the overworld</h2>
   <p style="max-width:860px;">Three <code>main.py</code> methods connect the overworld to <code>Battle</code>:</p>
